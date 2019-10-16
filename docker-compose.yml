@@ -22,3 +22,24 @@ services:
         limits:
           cpus: '4'
           memory: 4096M
+
+  mxnet:
+    image: sample.ml.mxnet
+    volumes:
+      - ./mxnet:/opt/app
+      - ./mxnet/.data:/opt/data
+      - ./:/opt/root
+    build:
+      context: ./mxnet
+      dockerfile: ./Dockerfile
+    ports:
+      - 7889:7888
+    # command: bash c dev
+    command: tail -f /dev/null
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4096M

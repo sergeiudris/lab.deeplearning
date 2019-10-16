@@ -27,7 +27,7 @@ RUN clojure -A:dev -Stree
 
 EXPOSE 4001
 EXPOSE 8080
-EXPOSE 7878
+EXPOSE 7888
 
 
 CMD ["bash","c", "dev"]

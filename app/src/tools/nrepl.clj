@@ -16,7 +16,7 @@
 ;     (handler {})))
 
 (defn -main []
-  (prn "--running REPL on 7878 ")
+  (prn "--running REPL on 7888 ")
   (defonce server (start-server
                    :bind "0.0.0.0"
                    :port 7888
