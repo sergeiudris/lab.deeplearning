@@ -28,14 +28,23 @@
             [org.apache.clojure-mxnet.context :as context])
   (:gen-class))
 
-(def data-dir "data/")
-(def mr-dataset-path "data/mr-data") ;; the MR polarity dataset path
+(defn delete-recursively [fname]
+  (doseq [f (reverse (file-seq (clojure.java.io/file fname)))]
+    (clojure.java.io/delete-file f)))
+
+(def data-dir ".data/mxnet/cnn")
+(def mr-dataset-path (str data-dir "/mr-data" )) ;; the MR polarity dataset path
 (def num-filter 100)
 (def num-label 2)
 (def dropout 0.5)
 
-(when-not (.exists (io/file (str data-dir)))
-  (do (println "Retrieving data for cnn text classification...") (sh "./get_data.sh")))
+(defn load-data!
+  []
+  (when-not (.exists (io/file (str data-dir)))
+    (do (println "Retrieving data for cnn text classification...") (sh "./data/mxnet/cnn/get_data.sh"))))
+
+#_(delete-recursively data-dir)
+
 
 (defn shuffle-data [test-num {:keys [data label sentence-count sentence-size vocab-size embedding-size pretrained-embedding]}]
   (println "Shuffling the data and splitting into training and test sets")
@@ -131,5 +140,6 @@
     #_(train-convnet {:embedding-size 50 :batch-size 100 :test-size 1000 :num-epoch 10})))
 
 (comment
+  (load-data!)
   (train-convnet {:devs devs :embedding-size 50 :batch-size 10 :test-size 100 :num-epoch 10 :max-examples 1000}))
 

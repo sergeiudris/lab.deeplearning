@@ -36,6 +36,11 @@
   (doseq [filename filenames]
     (.delete (java.io.File. filename))))
 
+;https://gist.github.com/edw/5128978
+(defn delete-recursively [fname]
+  (doseq [f (reverse (file-seq (clojure.java.io/file fname)))]
+    (clojure.java.io/delete-file f)))
+
 (defn mk-dirs
   "Make directories in the path"
   [path]
