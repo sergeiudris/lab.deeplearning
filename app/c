@@ -1,0 +1,12 @@
+#!/bin/bash
+
+
+dev(){
+
+  echo "-- running dev script"
+
+  clojure -A:dev -m app.main
+
+}
+
+"$@"
