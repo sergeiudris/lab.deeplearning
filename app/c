@@ -3,9 +3,8 @@
 
 dev(){
 
-  echo "-- running dev script"
-
-  clojure -A:dev -m app.main
+  echo "--starting"
+  clojure -A:dev:local -m app.main
 
 }
 
