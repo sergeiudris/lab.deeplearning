@@ -34,7 +34,7 @@
 (def num-epoch 5)
 
 (when-not (.exists (io/file (str data-dir "train-images-idx3-ubyte")))
-  (sh "../../scripts/get_mnist_data.sh"))
+  (sh "/opt/root/mxnet/examples/scripts/get_mnist_data.sh"))
 ;; for save checkpoints load checkpoints
 (io/make-parents "model/dummy.txt")
 
@@ -190,6 +190,8 @@
     (run-all devs)))
 
 (comment
+  
+  (def devs [(context/cpu)])
 
   ;;; run all the example functions
   (run-all [(context/cpu)])
@@ -230,7 +232,8 @@
   ;;=> ...
   ;;=> Batch  999  acc:  1.0
 
-  (run-predication-and-calc-accuracy-manually [(context/cpu)])
+  (run-predication-and-calc-accuracy-manually [(context/cpu) 
+                                                ])
   ;;=> Stats:  {:acc-sum 9494, :acc-cnt 10000, :index 1000}
   ;;=> Accuracy:  0.9494
 )

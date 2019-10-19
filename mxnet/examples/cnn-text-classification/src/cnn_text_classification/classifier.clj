@@ -143,7 +143,13 @@
                                 :pretrained-embedding :glove}))
   
   (->> String
-       cr/reflect
+       reflect
+       :members
+       (filter #(contains? (:flags %) :public))
+       pp/print-table)
+  
+  (->> mxmodule
+       reflect
        :members
        (filter #(contains? (:flags %) :public))
        pp/print-table)
