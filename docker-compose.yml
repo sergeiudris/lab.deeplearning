@@ -2,26 +2,26 @@ version: "3.7"
 
 services:
 
-  app:
-    image: sample.ml.app
-    volumes:
-      - ./samples/app:/opt/app
-      - ./samples/app/.data:/opt/data
-      - ./:/opt/root
-    build:
-      context: ./samples/app
-      dockerfile: ./Dockerfile
-    ports:
-      - 7888:7888
-    # command: bash c dev
-    command: tail -f /dev/null
-    stdin_open: true
-    tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 4096M
+  # app:
+  #   image: sample.ml.app
+  #   volumes:
+  #     - ./samples/app:/opt/app
+  #     - ./samples/app/.data:/opt/data
+  #     - ./:/opt/root
+  #   build:
+  #     context: ./samples/app
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7888:7888
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 4096M
 
   # tln:
   #   image: sample.ml.tln
@@ -44,23 +44,23 @@ services:
   #         cpus: '4'
   #         memory: 4096M
 
-  # mxnet:
-  #   image: sample.ml.mxnet
-  #   volumes:
-  #     - ./mxnet:/opt/app
-  #     - ./mxnet/.data:/opt/data
-  #     - ./:/opt/root
-  #   build:
-  #     context: ./mxnet
-  #     dockerfile: ./Dockerfile
-  #   ports:
-  #     - 7889:7888
-  #   # command: bash c dev
-  #   command: tail -f /dev/null
-  #   stdin_open: true
-  #   tty: true
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '4'
-  #         memory: 4096M
+  mxnet:
+    image: sample.ml.mxnet
+    volumes:
+      - ./mxnet:/opt/app
+      - ./mxnet/.data:/opt/data
+      - ./:/opt/root
+    build:
+      context: ./mxnet
+      dockerfile: ./Dockerfile
+    ports:
+      - 7888:7888
+    # command: bash c dev
+    command: tail -f /dev/null
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4096M

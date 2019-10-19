@@ -55,6 +55,9 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
 
 WORKDIR /opt/app
 
+COPY examples/bert/project.clj examples/bert/project.clj 
+RUN cd examples/bert && lein deps
+
 EXPOSE 8080
 EXPOSE 7888
 
