@@ -40,11 +40,24 @@ link_spaces_mxnet() {
 
     ln -s ../../.vscode spaces/$SPACE/.vscode
 
-    mkdir -p spaces/$SPACE/bert
 
-    ln -s ../../../mxnet/examples/bert/project.clj spaces/$SPACE/bert/project.clj
-    ln -s ../../../mxnet/examples/bert/src spaces/$SPACE/bert/src
-    ln -s ../../../mxnet/examples/bert/data spaces/$SPACE/bert/data
+    EXAMPLE=bert
+    mkdir -p spaces/$SPACE/$EXAMPLE
+    ln -s ../../../mxnet/examples/$EXAMPLE/project.clj spaces/$SPACE/$EXAMPLE/project.clj
+    ln -s ../../../mxnet/examples/$EXAMPLE/src spaces/$SPACE/$EXAMPLE/src
+    ln -s ../../../mxnet/examples/$EXAMPLE/data spaces/$SPACE/$EXAMPLE/data
+
+    EXAMPLE=rnn
+    mkdir -p spaces/$SPACE/$EXAMPLE
+    ln -s ../../../mxnet/examples/$EXAMPLE/project.clj spaces/$SPACE/$EXAMPLE/project.clj
+    ln -s ../../../mxnet/examples/$EXAMPLE/src spaces/$SPACE/$EXAMPLE/src
+    ln -s ../../../mxnet/examples/$EXAMPLE/data spaces/$SPACE/$EXAMPLE/data
+
+    EXAMPLE=cnn-text-classification
+    mkdir -p spaces/$SPACE/$EXAMPLE
+    ln -s ../../../mxnet/examples/$EXAMPLE/project.clj spaces/$SPACE/$EXAMPLE/project.clj
+    ln -s ../../../mxnet/examples/$EXAMPLE/src spaces/$SPACE/$EXAMPLE/src
+    ln -s ../../../mxnet/examples/$EXAMPLE/data spaces/$SPACE/$EXAMPLE/data
 
 }
 
