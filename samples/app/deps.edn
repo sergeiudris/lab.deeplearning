@@ -12,7 +12,5 @@
                   org.clojure/test.check {:mvn/version "0.10.0"}
                   org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
                   }}
-           :local {:extra-deps
-                   {examples/translation {:local/root "/opt/root/examples/translation"}}}
            }
 }

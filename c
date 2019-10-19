@@ -20,15 +20,17 @@ term(){
 }
 
 link_spaces() {
-    SPACE=srv
+    SPACE=samples
     mkdir -p spaces/$SPACE
-    # ln -s ../../app/src spaces/$SPACE/app
-    # ln -s ../../.vscode spaces/$SPACE/.vscode
-    # ln -s ../../app/deps.edn spaces/$SPACE/deps.edn
-    # ln -s ../../app/.data spaces/$SPACE/.data
 
-    mkdir -p spaces/$SPACE/examples
-    ln -s ../../../examples/translation/src/examples/translation spaces/$SPACE/examples/translation
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+    ln -s ../../samples/app/deps.edn spaces/$SPACE/deps.edn
+
+
+    mkdir -p spaces/$SPACE/tln
+
+    ln -s ../../../samples/tln/src/app/tln spaces/$SPACE/tln/src
+    ln -s ../../../samples/tln/.data spaces/$SPACE/tln/.data
 
 }
 

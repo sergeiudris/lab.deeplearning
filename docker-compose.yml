@@ -2,14 +2,35 @@ version: "3.7"
 
 services:
 
-  app:
-    image: sample.ml.app
+  # app:
+  #   image: sample.ml.app
+  #   volumes:
+  #     - ./app:/opt/app
+  #     - ./app/.data:/opt/data
+  #     - ./:/opt/root
+  #   build:
+  #     context: ./app
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7888:7888
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 4096M
+
+  tln:
+    image: sample.ml.tln
     volumes:
-      - ./app:/opt/app
-      - ./app/.data:/opt/data
+      - ./samples/tln:/opt/app
+      - ./samples/tln/.data:/opt/data
       - ./:/opt/root
     build:
-      context: ./app
+      context: ./samples/tln
       dockerfile: ./Dockerfile
     ports:
       - 7888:7888

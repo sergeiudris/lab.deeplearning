@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+dev(){
+
+  echo "--starting"
+  clojure -A:core -m app.main
+
+}
+
+"$@"
