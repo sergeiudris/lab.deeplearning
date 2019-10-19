@@ -25,7 +25,9 @@
             [org.apache.clojure-mxnet.ndarray :as ndarray]
             [org.apache.clojure-mxnet.optimizer :as optimizer]
             [org.apache.clojure-mxnet.symbol :as sym]
-            [org.apache.clojure-mxnet.context :as context])
+            [org.apache.clojure-mxnet.context :as context]
+            [clojure.pprint :as pp]
+            [clojure.reflect :refer [reflect]])
   (:gen-class))
 
 (def data-dir "data/")
@@ -131,5 +133,20 @@
     #_(train-convnet {:embedding-size 50 :batch-size 100 :test-size 1000 :num-epoch 10})))
 
 (comment
-  (train-convnet {:devs devs :embedding-size 50 :batch-size 10 :test-size 100 :num-epoch 10 :max-examples 1000}))
+
+  (def mxmodule (train-convnet {:devs (mapv #(context/cpu %) (range (Integer/parseInt "1")))
+                                :embedding-size 50
+                                :batch-size 10
+                                :test-size 100
+                                :num-epoch 10
+                                :max-examples 1000
+                                :pretrained-embedding :glove}))
+  
+  (->> String
+       cr/reflect
+       :members
+       (filter #(contains? (:flags %) :public))
+       pp/print-table)
+  
+  )
 
