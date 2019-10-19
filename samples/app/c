@@ -4,7 +4,7 @@
 dev(){
 
   echo "--starting"
-  clojure -A:dev:local -m app.main
+  clojure -A:core -m app.main
 
 }
 
