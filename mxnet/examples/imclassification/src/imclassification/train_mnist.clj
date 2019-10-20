@@ -50,7 +50,7 @@
                                    "DMLC_NUM_SERVER" (str num-servers)})))
 
 (when-not (.exists (io/file (str data-dir "train-images-idx3-ubyte")))
-  (sh "../../scripts/get_mnist_data.sh"))
+  (sh "/opt/root/mxnet/scripts/get_mnist_data.sh"))
 
 (defn get-symbol []
   (as-> (sym/variable "data") data
@@ -117,5 +117,8 @@
                (mapv #(context/cpu %) (range (Integer/parseInt (or dev-num "1")))))]
     (start devs)))
 
-(comment
-  (start [(context/cpu)]))
+#_(time (start [(context/cpu)]))
+; "Elapsed time: 42016.996141 msecs"
+
+#_(time (start [(context/cpu 0) (context/cpu 1)]))
+; "Elapsed time: 457164.860595 msecs"

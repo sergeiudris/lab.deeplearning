@@ -190,7 +190,7 @@
     (run-all devs)))
 
 (comment
-  
+
   (def devs [(context/cpu)])
 
   ;;; run all the example functions
@@ -232,12 +232,12 @@
   ;;=> ...
   ;;=> Batch  999  acc:  1.0
 
-  (run-predication-and-calc-accuracy-manually [(context/cpu) 
-                                                ])
-  
+  (time
+   (run-predication-and-calc-accuracy-manually [(context/cpu 0)]))
+
   (.. java.lang.Runtime getRuntime availableProcessors)
-  
+
   ;;=> Stats:  {:acc-sum 9494, :acc-cnt 10000, :index 1000}
   ;;=> Accuracy:  0.9494
-)
+  )
 

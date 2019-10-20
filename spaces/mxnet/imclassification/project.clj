@@ -1,0 +1,1 @@
+../../../mxnet/examples/imclassification/project.clj
