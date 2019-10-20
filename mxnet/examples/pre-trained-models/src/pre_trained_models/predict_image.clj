@@ -23,16 +23,24 @@
             [org.apache.clojure-mxnet.shape :as mx-shape]
             [org.apache.clojure-mxnet.symbol :as sym]
             [opencv4.core :as cv]
+            [clojure.java.shell :refer [sh]]
             [opencv4.utils :as cvu]))
 
 ;; based on https://mxnet.incubator.apache.org/tutorials/python/predict_image.html
 
 ;; run download-reset-152.sh to get the model params and json
 
+
+
 (def model-dir "model")
 (def num-channels 3)
 (def h 224)
 (def w 224)
+
+(when-not (.exists (io/file (str model-dir)))
+  (do (println "Retrieving data ...")
+      (sh "./download-resnet-152.sh"))
+  nil)
 
 (defn download [uri file]
   (with-open [in (io/input-stream uri)
@@ -91,14 +99,29 @@
 
 (comment
 
-  (predict "https://raw.githubusercontent.com/dmlc/web-data/master/mxnet/doc/tutorials/python/predict_image/cat.jpg" true)
+
+  
+  ; (System/getenv "DISPLAY")
+  ; (.. System (getenv "DISPLAY"))
+
+  ; (System/setProperty "java.awt.headless" "true")
+  ; (System/getProperty "java.awt.headless")
+
+  ; NoClassDefFoundError Could not initialize class sun.awt.X11GraphicsEnvironment
+  ; https://stackoverflow.com/a/27701516
+
+  (predict
+   "https://raw.githubusercontent.com/dmlc/web-data/master/mxnet/doc/tutorials/python/predict_image/cat.jpg"
+   true)
   ;; ({:prob 0.69066674, :label "n02122948 kitten, kitty"}
   ;;  {:prob 0.04466057, :label "n01323155 kit"}
   ;;  {:prob 0.029682875, :label "n01318894 pet"}
   ;;  {:prob 0.028944906, :label "n02122878 tabby, queen"}
   ;;  {:prob 0.027530408, :label "n01322221 baby"})
 
-  (predict "http://thenotoriouspug.com/wp-content/uploads/2015/01/Pug-Cookie-1920x1080-1024x576.jpg" true)
+  (predict
+   "http://thenotoriouspug.com/wp-content/uploads/2015/01/Pug-Cookie-1920x1080-1024x576.jpg"
+   true)
   ;; ({:prob 0.44412872, :label "n02110958 pug, pug-dog"}
   ;;  {:prob 0.093773685,
   ;;   :label "n13905792 wrinkle, furrow, crease, crinkle, seam, line"}
@@ -108,5 +131,5 @@
   ;;  {:prob 0.023329297, :label "n02083346 canine, canid"})
 
   (feature-extraction) ;=> [1 2048]
-)
+  )
 

@@ -12,7 +12,7 @@ RUN apt-get update && \
             unzip curl net-tools lsof
 
 RUN apt-get update && \
-    apt-get install -y openjdk-8-jdk
+    apt-get install -y openjdk-11-jdk
 
 ENV CLOJURE_SCRIPT_VERSION=linux-install-1.10.1.466.sh
 
