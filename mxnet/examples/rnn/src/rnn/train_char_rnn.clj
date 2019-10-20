@@ -179,3 +179,12 @@
                (mapv #(context/gpu %) (range (Integer/parseInt (or dev-num "1"))))
                (mapv #(context/cpu %) (range (Integer/parseInt (or dev-num "1")))))]
     (train devs)))
+
+#_(time (train [(context/cpu 0)]))
+;"Elapsed time: 531872.55285 msecs"
+
+#_(time (train [(context/cpu 0) (context/cpu 1)]))
+;"Elapsed time: 1203580.254081 msecs"
+
+#_(time (train [(context/cpu 0) (context/cpu 1)
+                (context/cpu 2) (context/cpu 3)]))
