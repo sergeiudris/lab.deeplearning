@@ -196,7 +196,7 @@
 
 (comment
 
-  (train (context/cpu 0) 3)
+  (train (context/cpu) 3)
 
   (m/save-checkpoint model {:prefix fine-tuned-prefix :epoch 3})
 

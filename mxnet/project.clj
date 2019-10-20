@@ -25,11 +25,11 @@
 
                  ;; To use with nightly snapshot
                  ;[org.apache.mxnet/mxnet-full_2.11-osx-x86_64-cpu "<insert-snapshot-version>"]
-                 ;[org.apache.mxnet/mxnet-full_2.11-linux-x86_64-cpu "<insert-snapshot-version>"]
+                 [org.apache.mxnet/mxnet-full_2.11-linux-x86_64-cpu "1.6.0-SNAPSHOT"]
                  ;[org.apache.mxnet/mxnet-full_2.11-linux-x86_64-gpu "<insert-snapshot-version"]
 
                  ;;; CI / Local Build
-                 [org.apache.mxnet/mxnet-full_2.11 "INTERNAL"]
+                 #_[org.apache.mxnet/mxnet-full_2.11 "INTERNAL"]
 
                  [org.clojure/tools.logging "0.4.0"]
                  [org.apache.logging.log4j/log4j-core "2.8.1"]

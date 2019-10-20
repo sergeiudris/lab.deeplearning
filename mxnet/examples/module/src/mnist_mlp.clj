@@ -234,6 +234,9 @@
 
   (run-predication-and-calc-accuracy-manually [(context/cpu) 
                                                 ])
+  
+  (.. java.lang.Runtime getRuntime availableProcessors)
+  
   ;;=> Stats:  {:acc-sum 9494, :acc-cnt 10000, :index 1000}
   ;;=> Accuracy:  0.9494
 )

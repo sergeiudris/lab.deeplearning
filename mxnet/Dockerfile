@@ -55,6 +55,10 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
 
 WORKDIR /opt/app
 
+COPY src src
+COPY project.clj project.clj
+RUN lein install
+
 COPY examples/bert/project.clj examples/bert/project.clj 
 RUN cd examples/bert && lein deps
 
