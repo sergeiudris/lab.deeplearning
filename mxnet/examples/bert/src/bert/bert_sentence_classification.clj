@@ -27,6 +27,7 @@
   (:require [bert.util :as bert-util]
             [clojure-csv.core :as csv]
             [clojure.string :as string]
+            [clojure.pprint :as pp]
             [org.apache.clojure-mxnet.callback :as callback]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.dtype :as dtype]
@@ -117,7 +118,7 @@
   (let [vocab (bert-util/get-vocab)
         idx->token (:idx->token vocab)
         token->idx (:token->idx vocab)
-        data-train-raw (->> raw-data
+        data-train-raw (->> (get-raw-data)
                             (mapv #(vals (select-keys % [3 4 0])))
                             (rest) ; drop header
                             (into []))
@@ -129,6 +130,43 @@
                   (flatten)
                   (into []))
      :train-num (count processed-datas)}))
+
+(comment
+  (def vs (prepare-data (get-raw-data)))
+  (first (get-raw-data))
+  ;https://gluon-nlp.mxnet.io/examples/sentence_embedding/bert.html#Loading-the-dataset
+
+  (first (mapv #(select-keys % [3 4 0]) (get-raw-data)))
+
+  (def v
+    (->>
+     (mapv #(select-keys % [3 4 0]) (get-raw-data))
+     (rest)
+     (take 10)))
+  (-> v (first ) (get 3))
+  
+  (bert-util/tokenize (string/lower-case (-> v (first) (get 3))))
+
+  (select-keys [1 2 3] [1 0 2])
+  (type vs)
+  (count vs)
+  (keys vs)
+  (key (first vs))
+  (take 10 (val (first vs)))
+  (count (second (first)))
+  (ffirst vs)
+  (take 10 (second (first vs)))
+  (take 10 vs)
+  (:train-num vs)
+
+  (doseq [[k v] vs]
+    (prn k)
+    (prn (take 10 v)))
+
+  ;
+  )
+
+
 
 (defn train
   "Trains (fine tunes) the sentence pairs for a classification task on the BERT Base model"
