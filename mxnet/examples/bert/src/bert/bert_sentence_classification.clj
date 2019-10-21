@@ -234,10 +234,14 @@
 
 (comment
 
-  (def model (train (context/cpu) 3))
+  #_(def model (train (context/cpu) 3))
 
-  (m/save-checkpoint model {:prefix fine-tuned-prefix :epoch 3})
+  #_(m/save-checkpoint model {:prefix fine-tuned-prefix :epoch 3})
 
+  #_(time
+   (->
+    (train (context/cpu) 3)
+    (m/save-checkpoint  {:prefix fine-tuned-prefix :epoch 3})))
   
   ;;;; Explore results from the fine-tuned model
 
@@ -258,6 +262,27 @@
   ;;  "In response to sluggish sales , Cisco pared spending ."]
   (predict-equivalence fine-tuned-predictor
                        "The company cut spending to compensate for weak sales ."
-                       "In response to poor sales results, the company cut spending .")  
+                       "In response to poor sales results, the company cut spending .")
+  ; [0.27060297 0.729397]
+  
+  (predict-equivalence fine-tuned-predictor
+                       "Cisco pared spending to compensate for sluggish sales ."
+                       "In response to sluggish sales , Cisco pared spending .")
+  ; [0.23891574 0.76108426]
+
+  (predict-equivalence fine-tuned-predictor
+                       "Clojure offers more than other LISp languages"
+                       "Clojure is richer than alternative  languages")
+  ; [0.1578331 0.8421669]
+  
+  (predict-equivalence fine-tuned-predictor
+                       "The weather is great"
+                       "String theory may unify quantom mechanics and general relativity")
+  ; [0.3303495 0.6696505]
+  
+  (predict-equivalence fine-tuned-predictor
+                       "The weather is great"
+                       "The weather seems great")
+  ; [0.44371074 0.5562893] 
 
   )
