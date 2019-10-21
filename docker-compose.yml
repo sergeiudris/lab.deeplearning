@@ -67,3 +67,13 @@ services:
         limits:
           cpus: '4'
           memory: 8192M
+
+  # nvidia:
+  #   image: nvidia/driver:418.40.04-ubuntu18.04
+  #   volumes:
+  #     - /run/nvidia:/run/nvidia:shared
+  #   command: --accept-license
+  #   privileged: true
+  #   pid: "host"
+  #   stdin_open: true
+  #   tty: true
