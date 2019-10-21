@@ -52,6 +52,7 @@ services:
       - ./:/opt/root
     build:
       context: ./mxnet
+      # dockerfile: ./gpu.Dockerfile
       dockerfile: ./Dockerfile
     ports:
       - 7888:7888

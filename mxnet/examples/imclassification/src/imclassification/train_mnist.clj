@@ -122,3 +122,5 @@
 
 #_(time (start [(context/cpu 0) (context/cpu 1)]))
 ; "Elapsed time: 457164.860595 msecs"
+
+#_(time (start [(context/gpu)]))

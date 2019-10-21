@@ -19,6 +19,9 @@
   :description "Clojure examples for image classification"
   :plugins [[lein-cljfmt "0.5.7"]]
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.apache.mxnet.contrib.clojure/clojure-mxnet "1.6.0-SNAPSHOT"]]
+                 [org.apache.mxnet.contrib.clojure/clojure-mxnet "1.6.0-SNAPSHOT"]
+                 #_[org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu "1.5.1"]
+                 #_[org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu "1.5.1"]
+                 ]
   :pedantic? :skip
   :main imclassification.train-mnist)
