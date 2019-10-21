@@ -85,5 +85,15 @@ link_spaces_mxnet() {
 
 }
 
+link_spaces_d2l(){
+    SPACE=d2l
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+
+    ln -s ../../d2l/deps.edn spaces/$SPACE/deps.edn
+    ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
+    ln -s ../../d2l/.data spaces/$SPACE/.data
+}
 
 "$@"

@@ -44,15 +44,48 @@ services:
   #         cpus: '4'
   #         memory: 4096M
 
-  mxnet:
-    image: sample.ml.mxnet
+  # mxnet:
+  #   image: sample.ml.mxnet
+  #   volumes:
+  #     - ./mxnet:/opt/app
+  #     - ./mxnet/.data:/opt/data
+  #     - ./:/opt/root
+  #   build:
+  #     context: ./mxnet
+  #     # dockerfile: ./gpu.Dockerfile
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7888:7888
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   environment:
+  #     - DISPLAY=10.0.75.1:0.0
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 8192M
+
+  # nvidia:
+  #   image: nvidia/driver:418.40.04-ubuntu18.04
+  #   volumes:
+  #     - /run/nvidia:/run/nvidia:shared
+  #   command: --accept-license
+  #   privileged: true
+  #   pid: "host"
+  #   stdin_open: true
+  #   tty: true
+
+  d2l:
+    image: sample.ml.d2l
     volumes:
-      - ./mxnet:/opt/app
-      - ./mxnet/.data:/opt/data
+      - ./d2l:/opt/app
+      - ./d2l/.data:/opt/data
       - ./:/opt/root
     build:
-      context: ./mxnet
-      # dockerfile: ./gpu.Dockerfile
+      context: ./d2l
       dockerfile: ./Dockerfile
     ports:
       - 7888:7888
@@ -67,13 +100,3 @@ services:
         limits:
           cpus: '4'
           memory: 8192M
-
-  # nvidia:
-  #   image: nvidia/driver:418.40.04-ubuntu18.04
-  #   volumes:
-  #     - /run/nvidia:/run/nvidia:shared
-  #   command: --accept-license
-  #   privileged: true
-  #   pid: "host"
-  #   stdin_open: true
-  #   tty: true
