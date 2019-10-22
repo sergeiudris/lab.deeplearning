@@ -20,6 +20,8 @@ RUN curl -O https://download.clojure.org/install/$CLOJURE_SCRIPT_VERSION && \
     chmod +x $CLOJURE_SCRIPT_VERSION && \
     sudo ./$CLOJURE_SCRIPT_VERSION
 
+WORKDIR /opt
+
 RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
     apt-get update && \
     apt-get install -y  \
@@ -27,6 +29,14 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
         libopenblas-base \
         libatlas3-base \
         libcurl3 
+
+# git tag --list
+# git checkout tags/<version> -b my_mxnet
+# RUN git clone --recursive https://github.com/apache/incubator-mxnet.git && \
+#         cd mxnet && \
+#         git submodule update --init --recursive && \
+#         cd contrib/clojure-package
+
 
 WORKDIR /opt/app
 
