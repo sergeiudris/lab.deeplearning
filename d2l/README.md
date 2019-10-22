@@ -27,3 +27,29 @@ Oct 14, 2019
     recognition, natural language processing, medical informatics, and other application areas, offering a unified
     set of tools for tackling diverse problems.
     
+- 15
+  - > Earlier, we introduced machine learning as “learning behavior from experience”. By learning here, we mean
+      improving at some task over time. But who is to say what constitutes an improvement?
+    > In order to develop a formal mathematical system of learning machines, we need to have formal measures
+      of how good (or bad) our models are. In machine learning, and optimization more generally, we call these
+      objective functions.
+      By convention, we usually define objective funcitons so that lower is better.
+      Because lower is better, these functions are sometimes called `loss` functions or `cost` functions.
+
+- 16
+  - > • Training Error: The error on that data on which the model was trained. You could think of this as
+        being like a student’s scores on practice exams used to prepare for some real exam. Even if the results
+        are encouraging, that does not guarantee success on the final exam.
+
+    > • Test Error: This is the error incurred on an unseen test set. This can deviate significantly from the
+        training error. When a model fails to generalize to unseen data, we say that it is overfitting. In real-life
+        terms, this is like flunking the real exam despite doing well on practice exams.
+
+- 21
+  - > At the
+      National Library of Medicine, a number of professional annotators go over each article that gets indexed
+      in PubMed to associate it with the relevant terms from MeSH, a collection of roughly 28k tags. This is a
+      time-consuming process and the annotators typically have a one year lag between archiving and tagging.
+      Machine learning can be used here to provide provisional tags until each article can have a proper manual
+      review. Indeed, for several years, the BioASQ organization has hosted a competition 14 to do precisely this.
+
