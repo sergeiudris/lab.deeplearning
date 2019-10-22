@@ -84,14 +84,22 @@
   (nd/sum A)
   (nd/mean A)
   (nd// (nd/sum A) (nd/size A))
-  
-  (def x (nd/arange 0 4) )
+
+  (def x (nd/arange 0 4))
   (def A (nd/reshape (nd/arange 0 20) [5 4]))
   (def c (nd/dot A x))
-  
-  
 
 
+  (def A (nd/reshape (nd/arange 0 20) [5 4]))
+  (def B (nd/ones [4 3]))
+  (def c (nd/dot A B))
+
+  ; l2 norm
+  (nd/norm x)
+  ; l1 norm
+  (nd/sum (nd/abs x))
+
+  
   ;
   )
 
