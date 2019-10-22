@@ -46,7 +46,7 @@
   (nd/* x2 x3)
   (nd// x2 x3)
   (nd/exp x2)
-  
+
    ; inplace
   (nd/+= x2 x3)
 
@@ -56,32 +56,42 @@
 
   (nd/concatenate [x y] {:axis 0})
   (nd/concatenate [x y] {:axis 1})
-  
+
   (nd/equal x y)
   (nd/< x y)
   (nd/>= x y)
-  
-  
+
+
   (nd/sum x)
   (nd/->double-vec (nd/norm (nd/sum x)))
   (nd/->raw (nd/sum x))
   (nd/->vec (nd/sum x))
-  
+
   (nd/->vec (nd/norm x))
   (first (nd/->vec (nd/norm x)))
-  
+
   (def a (-> (nd/arange 0 3) (nd/reshape [3 1])))
   (def b (-> (nd/arange 0 2) (nd/reshape [1 2])))
-  
+
   (def c (nd/broadcast-add a b))
+
+  (nd/slice c 0)
+
+  (nd/array [1] [1])
+
+  (def A (nd/reshape (nd/arange 0 20) [4 5]))
+
+  (nd/sum A)
+  (nd/mean A)
+  (nd// (nd/sum A) (nd/size A))
   
-  (nd/slice c 0 )
+  (def x (nd/arange 0 4) )
+  (def A (nd/reshape (nd/arange 0 20) [5 4]))
+  (def c (nd/dot A x))
   
   
- 
-  
-  
-  
+
+
   ;
   )
 
