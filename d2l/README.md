@@ -53,3 +53,26 @@ Oct 14, 2019
       Machine learning can be used here to provide provisional tags until each article can have a proper manual
       review. Indeed, for several years, the BioASQ organization has hosted a competition 14 to do precisely this.
 
+- 25
+  - supervised
+    - regression
+    - classification
+    - tagging
+    - search and ranking
+    - recommend
+    - sequence learning
+      - tagging and parsing
+      - auto speach recognition
+      - text to speech
+      - machine translation
+
+  - unsupervised
+    - clustering
+    - subspace estimation (when dependence is linear = principal component analysis)
+    - representation learning (Rome - Italy + France = Paris)
+    - directed graphical models, causality
+    - generative adversarial networks (synthesize data)
+  
+  - reinforcement
+  
+
