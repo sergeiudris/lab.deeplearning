@@ -126,8 +126,14 @@
 (comment
   (def true-w (nd/array [2 -3.4] [2]))
   (def true-b 4.2)
-  
-  (def data (synthetic-data true-w true-b 1000 ))
 
+  (def data (synthetic-data true-w true-b 1000))
+  (def features (first data))
+  (def lables (second data))
+
+  ; at this moment mxnet clojure has no autograd, gluon support 
+  ; https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=103089990
+  
+  
   ;
   )
