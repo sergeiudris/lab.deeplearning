@@ -105,3 +105,14 @@ Oct 14, 2019
       success of deep learning owes to the current abundance of massive datasets due to internet companies, cheap
       storage, connected devices, and the broad digitization of the economy.
 
+- 154
+  - > Their proposed idea is called dropout, and it is now a standard technique that is widely used
+      for training neural networks. Throughout trainin, on each iteration, dropout regularization consists simply
+      of zeroing out some fraction (typically 50%) of the nodes in each layer before calculating the subsequent
+      layer.
+
+  - > Intuitively,
+      deep learning researchers often explain the inutition thusly: we do not want the network’s output to depend
+      too precariously on the exact activation pathway through the network. The original authors of the dropout
+      technique described their intuition as an effort to prevent the `co-adaptation` of feature detectors.
+
