@@ -120,3 +120,13 @@
 
 
 #_(time (start [(context/cpu)]))
+
+(def labels ["t-shirt" "trouser" "pullover" "dress" "coat"
+             "sandal", "shirt", "sneaker", "bag", "ankle boot"])
+
+(defn label->name
+  [idx]
+  (get labels idx))
+
+#_(label->name 3)
+
