@@ -16,4 +16,4 @@
   (.exists (io/file name)))
 
 #_(when-not  (file-exists? (str data-dir "/t10k-labels-idx1-ubyte"))
-    (do (:exit (sh "bash" "-c" "bash load_fashion_mnist.sh" :dir "/opt/app"))))
+    (do (:exit (sh "bash" "-c" "bash bin/load_fashion_mnist.sh" :dir "/opt/app"))))
