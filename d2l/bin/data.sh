@@ -31,13 +31,8 @@ mnist(){
 
   cd $DIR
 
-  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz
-  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
-  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
-  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
-
-  gunzip *.gz
-
+  wget http://data.mxnet.io/mxnet/data/mnist.zip 
+  unzip -u mnist.zip
 }
 
 "$@"

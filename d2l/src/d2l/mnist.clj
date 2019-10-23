@@ -18,7 +18,13 @@
   (:gen-class)
   )
 
-(def data-dir "./tmp/data/fashion-mnist/")
+(def data-dir
+  "./tmp/data/fashion-mnist/"
+  #_"./tmp/data/mnist/")
+
+(def model-prefix
+  "tmp/model/fashion-mnist/test"
+  #_"tmp/model/mnist/test")
 
 (defn file-exists?
   [name]
@@ -27,13 +33,16 @@
 #_(when-not  (file-exists? (str data-dir "t10k-labels-idx1-ubyte"))
     (do (:exit (sh "bash" "-c" "bash bin/data.sh fashion_mnist" :dir "/opt/app"))))
 
+#_(when-not  (file-exists? (str data-dir "t10k-labels-idx1-ubyte"))
+    (do (:exit (sh "bash" "-c" "bash bin/data.sh mnist" :dir "/opt/app"))))
+
 #_(sh "bash" "-c" "mkdir -p tmp/model/fashion-mnist" :dir "/opt/app")
 #_(sh "bash" "-c" "mkdir -p tmp/model/mnist" :dir "/opt/app")
 
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
-(def num-epoch 1) ;; the number of training epochs
+(def num-epoch 3) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
 (def role "worker") ;; scheduler/server/worker
@@ -41,6 +50,8 @@
 (def scheduler-port 0) ;; scheduler port
 (def num-workers 1) ;; # of workers
 (def num-servers 1) ;; # of servers
+
+
 
 
 (def envs (cond-> {"DMLC_ROLE" role}
@@ -104,7 +115,7 @@
                      :fit-params (m/fit-params {:kvstore kvstore
                                                 :optimizer optimizer
                                                 :eval-metric eval-metric})})
-             (m/save-checkpoint {:prefix "tmp/model/fashion-mnist/test" :epoch _num-epoch}))
+             (m/save-checkpoint {:prefix model-prefix :epoch _num-epoch}))
          (println "Finish fit"))))))
 
 
