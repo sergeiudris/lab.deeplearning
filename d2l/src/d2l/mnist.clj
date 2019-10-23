@@ -60,12 +60,19 @@
                                    "DMLC_NUM_WORKER" (str num-workers)
                                    "DMLC_NUM_SERVER" (str num-servers)})))
 
-(defn get-symbol []
+#_(defn get-symbol []
   (as-> (sym/variable "data") data
     (sym/fully-connected "fc1" {:data data :num-hidden 128})
     (sym/activation "relu1" {:data data :act-type "relu"})
     (sym/fully-connected "fc2" {:data data :num-hidden 64})
     (sym/activation "relu2" {:data data :act-type "relu"})
+    (sym/fully-connected "fc3" {:data data :num-hidden 10})
+    (sym/softmax-output "softmax" {:data data})))
+
+(defn get-symbol []
+  (as-> (sym/variable "data") data
+    (sym/fully-connected "fc1" {:data data :num-hidden 256})
+    (sym/activation "relu1" {:data data :act-type "relu"})
     (sym/fully-connected "fc3" {:data data :num-hidden 10})
     (sym/softmax-output "softmax" {:data data})))
 

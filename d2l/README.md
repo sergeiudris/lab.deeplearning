@@ -75,4 +75,33 @@ Oct 14, 2019
   
   - reinforcement
   
+- 136
+  - > The phenomena of fitting our training data more closely than we fit the underlying distribution is called
+      overfitting, and the techniques used to combat overfitting are called regularization
+
+- 138
+  - > When we train our models, we attempt are searching for a function that fits the training data as well as
+      possible. If the function is so flexible that it can catch on to spurious patterns just as easily as to the true
+      associations, then it might peform too well without producing a model that generalizes well to unseen data.
+      This is precisely what we want to avoid (or at least control). Many of the techniques in deep learning are
+      heuristics and tricks aimed at guarding against overfitting.
+
+  - > In this chapter, to give you some intuition, we’ll focus on a few factors that tend to influence the generaliz-
+      ability of a model class:
+      1. The number of tunable parameters. When the number of tunable parameters, sometimes called the
+      degrees of freedom, is large, models tend to be more susceptible to overfitting.
+      2. The values taken by the parameters. When weights can take a wider range of values, models can be
+      more susceptible to over fitting.
+      3. The number of training examples. It’s trivially easy to overfit a dataset containing only one or two
+      examples even if your model is simple. But overfitting a dataset with millions of examples requires an
+      extremely flexible model.
+
+- 140
+  - > Moreover, in general,
+      more data never hurts. For a fixed task and data distribution, there is typically a relationship between
+      model complexity and dataset size. Given more data, we might profitably attempt to fit a more complex
+      model. Absent sufficient data, simpler models may be difficult to beat. For many tasks, deep learning only
+      outperforms linear models when many thousands of training examples are available. In part, the current
+      success of deep learning owes to the current abundance of massive datasets due to internet companies, cheap
+      storage, connected devices, and the broad digitization of the economy.
 
