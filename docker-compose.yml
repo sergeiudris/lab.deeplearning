@@ -82,7 +82,6 @@ services:
     image: sample.ml.d2l
     volumes:
       - ./d2l:/opt/app
-      - ./d2l/.data:/opt/data
       - ./:/opt/root
     build:
       context: ./d2l

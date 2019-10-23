@@ -18,17 +18,17 @@
   (:gen-class)
   )
 
-
-
-
-(def data-dir "./.data/")
+(def data-dir "./tmp/data/fashion-mnist/")
 
 (defn file-exists?
   [name]
   (.exists (io/file name)))
 
 #_(when-not  (file-exists? (str data-dir "t10k-labels-idx1-ubyte"))
-    (do (:exit (sh "bash" "-c" "bash bin/load_fashion_mnist.sh" :dir "/opt/app"))))
+    (do (:exit (sh "bash" "-c" "bash bin/data.sh fashion_mnist" :dir "/opt/app"))))
+
+#_(sh "bash" "-c" "mkdir -p tmp/model/fashion-mnist" :dir "/opt/app")
+#_(sh "bash" "-c" "mkdir -p tmp/model/mnist" :dir "/opt/app")
 
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
@@ -104,7 +104,7 @@
                      :fit-params (m/fit-params {:kvstore kvstore
                                                 :optimizer optimizer
                                                 :eval-metric eval-metric})})
-             (m/save-checkpoint {:prefix ".data/test" :epoch _num-epoch}))
+             (m/save-checkpoint {:prefix "tmp/model/fashion-mnist/test" :epoch _num-epoch}))
          (println "Finish fit"))))))
 
 
