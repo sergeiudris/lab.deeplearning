@@ -14,6 +14,8 @@
        (filter #(contains? (:flags %) :public))
        pp/print-table))
 
+#_(ping)
+
 (comment
 
   (def x (nd/arange 0 12))
@@ -94,13 +96,38 @@
   (def B (nd/ones [4 3]))
   (def c (nd/dot A B))
 
+  (def x (nd/arange 0 4))
   ; l2 norm
   (nd/norm x)
   ; l1 norm
   (nd/sum (nd/abs x))
 
-  
+  (def n 100000)
+  (def a (nd/ones [n]))
+  (def b (nd/ones [n]))
+  (time (nd/+ a b))
+  (nd/shape a)
+  (nd/->vec (nd/shape a))
+  (nd/size a)
   ;
   )
 
-#_(ping)
+; linear regression from scratch
+
+(defn synthetic-data
+  "generates y = Xw + b + noise "
+  [w b num-examples]
+  (let [X (random/normal 0 1 [num-examples (nd/size w)])
+        y0 (-> (nd/dot X w) (nd/+ b))
+        noise (random/normal 0 0.01 (nd/->vec (nd/shape y0)))
+        y (nd/+ y0 noise)]
+    [X y]))
+
+(comment
+  (def true-w (nd/array [2 -3.4] [2]))
+  (def true-b 4.2)
+  
+  (def data (synthetic-data true-w true-b 1000 ))
+
+  ;
+  )
