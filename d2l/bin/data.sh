@@ -35,4 +35,17 @@ mnist(){
   unzip -u mnist.zip
 }
 
+house(){
+   set -evx
+
+  DIR=./tmp/data/house
+
+  mkdir -p $DIR
+
+  cd $DIR
+
+  wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/train.csv
+  wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/test.csv
+}
+
 "$@"
