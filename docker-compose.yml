@@ -83,6 +83,7 @@ services:
     volumes:
       - ./d2l:/opt/app
       - ./:/opt/root
+      - ../pad:/opt/code/pad
     build:
       context: ./d2l
       dockerfile: ./Dockerfile

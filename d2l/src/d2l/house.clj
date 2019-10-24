@@ -6,6 +6,7 @@
             [clojure.string :as str]
             [clojure.data.csv :refer [read-csv]]
             [tools.io.core :refer [read-nth-line count-lines]]
+            [pad.coll.core :refer [ping]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -19,6 +20,8 @@
             [org.apache.clojure-mxnet.random :as random]
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
+
+#_(ping)
 
 (def data-dir "./tmp/data/house/")
 (def model-prefix "tmp/model/house/test")

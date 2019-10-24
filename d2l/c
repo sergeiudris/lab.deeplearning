@@ -4,7 +4,7 @@
 dev(){
 
   echo "--starting"
-  clojure -A:core -m d2l.main
+  clojure -A:core:local -m d2l.main
 
 }
 

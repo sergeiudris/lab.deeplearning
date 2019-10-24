@@ -94,6 +94,8 @@ link_spaces_d2l(){
     ln -s ../../d2l/deps.edn spaces/$SPACE/deps.edn
     ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
     ln -s ../../d2l/tmp spaces/$SPACE/tmp
+    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
+
 }
 
 "$@"

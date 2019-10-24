@@ -9,4 +9,9 @@
           nrepl {:mvn/version "0.6.0"}
           cider/cider-nrepl {:mvn/version "0.21.1"}
           org.clojure/data.csv {:mvn/version "0.1.4"}
-          }}}}
+
+          #_{:git/url "https://github.com/seeris/pad"
+             :sha "HEAD"
+             :deps/root "."}}}
+  :local {:extra-deps
+          {seeris/pad {:local/root "/opt/code/pad"}}}}}
