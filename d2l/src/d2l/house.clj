@@ -3,6 +3,7 @@
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
+            [clojure.string :as str]
             [clojure.data.csv :refer [read-csv]]
             [tools.io.core :refer [read-nth-line count-lines]]
             [org.apache.clojure-mxnet.io :as mx-io]
@@ -28,17 +29,50 @@
 #_(when-not  (.exists (io/file (str data-dir "train.csv")))
     (do (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))))
 
-(defn read-csv-file
+
+#_(read-nth-line (str data-dir "train.csv") 1)
+#_(read-nth-line (str data-dir "test.csv") 1)
+
+
+(defn read-csv-rows
   [filename]
   (with-open [reader (io/reader filename)]
     (->> (read-csv reader)
-         #_(take 10)
+         (rest)
          (vec))))
 
-#_(count (read-csv-file (str data-dir "train.csv")))
-#_(count (read-csv-file (str data-dir "test.csv")))
-#_(read-nth-line (str data-dir "train.csv") 1)
-#_(read-nth-line (str data-dir "test.csv") 1)
+(defn read-labels
+  [filename]
+  (with-open [reader (io/reader filename)]
+    (->> (read-csv reader)
+         (rest)
+         (mapv #(nth % 80)))))
+
+(defn read-column
+  [filename idx]
+  (with-open [reader (io/reader filename)]
+    (->> (read-csv reader)
+         (rest)
+         (mapv #(nth % idx)))))
+#_(def attrs
+    (->
+     (read-nth-line (str data-dir "train.csv") 1)
+     (str/split  #",")))
+#_(def features (-> attrs (rest) (vec)))
+#_(def train-dataset
+    (read-csv-rows (str data-dir "train.csv")))
+#_(def test-dataset
+    (read-csv-rows (str data-dir "test.csv")))
+#_(def train-labels (read-labels (str data-dir "train.csv")))
+#_(count attrs) ; 81
+#_(count features) ; 80
+#_(count train-dataset) ; 1460
+#_(count test-dataset) ; 1459
+#_(count train-labels) ; 1460
+
+#_(take 10 train-labels)
+
+
 
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
