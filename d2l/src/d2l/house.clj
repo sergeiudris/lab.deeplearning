@@ -30,8 +30,6 @@
     (do (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))))
 
 
-#_(read-nth-line (str data-dir "train.csv") 1)
-#_(read-nth-line (str data-dir "test.csv") 1)
 
 
 (defn read-csv-rows
@@ -55,6 +53,163 @@
          (rest)
          (mapv #(nth % idx)))))
 
+(defn sq
+  "Returns x squared"
+  [x]
+  (Math/pow x 2))
+
+(defn elwise-prod
+  "Returns a vector (mx), multiplies a,b element-wise "
+  [a b]
+  (mapv * a b))
+
+(defn elwise-sum
+  "Returns a vector (mx), adds a,b element-wise "
+  [a b]
+  (mapv + a b))
+
+(defn elwise-subtract
+  "Returns a vector (mx), subtracts a,b element-wise "
+  [a b]
+  (mapv - a b))
+
+(defn elwise-divide
+  "Returns a vector (mx), divides a,b element-wise "
+  [a b]
+  (mapv / a b))
+
+(defn dot-prod
+  "Retruns the sum of products of corresponding els"
+  [a b]
+  (reduce + 0 (map * a b)))
+
+(defn mean-square
+  "Returns the sum of squared vec els, divided by el count"
+  [a]
+  (/ (dot-prod a a) (count a)))
+
+(defn root-mean-square
+  "Returns suqare root of mean-square.
+   Tells what a 'typical'  |el| looks like"
+  [a]
+  (Math/sqrt (mean-square a)))
+
+(defn vec-sum
+  "Returns the sum of numbers.
+   Sum is a linear combintaion of scalars"
+  [a]
+  (reduce + 0 a))
+
+(defn vec-mean
+  "Returns avg of a vector"
+  [v]
+  (/ (vec-sum v) (count v)))
+
+(defn standard-deviation
+  "Standard deviation. Returns root-mean-square of the de-meaned vec"
+  [v]
+  (Math/sqrt (- (sq (root-mean-square v)) (sq (vec-mean v)))))
+
+(defn subtract-scalar
+  "Returns vector, adds a scalar element-wise"
+  [v x]
+  (mapv #(- % x)  v))
+
+(defn standardize
+  [v]
+  (elwise-divide (subtract-scalar v (vec-mean v)) (standard-deviation v)))
+
+(defn str->float
+  ([s]
+   (str->float s s))
+  ([s alt]
+   (try (Float/parseFloat s)
+        (catch Exception e alt))))
+
+(defn parse-numbers
+  [v]
+  (mapv (fn [x]
+          (str->float x)
+          ) v))
+
+(defn str-float?
+  [s]
+  (number? (str->float s)))
+
+(defn contained?
+  [v coll]
+  (some #(= v %) coll))
+
+(defn val->column-type
+  [v]
+  (cond
+    (str-float? v) :float
+    :else :string))
+
+(defn column-type
+  [rows column-idx {:keys [nulls] :or {nulls []}}]
+  (->>
+   rows
+   (map #(nth % column-idx))
+   (take-while #(not (contained? % nulls)))
+   #_(take-last 1)
+   (last)
+   (val->column-type)))
+
+
+(defn read-column-mdata
+  [filename & {:keys [nulls] :or {nulls []} :as opts}]
+  (with-open [reader (io/reader filename)]
+    (let [data (read-csv reader)
+          attrs (first data)
+          rows (rest data)]
+      (reduce-kv (fn [a k v]
+                   (assoc a k {:idx k
+                               :val v
+                               :dtype (column-type rows k opts)}))
+                 (sorted-map) attrs))))
+
+#_(count (read-column-mdata (str data-dir "train.csv")) )
+
+(defn read-column
+  [filename idx]
+  (with-open [reader (io/reader filename)]
+    (let [data (read-csv reader)
+          rows (rest data)]
+      (mapv #(nth % idx) rows))))
+
+#_ (distinct (read-column (str data-dir "train.csv")  65)) 
+
+(defn row->feature
+  [idx row cols]
+  (map-indexed
+   (fn [i x]
+     (let [col (get cols i)]
+       {:dtype (:dtype col)
+        :idx i
+        }
+       
+       )) row)
+  )
+
+
+(defn read-features
+  [{:keys [filename] :or {} } ]
+  (with-open [reader (io/reader filename)]
+    (let [data (read-csv reader)
+          cols (read-column-mdata filename)
+          rows (rest data)]
+      (->> rows
+           (map-indexed #(row->feature %1 %2 cols))
+           (take 5)
+           (vec)
+           ))))
+
+#_(read-features {:filename (str data-dir "train.csv")})
+
+#_(read-nth-line (str data-dir "train.csv") 1)
+#_(read-nth-line (str data-dir "test.csv") 1)
+
 (comment
 
   (def fields
@@ -64,34 +219,37 @@
 
   (def attrs (-> fields (rest) (vec)))
 
-  (def train-features
+  (def train-samples
     (->>
      (read-csv-rows (str data-dir "train.csv"))
      (mapv #(-> % (rest) (butlast) (vec)))))
 
 
-  (def test-features
+  (def test-samples
     (->>
      (read-csv-rows (str data-dir "test.csv"))
      (mapv #(-> % (rest)  (vec)))))
 
   (def train-labels (read-labels (str data-dir "train.csv")))
 
-  (def features (vec (concat train-features test-features)))
+  (def samples (vec (concat train-samples test-samples)))
+
+  (def features (samples->features samples))
 
   ;
   )
 
 #_(count fields) ; 81
 #_(count attrs) ; 80
-#_(count train-features) ; 1460
-#_(count test-features) ; 1459
+#_(count train-samples) ; 1460
+#_(count test-samples) ; 1459
 #_(count train-labels) ; 1460
 
-#_(take 10 train-labels)
-#_(count (first train-features))
-#_(count (first test-features))
+#_(count (first train-samples))
+#_(count (first test-samples))
 #_(count features)
+#_(take 10 features)
+
 
 
 
