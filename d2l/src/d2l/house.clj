@@ -3,6 +3,8 @@
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
+            [clojure.data.csv :refer [read-csv]]
+            [tools.io.core :refer [read-nth-line count-lines]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -26,6 +28,18 @@
 #_(when-not  (.exists (io/file (str data-dir "train.csv")))
     (do (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))))
 
+(defn read-csv-file
+  [filename]
+  (with-open [reader (io/reader filename)]
+    (->> (read-csv reader)
+         #_(take 10)
+         (vec))))
+
+#_(count (read-csv-file (str data-dir "train.csv")))
+#_(count (read-csv-file (str data-dir "test.csv")))
+#_(read-nth-line (str data-dir "train.csv") 1)
+#_(read-nth-line (str data-dir "test.csv") 1)
+
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
@@ -37,3 +51,64 @@
 (def scheduler-port 0) ;; scheduler port
 (def num-workers 1) ;; # of workers
 (def num-servers 1) ;; # of servers
+
+(def envs (cond-> {"DMLC_ROLE" role}
+            scheduler-host (merge {"DMLC_PS_ROOT_URI" scheduler-host
+                                   "DMLC_PS_ROOT_PORT" (str scheduler-port)
+                                   "DMLC_NUM_WORKER" (str num-workers)
+                                   "DMLC_NUM_SERVER" (str num-servers)})))
+
+
+
+(defn get-symbol []
+  (as-> (sym/variable "data") data
+    (sym/fully-connected "fc1" {:data data :num-hidden 128})
+    (sym/activation "relu1" {:data data :act-type "relu"})
+    (sym/fully-connected "fc2" {:data data :num-hidden 64})
+    (sym/activation "relu2" {:data data :act-type "relu"})
+    (sym/fully-connected "fc3" {:data data :num-hidden 10})
+    (sym/softmax-output "softmax" {:data data})))
+
+(defn train-data []
+  #_(mx-io/ndarray-iter [(ndarray/array (flatten train-data)
+                                      [(count train-data) sent-len])]
+                      {:label [(ndarray/array (flatten labels)
+                                              [(count labels) sent-len])]
+                       :label-name "softmax_label"
+                       :data-batch-size batch-size
+                       :last-batch-handle "pad"}))
+
+(defn eval-data []
+  #_(mx-io/ndarray-iter [(get-in shuffled [:test :data])]
+                      {:label [(get-in  shuffled [:test :label])]
+                       :label-name "softmax_label"
+                       :data-batch-size batch-size
+                       :last-batch-handle "pad"}))
+
+(defn start
+  ([devs] (start devs num-epoch))
+  ([devs _num-epoch]
+   (when scheduler-host
+     (println "Initing PS enviornments with " envs)
+     (kvstore-server/init envs))
+
+   (if (not= "worker" role)
+     (do
+       (println "Start KVStoreServer for scheduler and servers")
+       (kvstore-server/start))
+     (do
+       (println "Starting Training of MNIST ....")
+       (println "Running with context devices of" devs)
+       (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts devs})]
+         (-> _mod
+             (m/fit {:train-data (train-data)
+                     :eval-data (eval-data)
+                     :num-epoch _num-epoch
+                     :fit-params (m/fit-params {:kvstore kvstore
+                                                :optimizer optimizer
+                                                :eval-metric eval-metric})})
+             (m/save-checkpoint {:prefix model-prefix :epoch _num-epoch}))
+         (println "Finish fit"))))))
+
+
+#_(time (start [(context/cpu)]))

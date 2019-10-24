@@ -44,8 +44,11 @@ house(){
 
   cd $DIR
 
-  wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/train.csv
-  wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/test.csv
+  # wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/train.csv
+  # wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/test.csv
+
+  wget https://s3.us-east-2.amazonaws.com/tech.public.data/house-prices-advanced-regression-techniques.zip
+  unzip house-prices-advanced-regression-techniques.zip
 }
 
 "$@"
