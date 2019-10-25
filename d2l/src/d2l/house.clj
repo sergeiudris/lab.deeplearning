@@ -62,12 +62,18 @@
             attrs (first data)
             rows (rest data)]
         (reduce-kv (fn [a k v]
-                     (assoc a k {:idx k
-                                 :val v
-                                 :dtype (column-type rows k opts)}))
+                     (let [dtype (column-type rows k opts)]
+                       (assoc a k (merge
+                                   {:idx k
+                                    :val v
+                                    :dtype dtype}
+                                   (when (= dtype :string)
+                                     {:distinct (distinct (mapv #(nth % k) rows))})))
+                       ))
                    (sorted-map) attrs)))))
 
 #_(count (read-column-mdata (str data-dir "train.csv")) )
+#_((read-column-mdata (str data-dir "train.csv")) 2)
 
 (defn read-features
   []
@@ -76,7 +82,8 @@
              (fn [i x]
                (let [col (get cols i)]
                  {:dtype (:dtype col)
-                  :idx i})) row))]
+                  :idx i})) row))
+          ]
     (with-open [reader (io/reader (str data-dir "train.csv"))]
       (let [data (read-csv reader)
             cols (read-column-mdata (str data-dir "train.csv"))
