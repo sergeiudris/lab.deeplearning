@@ -44,38 +44,37 @@
 
 #_(distinct (read-column (str data-dir "train.csv")  65))
 
-(defn read-column-mdata
-  [filename & {:keys [nulls] :or {nulls []}}]
+(defn column-mdata
+  [attrs rows & {:keys [nulls] :or {nulls []}}]
   (letfn [(val>>column-type [v]
-                            (cond
-                              (str-float? v) :float
-                              :else :string))
+            (cond
+              (str-float? v) :float
+              :else :string))
           (column-type [rows column-idx]
-                       (->>
-                        rows
-                        (map #(nth % column-idx))
-                        (take-while #(not (contained? % nulls)))
-                        #_(take-last 1)
-                        (last)
-                        (val>>column-type)))
+            (->>
+             rows
+             (map #(nth % column-idx))
+             (take-while #(not (contained? % nulls)))
+             #_(take-last 1)
+             (last)
+             (val>>column-type)))
           (column [a k v rows]
-                       (let [dtype (column-type rows k)]
-                         (assoc a k (merge
-                                     {:idx k
-                                      :val v
-                                      :dtype dtype}
-                                     (when (= dtype :string)
-                                       {:distinct (distinct (mapv #(nth % k) rows))})))))]
-    (with-open [reader (io/reader filename)]
-      (let [data (read-csv reader)
-            attrs (first data)
-            rows (rest data)]
-        (reduce-kv (fn [a k v]
-                     (column a k v rows))
-                   (sorted-map) attrs)))))
+            (let [dtype (column-type rows k)]
+              (assoc a k (merge
+                          {:idx k
+                           :val v
+                           :dtype dtype}
+                          (when (= dtype :string)
+                            {:distinct (distinct (mapv #(nth % k) rows))})))))]
+    (reduce-kv (fn [a k v]
+                 (column a k v rows))
+               (sorted-map) attrs)))
 
-#_(count (read-column-mdata (str data-dir "train.csv")) )
-#_((read-column-mdata (str data-dir "train.csv")) 2)
+#_(with-open [reader (io/reader (str data-dir "train.csv"))]
+    (let [data (read-csv reader)
+          attrs (first data)
+          rows (rest data)]
+      (column-mdata attrs rows)))
 
 #_(def nulls ["NA"])
 #_(contained? "NA" nulls)
@@ -92,9 +91,11 @@
           (null-float-field>>val [v]
                                  (let []))
           (float-field>>val [colm v row]
-                            (case
-                             (contained? v nulls) (let [])
-                             :else ))
+                            
+                            )
+          (row>>mean [row]
+                     ()
+                     )
           (attr>>val [idx v row rows cols-mdata]
                      (let [colm (get cols-mdata idx)
                            dtype (:dtype colm)]
@@ -105,13 +106,15 @@
                          :else (throw (Exception. "uknown/missing column :dtype")))))]
     (with-open [reader (io/reader (str data-dir "train.csv"))]
       (let [data (read-csv reader)
-            cols-mdata (read-column-mdata (str data-dir "train.csv"))
-            rows (rest data)]
+            attrs (first data)
+            rows (rest data)
+            cols-mdata (column-mdata attrs rows :nulls nulls)]
         (->> rows
              (map (fn [row]
-                    (map-indexed (fn [idx v]
-                                   (attr>>val idx v row rows cols-mdata))
-                                 row)))
+                    (let []
+                      (map-indexed (fn [idx v]
+                                     (attr>>val idx v row rows cols-mdata))
+                                   row))))
              (take 5)
              (vec))))))
 
