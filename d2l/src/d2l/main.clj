@@ -1,5 +1,5 @@
 (ns d2l.main
-  (:require [tools.nrepl]
+  (:require [pad.nrepl.core :refer [start-nrepl-server]]
             [d2l.core]
             [d2l.mnist]
             [d2l.house]
@@ -7,4 +7,4 @@
             ))
 
 (defn -main  [& args]
-  (tools.nrepl/-main))
+  (start-nrepl-server))
