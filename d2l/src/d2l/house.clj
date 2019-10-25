@@ -92,7 +92,7 @@
 
 
 (defn read-features
-  [{:keys [nulls]}]
+  [{:keys [filename nulls data>>rows data>>attrs]}]
   (letfn [(val-null-float? [v dtype]
                            (and  (= dtype :float) (contained? v nulls)))
           (val-string? [v dtype]
@@ -133,12 +133,10 @@
                          (val-null-float? v dtype) row-mean
                          (val-float? v dtype) v
                          :else (throw (Exception. "uknown/missing column :dtype")))))]
-    (with-open [reader (io/reader (str data-dir "train.csv"))]
+    (with-open [reader (io/reader filename)]
       (let [data (read-csv reader)
-            raw-attrs (first data)
-            raw-rows (rest data)
-            attrs (rest (butlast raw-attrs))
-            rows (map #(rest (butlast %)) raw-rows)
+            rows (data>>rows data)
+            attrs (data>>attrs data)
             colsm (column-mdata attrs rows :nulls nulls)]
         (mapv (fn [row]
                 (let [row-nums (row>>row-nums row colsm)
@@ -186,7 +184,28 @@
                            (rest)
                            (mapv #(-> % (nth 80) (str->float))))))
 
-  (def train-features (read-features {:nulls ["NA"]}))
+  (def train-features (read-features {:filename (str data-dir "train.csv")
+                                      :nulls ["NA"]
+                                      :data>>rows (fn [data]
+                                                    (->> data
+                                                         (rest)
+                                                         (map #(rest (butlast %)))))
+                                      :data>>attrs (fn [data]
+                                                     (->
+                                                      (first data)
+                                                      (rest)
+                                                      (butlast)))}))
+
+  (def test-features (read-features {:filename (str data-dir "test.csv")
+                                     :nulls ["NA"]
+                                     :data>>rows (fn [data]
+                                                   (->> data
+                                                        (rest)
+                                                        (map #(rest %))))
+                                     :data>>attrs (fn [data]
+                                                    (->
+                                                     (first data)
+                                                     (rest)))}))
 
   (def train-features-1000 (->> train-features (take 1000) (flatten) (vec)))
   (def train-features-460 (->> train-features (drop 1000) (flatten) (vec)))
@@ -205,6 +224,7 @@
 #_(count (first train-samples))
 #_(count (first test-samples))
 #_(count train-features)
+#_(count test-features)
 #_(count train-features-1000) ; 304000
 #_(count train-features-460) ; 139840
 #_(count train-labels-1000) ; 1000
@@ -212,6 +232,7 @@
 
 #_(nth train-features 703)
 #_(count (nth train-features 703))
+#_(count (nth test-features 703))
 #_(count (flatten (nth train-features 703))) ; 304
 
 #_(read-nth-line (str data-dir "train.csv") 9)
