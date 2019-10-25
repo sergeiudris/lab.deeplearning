@@ -34,35 +34,6 @@
 #_(when-not  (.exists (io/file (str data-dir "train.csv")))
     (do (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))))
 
-(defn column-type
-  [rows column-idx {:keys [nulls] :or {nulls []}}]
-  (let [val->column-type (fn [v]
-                           (cond
-                             (str-float? v) :float
-                             :else :string))]
-    (->>
-     rows
-     (map #(nth % column-idx))
-     (take-while #(not (contained? % nulls)))
-     #_(take-last 1)
-     (last)
-     (val->column-type))))
-
-
-(defn read-column-mdata
-  [filename & {:keys [nulls] :or {nulls []} :as opts}]
-  (with-open [reader (io/reader filename)]
-    (let [data (read-csv reader)
-          attrs (first data)
-          rows (rest data)]
-      (reduce-kv (fn [a k v]
-                   (assoc a k {:idx k
-                               :val v
-                               :dtype (column-type rows k opts)}))
-                 (sorted-map) attrs))))
-
-#_(count (read-column-mdata (str data-dir "train.csv")) )
-
 (defn read-column
   [filename idx]
   (with-open [reader (io/reader filename)]
@@ -70,8 +41,50 @@
           rows (rest data)]
       (mapv #(nth % idx) rows))))
 
-#_ (distinct (read-column (str data-dir "train.csv")  65)) 
+#_(distinct (read-column (str data-dir "train.csv")  65))
 
+(defn read-column-mdata
+  [filename & {:keys [nulls] :or {nulls []} :as opts}]
+  (letfn [(val->column-type [v]
+            (cond
+              (str-float? v) :float
+              :else :string))
+          (column-type [rows column-idx {:keys [nulls] :or {nulls []}}]
+            (->>
+             rows
+             (map #(nth % column-idx))
+             (take-while #(not (contained? % nulls)))
+             #_(take-last 1)
+             (last)
+             (val->column-type)))]
+    (with-open [reader (io/reader filename)]
+      (let [data (read-csv reader)
+            attrs (first data)
+            rows (rest data)]
+        (reduce-kv (fn [a k v]
+                     (assoc a k {:idx k
+                                 :val v
+                                 :dtype (column-type rows k opts)}))
+                   (sorted-map) attrs)))))
+
+#_(count (read-column-mdata (str data-dir "train.csv")) )
+
+(defn read-features
+  []
+  (letfn [(row->feature [idx row cols]
+            (map-indexed
+             (fn [i x]
+               (let [col (get cols i)]
+                 {:dtype (:dtype col)
+                  :idx i})) row))]
+    (with-open [reader (io/reader (str data-dir "train.csv"))]
+      (let [data (read-csv reader)
+            cols (read-column-mdata (str data-dir "train.csv"))
+            rows (rest data)]
+        (->> rows
+             (map-indexed #(row->feature %1 %2 cols))
+             (take 5)
+             (vec))))))
 
 #_(read-nth-line (str data-dir "train.csv") 1)
 #_(read-nth-line (str data-dir "test.csv") 1)
@@ -106,21 +119,7 @@
 
   (def samples (vec (concat train-samples test-samples)))
 
-  (def features (with-open [reader (io/reader (str data-dir "train.csv"))]
-                  (let [row->feature (fn [idx row cols]
-                                       (map-indexed
-                                        (fn [i x]
-                                          (let [col (get cols i)]
-                                            {:dtype (:dtype col)
-                                             :idx i})) row))
-
-                        data (read-csv reader)
-                        cols (read-column-mdata (str data-dir "train.csv"))
-                        rows (rest data)]
-                    (->> rows
-                         (map-indexed #(row->feature %1 %2 cols))
-                         (take 5)
-                         (vec)))))
+  (def features (read-features) )
   ;
   )
 
@@ -133,7 +132,7 @@
 #_(count (first train-samples))
 #_(count (first test-samples))
 #_(count features)
-#_(take 10 features)
+#_(take 1 features)
 
 
 (defn standardize
