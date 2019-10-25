@@ -7,6 +7,9 @@
             [clojure.data.csv :refer [read-csv]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
+            [pad.math.core :refer [vec-standard-deviation-2
+                                   scalar-subtract elwise-divide
+                                   vec-mean scalar-divide]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -54,71 +57,13 @@
          (rest)
          (mapv #(nth % idx)))))
 
-(defn sq
-  "Returns x squared"
-  [x]
-  (Math/pow x 2))
 
-(defn elwise-prod
-  "Returns a vector (mx), multiplies a,b element-wise "
-  [a b]
-  (mapv * a b))
-
-(defn elwise-sum
-  "Returns a vector (mx), adds a,b element-wise "
-  [a b]
-  (mapv + a b))
-
-(defn elwise-subtract
-  "Returns a vector (mx), subtracts a,b element-wise "
-  [a b]
-  (mapv - a b))
-
-(defn elwise-divide
-  "Returns a vector (mx), divides a,b element-wise "
-  [a b]
-  (mapv / a b))
-
-(defn dot-prod
-  "Retruns the sum of products of corresponding els"
-  [a b]
-  (reduce + 0 (map * a b)))
-
-(defn mean-square
-  "Returns the sum of squared vec els, divided by el count"
-  [a]
-  (/ (dot-prod a a) (count a)))
-
-(defn root-mean-square
-  "Returns suqare root of mean-square.
-   Tells what a 'typical'  |el| looks like"
-  [a]
-  (Math/sqrt (mean-square a)))
-
-(defn vec-sum
-  "Returns the sum of numbers.
-   Sum is a linear combintaion of scalars"
-  [a]
-  (reduce + 0 a))
-
-(defn vec-mean
-  "Returns avg of a vector"
-  [v]
-  (/ (vec-sum v) (count v)))
-
-(defn standard-deviation
-  "Standard deviation. Returns root-mean-square of the de-meaned vec"
-  [v]
-  (Math/sqrt (- (sq (root-mean-square v)) (sq (vec-mean v)))))
-
-(defn subtract-scalar
-  "Returns vector, adds a scalar element-wise"
-  [v x]
-  (mapv #(- % x)  v))
 
 (defn standardize
   [v]
-  (elwise-divide (subtract-scalar v (vec-mean v)) (standard-deviation v)))
+  (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
+
+#_(standardize [10 20 30 40])
 
 (defn str->float
   ([s]
@@ -231,7 +176,7 @@
 
   (def samples (vec (concat train-samples test-samples)))
 
-  (def features (samples->features samples))
+  (def features (read-features {:filename (str data-dir "train.csv")}))
 
   ;
   )
