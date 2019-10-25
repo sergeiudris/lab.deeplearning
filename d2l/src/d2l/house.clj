@@ -44,32 +44,33 @@
 #_(distinct (read-column (str data-dir "train.csv")  65))
 
 (defn read-column-mdata
-  [filename & {:keys [nulls] :or {nulls []} :as opts}]
+  [filename & {:keys [nulls] :or {nulls []}}]
   (letfn [(val->column-type [v]
-            (cond
-              (str-float? v) :float
-              :else :string))
-          (column-type [rows column-idx {:keys [nulls] :or {nulls []}}]
-            (->>
-             rows
-             (map #(nth % column-idx))
-             (take-while #(not (contained? % nulls)))
-             #_(take-last 1)
-             (last)
-             (val->column-type)))]
+                            (cond
+                              (str-float? v) :float
+                              :else :string))
+          (column-type [rows column-idx]
+                       (->>
+                        rows
+                        (map #(nth % column-idx))
+                        (take-while #(not (contained? % nulls)))
+                        #_(take-last 1)
+                        (last)
+                        (val->column-type)))
+          (column [a k v rows]
+                       (let [dtype (column-type rows k)]
+                         (assoc a k (merge
+                                     {:idx k
+                                      :val v
+                                      :dtype dtype}
+                                     (when (= dtype :string)
+                                       {:distinct (distinct (mapv #(nth % k) rows))})))))]
     (with-open [reader (io/reader filename)]
       (let [data (read-csv reader)
             attrs (first data)
             rows (rest data)]
         (reduce-kv (fn [a k v]
-                     (let [dtype (column-type rows k opts)]
-                       (assoc a k (merge
-                                   {:idx k
-                                    :val v
-                                    :dtype dtype}
-                                   (when (= dtype :string)
-                                     {:distinct (distinct (mapv #(nth % k) rows))})))
-                       ))
+                     (column a k v rows))
                    (sorted-map) attrs)))))
 
 #_(count (read-column-mdata (str data-dir "train.csv")) )
