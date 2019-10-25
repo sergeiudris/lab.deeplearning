@@ -107,10 +107,12 @@
                                           (str->float x)
                                           x)) row))
           (string-field>>val [colm v]
-                             (keep-indexed (fn [i x]
-                                             (if (= x v)
-                                               (mk-one-hot-vec (count (:distinct colm)) i)
-                                               nil)) (:distinct colm)))
+                             (->> (:distinct colm)
+                                  (keep-indexed (fn [i x]
+                                                  (if (= x v)
+                                                    (mk-one-hot-vec (count (:distinct colm)) i)
+                                                    nil)))
+                                  (first)))
           (float-field>>val [colm v row row-mean])
           (row>>mean [row]
                      (->> row
@@ -138,20 +140,19 @@
             attrs (rest (butlast raw-attrs))
             rows (map #(rest (butlast %)) raw-rows)
             colsm (column-mdata attrs rows :nulls nulls)]
-        (->> rows
-             (map (fn [row]
-                    (let [row-nums (row>>row-nums row colsm)
-                          row-mean (row>>mean row-nums)
-                          row-denulled (map-indexed
-                                        (fn [idx v]
-                                          (attr>>val idx v row rows colsm row-mean))
-                                        row-nums)
-                          float-features (row>>float-features row-denulled)
-                          string-features (row>>string-features row-denulled)]
-                      (concat  float-features string-features))))
-             (vec))))))
+        (mapv (fn [row]
+                (let [row-nums (row>>row-nums row colsm)
+                      row-mean (row>>mean row-nums)
+                      row-denulled (map-indexed
+                                    (fn [idx v]
+                                      (attr>>val idx v row rows colsm row-mean))
+                                    row-nums)
+                      float-features (row>>float-features row-denulled)
+                      string-features (row>>string-features row-denulled)]
+                  (vec (concat  float-features string-features)))) rows)
+        ))))
 
-#_(read-nth-line (str data-dir "train.csv") 1)
+#_(read-nth-line (str data-dir "train.csv") 704)
 #_(read-nth-line (str data-dir "test.csv") 1)
 
 (comment
@@ -198,6 +199,11 @@
 #_(count (first test-samples))
 #_(count features)
 #_(nth features 703)
+#_(count (nth features 703))
+#_(count (flatten (nth features 703)))
+
+#_(read-nth-line (str data-dir "train.csv") 9)
+#_(nth features 7) ; second value should be 0 (NA is normalized to 0)
 
 
 
