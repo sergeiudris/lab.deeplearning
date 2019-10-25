@@ -45,7 +45,7 @@
 
 (defn read-column-mdata
   [filename & {:keys [nulls] :or {nulls []}}]
-  (letfn [(val->column-type [v]
+  (letfn [(val>>column-type [v]
                             (cond
                               (str-float? v) :float
                               :else :string))
@@ -56,7 +56,7 @@
                         (take-while #(not (contained? % nulls)))
                         #_(take-last 1)
                         (last)
-                        (val->column-type)))
+                        (val>>column-type)))
           (column [a k v rows]
                        (let [dtype (column-type rows k)]
                          (assoc a k (merge
@@ -78,19 +78,18 @@
 
 (defn read-features
   []
-  (letfn [(row->feature [idx row cols]
-            (map-indexed
-             (fn [i x]
-               (let [col (get cols i)]
-                 {:dtype (:dtype col)
-                  :idx i})) row))
-          ]
+  (letfn [(row>>feature [idx row cols]
+                        (map-indexed
+                         (fn [i x]
+                           (let [col (get cols i)]
+                             {:dtype (:dtype col)
+                              :idx i})) row))]
     (with-open [reader (io/reader (str data-dir "train.csv"))]
       (let [data (read-csv reader)
             cols (read-column-mdata (str data-dir "train.csv"))
             rows (rest data)]
         (->> rows
-             (map-indexed #(row->feature %1 %2 cols))
+             (map-indexed #(row>>feature %1 %2 cols))
              (take 5)
              (vec))))))
 
