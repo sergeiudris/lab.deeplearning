@@ -178,14 +178,20 @@
             (rest)
             (mapv #(-> % (rest)  (vec)))))))
 
-  (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
-                      (->> (read-csv reader)
-                           (rest)
-                           (mapv #(nth % 80)))))
 
   (def samples (vec (concat train-samples test-samples)))
 
-  (def features (read-features {:nulls ["NA"]}) )
+  (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
+                      (->> (read-csv reader)
+                           (rest)
+                           (mapv #(-> % (nth 80) (str->float))))))
+
+  (def train-features (read-features {:nulls ["NA"]}))
+
+  (def train-features-1000 (->> train-features (take 1000) (flatten) (vec)))
+  (def train-features-460 (->> train-features (drop 1000) (flatten) (vec)))
+  (def train-labels-1000 (->> train-labels (take 1000)  (vec)))
+  (def train-labels-460 (->> train-labels (drop 1000)  (vec)))
   ;
   )
 
@@ -194,16 +200,22 @@
 #_(count train-samples) ; 1460
 #_(count test-samples) ; 1459
 #_(count train-labels) ; 1460
+#_(take 5 train-labels)
 
 #_(count (first train-samples))
 #_(count (first test-samples))
-#_(count features)
-#_(nth features 703)
-#_(count (nth features 703))
-#_(count (flatten (nth features 703)))
+#_(count train-features)
+#_(count train-features-1000) ; 304000
+#_(count train-features-460) ; 139840
+#_(count train-labels-1000) ; 1000
+#_(count train-labels-460) ; 460
+
+#_(nth train-features 703)
+#_(count (nth train-features 703))
+#_(count (flatten (nth train-features 703))) ; 304
 
 #_(read-nth-line (str data-dir "train.csv") 9)
-#_(nth features 7) ; second value should be 0 (NA is normalized to 0)
+#_(nth train-features 7) ; second value should be 0 (NA is normalized to 0)
 
 
 
@@ -237,17 +249,19 @@
     (sym/softmax-output "softmax" {:data data})))
 
 (defn train-data []
-  #_(mx-io/ndarray-iter [(ndarray/array (flatten train-data)
-                                      [(count train-data) sent-len])]
-                      {:label [(ndarray/array (flatten labels)
-                                              [(count labels) sent-len])]
+  (mx-io/ndarray-iter [(nd/array train-features-1000
+                                      [1000 (count (flatten (nth features 1)))])]
+                      {:label [(nd/array train-labels-1000
+                                              [1000 1])]
                        :label-name "softmax_label"
                        :data-batch-size batch-size
                        :last-batch-handle "pad"}))
 
 (defn eval-data []
-  #_(mx-io/ndarray-iter [(get-in shuffled [:test :data])]
-                      {:label [(get-in  shuffled [:test :label])]
+  (mx-io/ndarray-iter [(nd/array train-features-460
+                                      [460 (count (flatten (nth features 1)))])]
+                      {:label [(nd/array train-labels-460
+                                              [460 1])]
                        :label-name "softmax_label"
                        :data-batch-size batch-size
                        :last-batch-handle "pad"}))
