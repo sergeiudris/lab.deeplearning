@@ -10,7 +10,8 @@
             [pad.data.core :refer [str-float?]]
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
-                                   vec-mean scalar-divide]]
+                                   vec-mean scalar-divide
+                                   mk-one-hot-vec]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -46,6 +47,7 @@
 
 (defn column-mdata
   [attrs rows & {:keys [nulls] :or {nulls []}}]
+  (prn attrs)
   (letfn [(val>>column-type [v]
             (cond
               (str-float? v) :float
@@ -68,7 +70,7 @@
                             {:distinct (distinct (mapv #(nth % k) rows))})))))]
     (reduce-kv (fn [a k v]
                  (column a k v rows))
-               (sorted-map) attrs)))
+               (sorted-map) (vec attrs))))
 
 #_(with-open [reader (io/reader (str data-dir "train.csv"))]
     (let [data (read-csv reader)
@@ -79,6 +81,16 @@
 #_(def nulls ["NA"])
 #_(contained? "NA" nulls)
 
+
+(defn standardize
+  [v]
+  (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
+
+#_(standardize [10 20 30 40])
+#_(vec-mean [1 2 3])
+#_(standardize [1 2 3 2])
+
+
 (defn read-features
   [{:keys [nulls]}]
   (letfn [(val-null-float? [v dtype]
@@ -87,35 +99,56 @@
                        (= dtype :string))
           (val-float? [v dtype]
                       (= dtype :float))
-          (string-field>>val [v])
-          (null-float-field>>val [v]
-                                 (let []))
-          (float-field>>val [colm v row]
-                            
-                            )
+          (col-idx-float? [idx colsm]
+                          (= (get-in colsm [idx :dtype]) :float))
+          (row>>row-nums [row colsm]
+                         (map-indexed (fn [i x]
+                                        (if  (col-idx-float? i colsm)
+                                          (str->float x)
+                                          x)) row))
+          (string-field>>val [colm v]
+                             (keep-indexed (fn [i x]
+                                             (if (= x v)
+                                               (mk-one-hot-vec (count (:distinct colm)) i)
+                                               nil)) (:distinct colm)))
+          (float-field>>val [colm v row row-mean])
           (row>>mean [row]
-                     ()
-                     )
-          (attr>>val [idx v row rows cols-mdata]
-                     (let [colm (get cols-mdata idx)
+                     (->> row
+                          (keep-indexed (fn [i v]
+                                          (if (number? v) v nil)))
+                          (vec-mean)))
+          (row>>float-features [row]
+                               (->> row
+                                    (filter number?)
+                                    (standardize)))
+          (row>>string-features [row]
+                                (filter coll? row))
+          (attr>>val [idx v row rows colsm row-mean]
+                     (let [colm (get colsm idx)
                            dtype (:dtype colm)]
                        (cond
                          (val-string? v dtype) (string-field>>val colm v)
-                         (val-null-float? v dtype) (null-float-field>>val colm v)
-                         (val-float? v dtype) (float-field>>val colm v row)
+                         (val-null-float? v dtype) row-mean
+                         (val-float? v dtype) v
                          :else (throw (Exception. "uknown/missing column :dtype")))))]
     (with-open [reader (io/reader (str data-dir "train.csv"))]
       (let [data (read-csv reader)
-            attrs (first data)
-            rows (rest data)
-            cols-mdata (column-mdata attrs rows :nulls nulls)]
+            raw-attrs (first data)
+            raw-rows (rest data)
+            attrs (rest (butlast raw-attrs))
+            rows (map #(rest (butlast %)) raw-rows)
+            colsm (column-mdata attrs rows :nulls nulls)]
         (->> rows
              (map (fn [row]
-                    (let []
-                      (map-indexed (fn [idx v]
-                                     (attr>>val idx v row rows cols-mdata))
-                                   row))))
-             (take 5)
+                    (let [row-nums (row>>row-nums row colsm)
+                          row-mean (row>>mean row-nums)
+                          row-denulled (map-indexed
+                                        (fn [idx v]
+                                          (attr>>val idx v row rows colsm row-mean))
+                                        row-nums)
+                          float-features (row>>float-features row-denulled)
+                          string-features (row>>string-features row-denulled)]
+                      (concat  float-features string-features))))
              (vec))))))
 
 #_(read-nth-line (str data-dir "train.csv") 1)
@@ -164,16 +197,8 @@
 #_(count (first train-samples))
 #_(count (first test-samples))
 #_(count features)
-#_(take 1 features)
+#_(nth features 703)
 
-
-(defn standardize
-  [v]
-  (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
-
-#_(standardize [10 20 30 40])
-#_(vec-mean [1 2 3])
-#_(standardize [1 2 3 2])
 
 
 (def batch-size 10) ;; the batch size
