@@ -14,4 +14,4 @@
              :sha "HEAD"
              :deps/root "."}}}
   :local {:extra-deps
-          {seeris/pad {:local/root "/opt/code/pad"}}}}}
+          {pad {:local/root "/opt/code/pad"}}}}}
