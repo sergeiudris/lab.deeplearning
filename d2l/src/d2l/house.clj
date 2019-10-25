@@ -28,6 +28,7 @@
 (def data-dir "./tmp/data/house/")
 (def model-prefix "tmp/model/house/test")
 
+
 #_(sh "bash" "-c" "mkdir -p tmp/data/house" :dir "/opt/app")
 #_(sh "bash" "-c" "mkdir -p tmp/model/house" :dir "/opt/app")
 
@@ -76,20 +77,41 @@
 #_(count (read-column-mdata (str data-dir "train.csv")) )
 #_((read-column-mdata (str data-dir "train.csv")) 2)
 
+#_(def nulls ["NA"])
+#_(contained? "NA" nulls)
+
 (defn read-features
-  []
-  (letfn [(row>>feature [idx row cols]
-                        (map-indexed
-                         (fn [i x]
-                           (let [col (get cols i)]
-                             {:dtype (:dtype col)
-                              :idx i})) row))]
+  [{:keys [nulls]}]
+  (letfn [(val-null-float? [v dtype]
+                           (and  (= dtype :float) (contained? v nulls)))
+          (val-string? [v dtype]
+                       (= dtype :string))
+          (val-float? [v dtype]
+                      (= dtype :float))
+          (string-field>>val [v])
+          (null-float-field>>val [v]
+                                 (let []))
+          (float-field>>val [colm v row]
+                            (case
+                             (contained? v nulls) (let [])
+                             :else ))
+          (attr>>val [idx v row rows cols-mdata]
+                     (let [colm (get cols-mdata idx)
+                           dtype (:dtype colm)]
+                       (cond
+                         (val-string? v dtype) (string-field>>val colm v)
+                         (val-null-float? v dtype) (null-float-field>>val colm v)
+                         (val-float? v dtype) (float-field>>val colm v row)
+                         :else (throw (Exception. "uknown/missing column :dtype")))))]
     (with-open [reader (io/reader (str data-dir "train.csv"))]
       (let [data (read-csv reader)
-            cols (read-column-mdata (str data-dir "train.csv"))
+            cols-mdata (read-column-mdata (str data-dir "train.csv"))
             rows (rest data)]
         (->> rows
-             (map-indexed #(row>>feature %1 %2 cols))
+             (map (fn [row]
+                    (map-indexed (fn [idx v]
+                                   (attr>>val idx v row rows cols-mdata))
+                                 row)))
              (take 5)
              (vec))))))
 
@@ -126,7 +148,7 @@
 
   (def samples (vec (concat train-samples test-samples)))
 
-  (def features (read-features) )
+  (def features (read-features {:nulls ["NA"]}) )
   ;
   )
 
@@ -147,6 +169,8 @@
   (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
 
 #_(standardize [10 20 30 40])
+#_(vec-mean [1 2 3])
+#_(standardize [1 2 3 2])
 
 
 (def batch-size 10) ;; the batch size
