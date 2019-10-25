@@ -7,6 +7,7 @@
             [clojure.data.csv :refer [read-csv]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
+            [pad.data.core :refer [str-float?]]
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide]]
@@ -33,70 +34,19 @@
 #_(when-not  (.exists (io/file (str data-dir "train.csv")))
     (do (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))))
 
-
-
-
-(defn read-csv-rows
-  [filename]
-  (with-open [reader (io/reader filename)]
-    (->> (read-csv reader)
-         (rest)
-         (vec))))
-
-(defn read-labels
-  [filename]
-  (with-open [reader (io/reader filename)]
-    (->> (read-csv reader)
-         (rest)
-         (mapv #(nth % 80)))))
-
-(defn read-column
-  [filename idx]
-  (with-open [reader (io/reader filename)]
-    (->> (read-csv reader)
-         (rest)
-         (mapv #(nth % idx)))))
-
-
-
-(defn standardize
-  [v]
-  (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
-
-#_(standardize [10 20 30 40])
-
-(defn str->float
-  ([s]
-   (str->float s s))
-  ([s alt]
-   (try (Float/parseFloat s)
-        (catch Exception e alt))))
-
-(defn parse-numbers
-  [v]
-  (mapv (fn [x]
-          (str->float x)
-          ) v))
-
-(defn str-float?
-  [s]
-  (number? (str->float s)))
-
-(defn val->column-type
-  [v]
-  (cond
-    (str-float? v) :float
-    :else :string))
-
 (defn column-type
   [rows column-idx {:keys [nulls] :or {nulls []}}]
-  (->>
-   rows
-   (map #(nth % column-idx))
-   (take-while #(not (contained? % nulls)))
-   #_(take-last 1)
-   (last)
-   (val->column-type)))
+  (let [val->column-type (fn [v]
+                           (cond
+                             (str-float? v) :float
+                             :else :string))]
+    (->>
+     rows
+     (map #(nth % column-idx))
+     (take-while #(not (contained? % nulls)))
+     #_(take-last 1)
+     (last)
+     (val->column-type))))
 
 
 (defn read-column-mdata
@@ -122,32 +72,6 @@
 
 #_ (distinct (read-column (str data-dir "train.csv")  65)) 
 
-(defn row->feature
-  [idx row cols]
-  (map-indexed
-   (fn [i x]
-     (let [col (get cols i)]
-       {:dtype (:dtype col)
-        :idx i
-        }
-       
-       )) row)
-  )
-
-
-(defn read-features
-  [{:keys [filename] :or {} } ]
-  (with-open [reader (io/reader filename)]
-    (let [data (read-csv reader)
-          cols (read-column-mdata filename)
-          rows (rest data)]
-      (->> rows
-           (map-indexed #(row->feature %1 %2 cols))
-           (take 5)
-           (vec)
-           ))))
-
-#_(read-features {:filename (str data-dir "train.csv")})
 
 #_(read-nth-line (str data-dir "train.csv") 1)
 #_(read-nth-line (str data-dir "test.csv") 1)
@@ -163,21 +87,40 @@
 
   (def train-samples
     (->>
-     (read-csv-rows (str data-dir "train.csv"))
-     (mapv #(-> % (rest) (butlast) (vec)))))
-
+     (with-open [reader (io/reader (str data-dir "train.csv"))]
+       (->> (read-csv reader)
+            (rest)
+            (mapv #(-> % (rest) (butlast) (vec)))))))
 
   (def test-samples
     (->>
-     (read-csv-rows (str data-dir "test.csv"))
-     (mapv #(-> % (rest)  (vec)))))
+     (with-open [reader (io/reader (str data-dir "test.csv"))]
+       (->> (read-csv reader)
+            (rest)
+            (mapv #(-> % (rest)  (vec)))))))
 
-  (def train-labels (read-labels (str data-dir "train.csv")))
+  (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
+                      (->> (read-csv reader)
+                           (rest)
+                           (mapv #(nth % 80)))))
 
   (def samples (vec (concat train-samples test-samples)))
 
-  (def features (read-features {:filename (str data-dir "train.csv")}))
+  (def features (with-open [reader (io/reader (str data-dir "train.csv"))]
+                  (let [row->feature (fn [idx row cols]
+                                       (map-indexed
+                                        (fn [i x]
+                                          (let [col (get cols i)]
+                                            {:dtype (:dtype col)
+                                             :idx i})) row))
 
+                        data (read-csv reader)
+                        cols (read-column-mdata (str data-dir "train.csv"))
+                        rows (rest data)]
+                    (->> rows
+                         (map-indexed #(row->feature %1 %2 cols))
+                         (take 5)
+                         (vec)))))
   ;
   )
 
@@ -193,8 +136,11 @@
 #_(take 10 features)
 
 
+(defn standardize
+  [v]
+  (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
 
-
+#_(standardize [10 20 30 40])
 
 
 (def batch-size 10) ;; the batch size
