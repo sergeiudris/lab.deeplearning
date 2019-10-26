@@ -233,7 +233,7 @@
     ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
     (def eval-features (->> train-features-raw (drop 1000) (flatten) (vec)))
     (def eval-labels (->> train-labels-raw (drop 1000)  (vec)))
-    (def test-features (->> test-features-raw (take 10) (flatten) (vec)))
+    (def test-features (->> test-features-raw (take 1) (flatten) (vec)))
     
     (def train-features (->> train-features-raw  (flatten) (vec)))
     (def train-labels (->> train-labels-raw   (vec)))
@@ -260,7 +260,9 @@
 #_(count train-labels) ; 1000
 #_(count eval-labels) ; 460
 #_(count test-features)
-#_(count train-features)
+#_(/ (count train-features) 354)
+#_(count (->> train-labels (filter number?)))
+#_(take 354 train-features)
 
 #_(nth train-features-raw 703)
 #_(count (nth train-features-raw 703))
@@ -276,7 +278,7 @@
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
-(def num-epoch 100) ;; the number of training epochs
+(def num-epoch 5) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
 (def role "worker") ;; scheduler/server/worker
@@ -298,11 +300,11 @@
               ; (sym/fully-connected "fc1" {:data data :num-hidden 64})
               ; (sym/activation "relu1" {:data data :act-type "relu"})
 
-              (sym/fully-connected "fc2" {:data data :num-hidden 128})
+              (sym/fully-connected "fc2" {:data data :num-hidden 354})
               (sym/activation "relu2" {:data data :act-type "relu"})
 
-              (sym/fully-connected "fc3" {:data data :num-hidden 64})
-              (sym/activation "relu3" {:data data :act-type "relu"})
+              ; (sym/fully-connected "fc3" {:data data :num-hidden 64})
+              ; (sym/activation "relu3" {:data data :act-type "relu"})
 
               (sym/fully-connected "fc4" {:data data :num-hidden 1})
               (sym/softmax-output "softmax" {:data data})))
@@ -323,13 +325,14 @@
                                  :data-batch-size batch-size
                                  :last-batch-handle "pad"}))]
     (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
-      (let [mxm (m/fit _mod {:train-data (train-data)
+      (let [_mxm (m/fit _mod {:train-data (train-data)
                   ; :eval-data (eval-data)
                              :num-epoch num-epoch
                              :fit-params (m/fit-params {:kvstore kvstore
                                                         :optimizer optimizer
                                                         :eval-metric eval-metric})})]
-        (m/save-checkpoint mxm {:prefix model-prefix :epoch num-epoch}))
+        (def mxm _mxm)
+        (m/save-checkpoint _mxm {:prefix model-prefix :epoch num-epoch}))
       (println "Finish fit"))))
 
 (def envs (cond-> {"DMLC_ROLE" role}
@@ -355,7 +358,7 @@
          (init-data!))
        (train {:contexts devices
                :train-features  (resolve-var 'train-features)
-               :train-features-shape [1460 354]
+               :train-features-shape [1460 354 ]
                :train-labels (resolve-var 'train-labels)
                :train-labels-shape [1460 1]
               ;  :eval-features  (resolve-var 'eval-features)
@@ -366,32 +369,37 @@
 
 
 #_(time (start [(context/cpu)]))
+#_(m/get-params mxm)
 
 
 
-
-#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [10 354])]
+#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [1 354])]
                                      {:label
-                                      [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
+                                      [(nd/array (->> train-labels (take 1) (vec)) [1 1])]
                                       :label-name "softmax_label"
                                       :data-batch-size 1
                                       :last-batch-handle "pad"}))
 
 #_(def mxmod
     (-> (m/load-checkpoint {:prefix model-prefix
-                            :epoch 100
+                            :epoch 5
                             :load-optimizer-states false})
         (m/bind {:data-shapes (mx-io/provide-data eval-data)
                  :label-shapes (mx-io/provide-label eval-data)})
         (m/init-params)))
+
+#_(m/get-params mxmod)
+
 
 #_(mx-io/data-desc {:name "data0"
                     :shape [1 354]
                     :dtype dtype/FLOAT32
                     :layout layout/NT})
 
-#_(def results
-    (m/predict mxmod {:eval-data eval-data}))
+#_(m/predict {:eval-data eval-data})
+
+
 
 #_(nd/->vec results)
+
 
