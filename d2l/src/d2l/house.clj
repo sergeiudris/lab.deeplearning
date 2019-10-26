@@ -29,12 +29,16 @@
 (def data-dir "./tmp/data/house/")
 (def model-prefix "tmp/model/house/test")
 
+(defn load-data!
+  []
+  (when-not  (.exists (io/file (str data-dir "train.csv")))
+    (do
+      (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))
+      (sh "bash" "-c" "mkdir -p tmp/data/house" :dir "/opt/app")
+      (sh "bash" "-c" "mkdir -p tmp/model/house" :dir "/opt/app")
+      )))
 
-#_(sh "bash" "-c" "mkdir -p tmp/data/house" :dir "/opt/app")
-#_(sh "bash" "-c" "mkdir -p tmp/model/house" :dir "/opt/app")
-
-#_(when-not  (.exists (io/file (str data-dir "train.csv")))
-    (do (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))))
+#_(load-data!)
 
 (defn read-column
   [filename idx]
@@ -153,7 +157,8 @@
 #_(read-nth-line (str data-dir "train.csv") 704)
 #_(read-nth-line (str data-dir "test.csv") 1)
 
-(comment
+(defn init-data!
+  []
   (do
     (def fields
       (->
@@ -213,9 +218,9 @@
     (def train-labels-460 (->> train-labels (drop 1000)  (vec)))
 
   ;
-    )
-  ;
-  )
+    ))
+
+#_(init-data!)
 
 #_(count fields) ; 81
 #_(count attrs) ; 80
@@ -256,44 +261,57 @@
 (def num-workers 1) ;; # of workers
 (def num-servers 1) ;; # of servers
 
+(defn train
+  [{:keys [contexts batch-size  train-features train-features-shape
+           eval-features eval-features-shape
+           train-labels train-labels-shape
+           eval-labels eval-labels-shape
+           ]}]
+  (letfn [(get-symbol
+            []
+            (as-> (sym/variable "data") data
+              (sym/fully-connected "fc1" {:data data :num-hidden 128})
+              (sym/activation "relu1" {:data data :act-type "relu"})
+              (sym/fully-connected "fc2" {:data data :num-hidden 64})
+              (sym/activation "relu2" {:data data :act-type "relu"})
+              (sym/fully-connected "fc3" {:data data :num-hidden 10})
+              (sym/softmax-output "softmax" {:data data})))
+
+          (train-data
+            []
+            (mx-io/ndarray-iter [(nd/array train-features
+                                           [])]
+                                {:label [(nd/array train-labels train-labels-shape)]
+                                 :label-name "softmax_label"
+                                 :data-batch-size batch-size
+                                 :last-batch-handle "pad"}))
+
+          (eval-data
+            []
+            (mx-io/ndarray-iter [(nd/array eval-features eval-features-shape)]
+                                {:label [(nd/array eval-labels eval-labels-shape)]
+                                 :label-name "softmax_label"
+                                 :data-batch-size batch-size
+                                 :last-batch-handle "pad"}))]
+    (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
+      (-> _mod
+          (m/fit {:train-data (train-data)
+                  :eval-data (eval-data)
+                  :num-epoch num-epoch
+                  :fit-params (m/fit-params {:kvstore kvstore
+                                             :optimizer optimizer
+                                             :eval-metric eval-metric})})
+          (m/save-checkpoint {:prefix model-prefix :epoch num-epoch}))
+      (println "Finish fit"))))
+
 (def envs (cond-> {"DMLC_ROLE" role}
             scheduler-host (merge {"DMLC_PS_ROOT_URI" scheduler-host
                                    "DMLC_PS_ROOT_PORT" (str scheduler-port)
                                    "DMLC_NUM_WORKER" (str num-workers)
                                    "DMLC_NUM_SERVER" (str num-servers)})))
-
-
-
-(defn get-symbol []
-  (as-> (sym/variable "data") data
-    (sym/fully-connected "fc1" {:data data :num-hidden 128})
-    (sym/activation "relu1" {:data data :act-type "relu"})
-    (sym/fully-connected "fc2" {:data data :num-hidden 64})
-    (sym/activation "relu2" {:data data :act-type "relu"})
-    (sym/fully-connected "fc3" {:data data :num-hidden 10})
-    (sym/softmax-output "softmax" {:data data})))
-
-(defn train-data []
-  (mx-io/ndarray-iter [(nd/array (var-get (resolve 'train-features-1000))
-                                      [1000 (count (flatten (nth (var-get (resolve 'features)) 1)))])]
-                      {:label [(nd/array (var-get (resolve 'train-labels-1000))
-                                              [1000 1])]
-                       :label-name "softmax_label"
-                       :data-batch-size batch-size
-                       :last-batch-handle "pad"}))
-
-(defn eval-data []
-  (mx-io/ndarray-iter [(nd/array (var-get (resolve 'train-features-460))
-                                      [460 (count (flatten (nth (var-get (resolve 'features)) 1)))])]
-                      {:label [(nd/array (var-get (resolve 'train-labels-460))
-                                              [460 1])]
-                       :label-name "softmax_label"
-                       :data-batch-size batch-size
-                       :last-batch-handle "pad"}))
-
 (defn start
-  ([devs] (start devs num-epoch))
-  ([devs _num-epoch]
+  ([devices] (start devices num-epoch))
+  ([devices _num-epoch]
    (when scheduler-host
      (println "Initing PS enviornments with " envs)
      (kvstore-server/init envs))
@@ -304,17 +322,19 @@
        (kvstore-server/start))
      (do
        (println "Starting Training of MNIST ....")
-       (println "Running with context devices of" devs)
-       (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts devs})]
-         (-> _mod
-             (m/fit {:train-data (train-data)
-                     :eval-data (eval-data)
-                     :num-epoch _num-epoch
-                     :fit-params (m/fit-params {:kvstore kvstore
-                                                :optimizer optimizer
-                                                :eval-metric eval-metric})})
-             (m/save-checkpoint {:prefix model-prefix :epoch _num-epoch}))
-         (println "Finish fit"))))))
+       (println "Running with context devices of" devices)
+       (when-not (resolve 'train-features)
+         (init-data!))
+       (train {:contexts devices
+               :train-features  (resolve-var 'train-features-1000)
+               :train-features-shape []
+               :train-labels (resolve-var 'train-labels-1000)
+               :train-labels-shape [1000 1]
+               :eval-features  (resolve-var 'train-features-460)
+               :eval-features-shape [460 (count (flatten (nth (resolve-var 'features) 1)))]
+               :eval-labels []
+               :eval-labels-shape []
+               :batch-size batch-size})))))
 
 
 #_(time (start [(context/cpu)]))
