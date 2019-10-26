@@ -49,9 +49,8 @@
 
 #_(distinct (read-column (str data-dir "train.csv")  65))
 
-(defn column-mdata
-  [attrs rows & {:keys [nulls] :or {nulls []}}]
-  (prn attrs)
+(defn read-column-mdata
+  [{:keys [nulls] :or {nulls []}}]
   (letfn [(val>>column-type [v]
             (cond
               (str-float? v) :float
@@ -72,15 +71,26 @@
                            :dtype dtype}
                           (when (= dtype :string)
                             {:distinct (distinct (mapv #(nth % k) rows))})))))]
-    (reduce-kv (fn [a k v]
-                 (column a k v rows))
-               (sorted-map) (vec attrs))))
+    (with-open [reader-train (io/reader (str data-dir "train.csv"))
+                reader-test (io/reader (str data-dir "test.csv"))]
+      (let [data-train (read-csv reader-train)
+            data-test (read-csv reader-test)
+            rows-train (map #(-> % (rest) (butlast)) data-train)
+            rows-test (map #(-> % (rest)) data-test)
+            attrs (-> (first data-train) (rest) (butlast))
+            rows (concat rows-train rows-test)]
+        (reduce-kv (fn [a k v]
+                     (column a k v rows))
+                   (sorted-map) (vec attrs))))
+    ))
 
 #_(with-open [reader (io/reader (str data-dir "train.csv"))]
     (let [data (read-csv reader)
           attrs (first data)
           rows (rest data)]
       (column-mdata attrs rows)))
+
+#_(read-column-mdata {:nulls ["NA"]})
 
 #_(def nulls ["NA"])
 #_(contained? "NA" nulls)
@@ -141,7 +151,7 @@
       (let [data (read-csv reader)
             rows (data>>rows data)
             attrs (data>>attrs data)
-            colsm (column-mdata attrs rows :nulls nulls)]
+            colsm (read-column-mdata {:nulls nulls})]
         (mapv (fn [row]
                 (let [row-nums (row>>row-nums row colsm)
                       row-mean (row>>mean row-nums)
@@ -151,8 +161,7 @@
                                     row-nums)
                       float-features (row>>float-features row-denulled)
                       string-features (row>>string-features row-denulled)]
-                  (vec (concat  float-features string-features)))) rows)
-        ))))
+                  (vec (concat  float-features string-features)))) rows)))))
 
 #_(read-nth-line (str data-dir "train.csv") 704)
 #_(read-nth-line (str data-dir "test.csv") 1)
@@ -208,15 +217,22 @@
                                                               (rest)
                                                               (map #(rest %))))
                                            :data>>attrs (fn [data]
-                                                          (->
-                                                           (first data)
-                                                           (rest)))}))
+                                                          (with-open [reader (io/reader (str data-dir "train.csv"))]
+                                                            (->
+                                                             (read-csv reader)
+                                                             (first)
+                                                             (rest)
+                                                             (butlast)))
+                                                          #_(->
+                                                             (first data)
+                                                             (rest)))}))
 
     ; (def train-features (->> train-features-raw (take 1000) (flatten) (vec)))
     ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
     (def eval-features (->> train-features-raw (drop 1000) (flatten) (vec)))
     (def eval-labels (->> train-labels-raw (drop 1000)  (vec)))
-
+    (def test-features (->> test-features-raw (take 1) (flatten) (vec)))
+    
     (def train-features (->> train-features-raw  (flatten) (vec)))
     (def train-labels (->> train-labels-raw   (vec)))
 
@@ -241,11 +257,14 @@
 #_(count eval-features) ; 139840
 #_(count train-labels) ; 1000
 #_(count eval-labels) ; 460
+#_(count test-features)
+#_(count train-features)
 
 #_(nth train-features-raw 703)
 #_(count (nth train-features-raw 703))
 #_(count (nth test-features-raw 703))
-#_(count (flatten (nth train-features-raw 703))) ; 304
+#_(count (flatten (nth train-features-raw 703))) ; 354
+#_(count (flatten (nth test-features-raw 703))) ; 354
 
 #_(read-nth-line (str data-dir "train.csv") 9)
 #_(nth train-features-raw 7) ; second value should be 0 (NA is normalized to 0)
@@ -302,14 +321,14 @@
                                  :data-batch-size batch-size
                                  :last-batch-handle "pad"}))]
     (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
-      (-> _mod
-          (m/fit {:train-data (train-data)
+      (let [mxm (m/fit _mod {:train-data (train-data)
                   ; :eval-data (eval-data)
-                  :num-epoch num-epoch
-                  :fit-params (m/fit-params {:kvstore kvstore
-                                             :optimizer optimizer
-                                             :eval-metric eval-metric})})
-          (m/save-checkpoint {:prefix model-prefix :epoch num-epoch}))
+                               :num-epoch num-epoch
+                               :fit-params (m/fit-params {:kvstore kvstore
+                                                          :optimizer optimizer
+                                                          :eval-metric eval-metric})})]
+        (do (def mxm mxm))
+        (m/save-checkpoint mxm {:prefix model-prefix :epoch num-epoch}))
       (println "Finish fit"))))
 
 (def envs (cond-> {"DMLC_ROLE" role}
@@ -331,11 +350,11 @@
      (do
        (println "Starting Training of MNIST ....")
        (println "Running with context devices of" devices)
-       (when-not (resolve 'train-features)
+       (when-not (bound? #'train-features)
          (init-data!))
        (train {:contexts devices
                :train-features  (resolve-var 'train-features)
-               :train-features-shape [1460 304]
+               :train-features-shape [1460 354]
                :train-labels (resolve-var 'train-labels)
                :train-labels-shape [1460 1]
               ;  :eval-features  (resolve-var 'eval-features)
@@ -346,3 +365,19 @@
 
 
 #_(time (start [(context/cpu)]))
+
+#_(def mloaded (m/load-checkpoint {:prefix model-prefix
+                                   :epoch 100
+                                   :load-optimizer-states false}))
+
+#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [1 354])]
+                                     {
+                                      ; :label
+                                      ; [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
+                                      :label-name "softmax_label"
+                                      :data-batch-size 1
+                                      :last-batch-handle "pad"}))
+
+#_(def results
+    (m/predict mxm {:eval-data eval-data}))
+
