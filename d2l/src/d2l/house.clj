@@ -7,7 +7,7 @@
             [clojure.data.csv :refer [read-csv]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
-            [pad.data.core :refer [str-float? str>>float]]
+            [pad.core :refer [str-float? str>>float resolve-var]]
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide
@@ -154,63 +154,66 @@
 #_(read-nth-line (str data-dir "test.csv") 1)
 
 (comment
+  (do
+    (def fields
+      (->
+       (read-nth-line (str data-dir "train.csv") 1)
+       (str/split  #",")))
 
-  (def fields
-    (->
-     (read-nth-line (str data-dir "train.csv") 1)
-     (str/split  #",")))
+    (def attrs (-> fields (rest) (vec)))
 
-  (def attrs (-> fields (rest) (vec)))
+    (def train-samples
+      (->>
+       (with-open [reader (io/reader (str data-dir "train.csv"))]
+         (->> (read-csv reader)
+              (rest)
+              (mapv #(-> % (rest) (butlast) (vec)))))))
 
-  (def train-samples
-    (->>
-     (with-open [reader (io/reader (str data-dir "train.csv"))]
-       (->> (read-csv reader)
-            (rest)
-            (mapv #(-> % (rest) (butlast) (vec)))))))
-
-  (def test-samples
-    (->>
-     (with-open [reader (io/reader (str data-dir "test.csv"))]
-       (->> (read-csv reader)
-            (rest)
-            (mapv #(-> % (rest)  (vec)))))))
+    (def test-samples
+      (->>
+       (with-open [reader (io/reader (str data-dir "test.csv"))]
+         (->> (read-csv reader)
+              (rest)
+              (mapv #(-> % (rest)  (vec)))))))
 
 
-  (def samples (vec (concat train-samples test-samples)))
+    (def samples (vec (concat train-samples test-samples)))
 
-  (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
-                      (->> (read-csv reader)
-                           (rest)
-                           (mapv #(-> % (nth 80) (str>>float))))))
+    (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
+                        (->> (read-csv reader)
+                             (rest)
+                             (mapv #(-> % (nth 80) (str>>float))))))
 
-  (def train-features (read-features {:filename (str data-dir "train.csv")
-                                      :nulls ["NA"]
-                                      :data>>rows (fn [data]
-                                                    (->> data
-                                                         (rest)
-                                                         (map #(rest (butlast %)))))
-                                      :data>>attrs (fn [data]
-                                                     (->
-                                                      (first data)
-                                                      (rest)
-                                                      (butlast)))}))
-
-  (def test-features (read-features {:filename (str data-dir "test.csv")
-                                     :nulls ["NA"]
-                                     :data>>rows (fn [data]
-                                                   (->> data
+    (def train-features (read-features {:filename (str data-dir "train.csv")
+                                        :nulls ["NA"]
+                                        :data>>rows (fn [data]
+                                                      (->> data
+                                                           (rest)
+                                                           (map #(rest (butlast %)))))
+                                        :data>>attrs (fn [data]
+                                                       (->
+                                                        (first data)
                                                         (rest)
-                                                        (map #(rest %))))
-                                     :data>>attrs (fn [data]
-                                                    (->
-                                                     (first data)
-                                                     (rest)))}))
+                                                        (butlast)))}))
 
-  (def train-features-1000 (->> train-features (take 1000) (flatten) (vec)))
-  (def train-features-460 (->> train-features (drop 1000) (flatten) (vec)))
-  (def train-labels-1000 (->> train-labels (take 1000)  (vec)))
-  (def train-labels-460 (->> train-labels (drop 1000)  (vec)))
+    (def test-features (read-features {:filename (str data-dir "test.csv")
+                                       :nulls ["NA"]
+                                       :data>>rows (fn [data]
+                                                     (->> data
+                                                          (rest)
+                                                          (map #(rest %))))
+                                       :data>>attrs (fn [data]
+                                                      (->
+                                                       (first data)
+                                                       (rest)))}))
+
+    (def train-features-1000 (->> train-features (take 1000) (flatten) (vec)))
+    (def train-features-460 (->> train-features (drop 1000) (flatten) (vec)))
+    (def train-labels-1000 (->> train-labels (take 1000)  (vec)))
+    (def train-labels-460 (->> train-labels (drop 1000)  (vec)))
+
+  ;
+    )
   ;
   )
 
@@ -225,7 +228,8 @@
 #_(count (first test-samples))
 #_(count train-features)
 #_(count test-features)
-#_(count train-features-1000) ; 304000
+#_(count (var-get (resolve 'train-features-1000))) ; 304000
+#_(count (resolve-var 'train-features-1000))
 #_(count train-features-460) ; 139840
 #_(count train-labels-1000) ; 1000
 #_(count train-labels-460) ; 460
@@ -270,18 +274,18 @@
     (sym/softmax-output "softmax" {:data data})))
 
 (defn train-data []
-  (mx-io/ndarray-iter [(nd/array (resolve 'train-features-1000)
-                                      [1000 (count (flatten (nth (resolve 'features) 1)))])]
-                      {:label [(nd/array (resolve 'train-labels-1000)
+  (mx-io/ndarray-iter [(nd/array (var-get (resolve 'train-features-1000))
+                                      [1000 (count (flatten (nth (var-get (resolve 'features)) 1)))])]
+                      {:label [(nd/array (var-get (resolve 'train-labels-1000))
                                               [1000 1])]
                        :label-name "softmax_label"
                        :data-batch-size batch-size
                        :last-batch-handle "pad"}))
 
 (defn eval-data []
-  (mx-io/ndarray-iter [(nd/array (resolve 'train-features-460)
-                                      [460 (count (flatten (nth (resolve 'features) 1)))])]
-                      {:label [(nd/array (resolve 'train-labels-460)
+  (mx-io/ndarray-iter [(nd/array (var-get (resolve 'train-features-460))
+                                      [460 (count (flatten (nth (var-get (resolve 'features)) 1)))])]
+                      {:label [(nd/array (var-get (resolve 'train-labels-460))
                                               [460 1])]
                        :label-name "softmax_label"
                        :data-batch-size batch-size
