@@ -252,7 +252,7 @@
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
-(def num-epoch 3) ;; the number of training epochs
+(def num-epoch 25) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
 (def role "worker") ;; scheduler/server/worker
@@ -270,17 +270,21 @@
   (letfn [(get-symbol
             []
             (as-> (sym/variable "data") data
-              (sym/fully-connected "fc1" {:data data :num-hidden 128})
+              (sym/fully-connected "fc1" {:data data :num-hidden 64})
               (sym/activation "relu1" {:data data :act-type "relu"})
-              (sym/fully-connected "fc2" {:data data :num-hidden 64})
+
+              (sym/fully-connected "fc2" {:data data :num-hidden 128})
               (sym/activation "relu2" {:data data :act-type "relu"})
-              (sym/fully-connected "fc3" {:data data :num-hidden 10})
+
+              (sym/fully-connected "fc3" {:data data :num-hidden 64})
+              (sym/activation "relu3" {:data data :act-type "relu"})
+
+              (sym/fully-connected "fc-out" {:data data :num-hidden 1})
               (sym/softmax-output "softmax" {:data data})))
 
           (train-data
             []
-            (mx-io/ndarray-iter [(nd/array train-features
-                                           [])]
+            (mx-io/ndarray-iter [(nd/array train-features train-features-shape)]
                                 {:label [(nd/array train-labels train-labels-shape)]
                                  :label-name "softmax_label"
                                  :data-batch-size batch-size
@@ -327,13 +331,13 @@
          (init-data!))
        (train {:contexts devices
                :train-features  (resolve-var 'train-features-1000)
-               :train-features-shape []
+               :train-features-shape [1000 304]
                :train-labels (resolve-var 'train-labels-1000)
                :train-labels-shape [1000 1]
                :eval-features  (resolve-var 'train-features-460)
-               :eval-features-shape [460 (count (flatten (nth (resolve-var 'features) 1)))]
-               :eval-labels []
-               :eval-labels-shape []
+               :eval-features-shape [460 304]
+               :eval-labels (resolve-var 'train-labels-460)
+               :eval-labels-shape [460 1]
                :batch-size batch-size})))))
 
 
