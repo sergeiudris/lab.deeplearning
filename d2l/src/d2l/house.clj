@@ -323,11 +323,10 @@
     (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
       (let [mxm (m/fit _mod {:train-data (train-data)
                   ; :eval-data (eval-data)
-                               :num-epoch num-epoch
-                               :fit-params (m/fit-params {:kvstore kvstore
-                                                          :optimizer optimizer
-                                                          :eval-metric eval-metric})})]
-        (do (def mxm mxm))
+                             :num-epoch num-epoch
+                             :fit-params (m/fit-params {:kvstore kvstore
+                                                        :optimizer optimizer
+                                                        :eval-metric eval-metric})})]
         (m/save-checkpoint mxm {:prefix model-prefix :epoch num-epoch}))
       (println "Finish fit"))))
 
@@ -366,11 +365,10 @@
 
 #_(time (start [(context/cpu)]))
 
-#_(def mloaded (m/load-checkpoint {:prefix model-prefix
-                                   :epoch 100
-                                   :load-optimizer-states false}))
 
-#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [1 354])]
+
+
+#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [354])]
                                      {
                                       ; :label
                                       ; [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
@@ -378,6 +376,10 @@
                                       :data-batch-size 1
                                       :last-batch-handle "pad"}))
 
+#_(def mxmod (m/load-checkpoint {:prefix model-prefix
+                                 :epoch 100
+                                 :load-optimizer-states false}))
+
 #_(def results
-    (m/predict mxm {:eval-data eval-data}))
+    (m/predict mxmod {:eval-data eval-data}))
 
