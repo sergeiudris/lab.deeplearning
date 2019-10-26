@@ -7,7 +7,7 @@
             [clojure.data.csv :refer [read-csv]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
-            [pad.data.core :refer [str-float?]]
+            [pad.data.core :refer [str-float? str>>float]]
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide
@@ -104,7 +104,7 @@
           (row>>row-nums [row colsm]
                          (map-indexed (fn [i x]
                                         (if  (col-idx-float? i colsm)
-                                          (str->float x)
+                                          (str>>float x)
                                           x)) row))
           (string-field>>val [colm v]
                              (->> (:distinct colm)
@@ -182,7 +182,7 @@
   (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
                       (->> (read-csv reader)
                            (rest)
-                           (mapv #(-> % (nth 80) (str->float))))))
+                           (mapv #(-> % (nth 80) (str>>float))))))
 
   (def train-features (read-features {:filename (str data-dir "train.csv")
                                       :nulls ["NA"]
@@ -270,18 +270,18 @@
     (sym/softmax-output "softmax" {:data data})))
 
 (defn train-data []
-  (mx-io/ndarray-iter [(nd/array train-features-1000
-                                      [1000 (count (flatten (nth features 1)))])]
-                      {:label [(nd/array train-labels-1000
+  (mx-io/ndarray-iter [(nd/array (resolve 'train-features-1000)
+                                      [1000 (count (flatten (nth (resolve 'features) 1)))])]
+                      {:label [(nd/array (resolve 'train-labels-1000)
                                               [1000 1])]
                        :label-name "softmax_label"
                        :data-batch-size batch-size
                        :last-batch-handle "pad"}))
 
 (defn eval-data []
-  (mx-io/ndarray-iter [(nd/array train-features-460
-                                      [460 (count (flatten (nth features 1)))])]
-                      {:label [(nd/array train-labels-460
+  (mx-io/ndarray-iter [(nd/array (resolve 'train-features-460)
+                                      [460 (count (flatten (nth (resolve 'features) 1)))])]
+                      {:label [(nd/array (resolve 'train-labels-460)
                                               [460 1])]
                        :label-name "softmax_label"
                        :data-batch-size batch-size

@@ -3,7 +3,6 @@
 
 dev(){
 
-  echo "--starting"
   clojure -A:core:local -m d2l.main
 
 }
