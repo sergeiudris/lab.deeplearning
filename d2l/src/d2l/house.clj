@@ -22,6 +22,8 @@
             [org.apache.clojure-mxnet.optimizer :as optimizer]
             [org.apache.clojure-mxnet.resource-scope :as resource-scope]
             [org.apache.clojure-mxnet.ndarray :as nd]
+            [org.apache.clojure-mxnet.dtype :as dtype]
+            [org.apache.clojure-mxnet.layout :as layout]
             [org.apache.clojure-mxnet.random :as random]
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
@@ -231,7 +233,7 @@
     ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
     (def eval-features (->> train-features-raw (drop 1000) (flatten) (vec)))
     (def eval-labels (->> train-labels-raw (drop 1000)  (vec)))
-    (def test-features (->> test-features-raw (take 1) (flatten) (vec)))
+    (def test-features (->> test-features-raw (take 10) (flatten) (vec)))
     
     (def train-features (->> train-features-raw  (flatten) (vec)))
     (def train-labels (->> train-labels-raw   (vec)))
@@ -368,18 +370,28 @@
 
 
 
-#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [354])]
-                                     {
-                                      ; :label
-                                      ; [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
+#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [10 354])]
+                                     {:label
+                                      [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
                                       :label-name "softmax_label"
                                       :data-batch-size 1
                                       :last-batch-handle "pad"}))
 
-#_(def mxmod (m/load-checkpoint {:prefix model-prefix
-                                 :epoch 100
-                                 :load-optimizer-states false}))
+#_(def mxmod
+    (-> (m/load-checkpoint {:prefix model-prefix
+                            :epoch 100
+                            :load-optimizer-states false})
+        (m/bind {:data-shapes (mx-io/provide-data eval-data)
+                 :label-shapes (mx-io/provide-label eval-data)})
+        (m/init-params)))
+
+#_(mx-io/data-desc {:name "data0"
+                    :shape [1 354]
+                    :dtype dtype/FLOAT32
+                    :layout layout/NT})
 
 #_(def results
     (m/predict mxmod {:eval-data eval-data}))
+
+#_(nd/->vec results)
 
