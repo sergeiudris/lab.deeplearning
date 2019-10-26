@@ -184,38 +184,41 @@
 
     (def samples (vec (concat train-samples test-samples)))
 
-    (def train-labels (with-open [reader (io/reader (str data-dir "train.csv"))]
-                        (->> (read-csv reader)
-                             (rest)
-                             (mapv #(-> % (nth 80) (str>>float))))))
+    (def train-labels-raw (with-open [reader (io/reader (str data-dir "train.csv"))]
+                            (->> (read-csv reader)
+                                 (rest)
+                                 (mapv #(-> % (nth 80) (str>>float))))))
 
-    (def train-features (read-features {:filename (str data-dir "train.csv")
-                                        :nulls ["NA"]
-                                        :data>>rows (fn [data]
-                                                      (->> data
-                                                           (rest)
-                                                           (map #(rest (butlast %)))))
-                                        :data>>attrs (fn [data]
-                                                       (->
-                                                        (first data)
-                                                        (rest)
-                                                        (butlast)))}))
+    (def train-features-raw (read-features {:filename (str data-dir "train.csv")
+                                            :nulls ["NA"]
+                                            :data>>rows (fn [data]
+                                                          (->> data
+                                                               (rest)
+                                                               (map #(rest (butlast %)))))
+                                            :data>>attrs (fn [data]
+                                                           (->
+                                                            (first data)
+                                                            (rest)
+                                                            (butlast)))}))
 
-    (def test-features (read-features {:filename (str data-dir "test.csv")
-                                       :nulls ["NA"]
-                                       :data>>rows (fn [data]
-                                                     (->> data
-                                                          (rest)
-                                                          (map #(rest %))))
-                                       :data>>attrs (fn [data]
-                                                      (->
-                                                       (first data)
-                                                       (rest)))}))
+    (def test-features-raw (read-features {:filename (str data-dir "test.csv")
+                                           :nulls ["NA"]
+                                           :data>>rows (fn [data]
+                                                         (->> data
+                                                              (rest)
+                                                              (map #(rest %))))
+                                           :data>>attrs (fn [data]
+                                                          (->
+                                                           (first data)
+                                                           (rest)))}))
 
-    (def train-features-1000 (->> train-features (take 1000) (flatten) (vec)))
-    (def train-features-460 (->> train-features (drop 1000) (flatten) (vec)))
-    (def train-labels-1000 (->> train-labels (take 1000)  (vec)))
-    (def train-labels-460 (->> train-labels (drop 1000)  (vec)))
+    ; (def train-features (->> train-features-raw (take 1000) (flatten) (vec)))
+    ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
+    (def eval-features (->> train-features-raw (drop 1000) (flatten) (vec)))
+    (def eval-labels (->> train-labels-raw (drop 1000)  (vec)))
+
+    (def train-features (->> train-features-raw  (flatten) (vec)))
+    (def train-labels (->> train-labels-raw   (vec)))
 
   ;
     ))
@@ -226,33 +229,33 @@
 #_(count attrs) ; 80
 #_(count train-samples) ; 1460
 #_(count test-samples) ; 1459
-#_(count train-labels) ; 1460
+#_(count train-labels-raw) ; 1460
 #_(take 5 train-labels)
 
 #_(count (first train-samples))
 #_(count (first test-samples))
-#_(count train-features)
-#_(count test-features)
-#_(count (var-get (resolve 'train-features-1000))) ; 304000
-#_(count (resolve-var 'train-features-1000))
-#_(count train-features-460) ; 139840
-#_(count train-labels-1000) ; 1000
-#_(count train-labels-460) ; 460
+#_(count train-features-raw)
+#_(count test-features-raw)
+#_(count (var-get (resolve 'train-features))) ; 304000
+#_(count (resolve-var 'train-features))
+#_(count eval-features) ; 139840
+#_(count train-labels) ; 1000
+#_(count eval-labels) ; 460
 
-#_(nth train-features 703)
-#_(count (nth train-features 703))
-#_(count (nth test-features 703))
-#_(count (flatten (nth train-features 703))) ; 304
+#_(nth train-features-raw 703)
+#_(count (nth train-features-raw 703))
+#_(count (nth test-features-raw 703))
+#_(count (flatten (nth train-features-raw 703))) ; 304
 
 #_(read-nth-line (str data-dir "train.csv") 9)
-#_(nth train-features 7) ; second value should be 0 (NA is normalized to 0)
+#_(nth train-features-raw 7) ; second value should be 0 (NA is normalized to 0)
 
 
 
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
-(def num-epoch 25) ;; the number of training epochs
+(def num-epoch 100) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
 (def role "worker") ;; scheduler/server/worker
@@ -270,8 +273,9 @@
   (letfn [(get-symbol
             []
             (as-> (sym/variable "data") data
-              (sym/fully-connected "fc1" {:data data :num-hidden 64})
-              (sym/activation "relu1" {:data data :act-type "relu"})
+              
+              ; (sym/fully-connected "fc1" {:data data :num-hidden 64})
+              ; (sym/activation "relu1" {:data data :act-type "relu"})
 
               (sym/fully-connected "fc2" {:data data :num-hidden 128})
               (sym/activation "relu2" {:data data :act-type "relu"})
@@ -279,7 +283,7 @@
               (sym/fully-connected "fc3" {:data data :num-hidden 64})
               (sym/activation "relu3" {:data data :act-type "relu"})
 
-              (sym/fully-connected "fc-out" {:data data :num-hidden 1})
+              (sym/fully-connected "fc4" {:data data :num-hidden 1})
               (sym/softmax-output "softmax" {:data data})))
 
           (train-data
@@ -300,7 +304,7 @@
     (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
       (-> _mod
           (m/fit {:train-data (train-data)
-                  :eval-data (eval-data)
+                  ; :eval-data (eval-data)
                   :num-epoch num-epoch
                   :fit-params (m/fit-params {:kvstore kvstore
                                              :optimizer optimizer
@@ -330,14 +334,14 @@
        (when-not (resolve 'train-features)
          (init-data!))
        (train {:contexts devices
-               :train-features  (resolve-var 'train-features-1000)
-               :train-features-shape [1000 304]
-               :train-labels (resolve-var 'train-labels-1000)
-               :train-labels-shape [1000 1]
-               :eval-features  (resolve-var 'train-features-460)
-               :eval-features-shape [460 304]
-               :eval-labels (resolve-var 'train-labels-460)
-               :eval-labels-shape [460 1]
+               :train-features  (resolve-var 'train-features)
+               :train-features-shape [1460 304]
+               :train-labels (resolve-var 'train-labels)
+               :train-labels-shape [1460 1]
+              ;  :eval-features  (resolve-var 'eval-features)
+              ;  :eval-features-shape [460 304]
+              ;  :eval-labels (resolve-var 'eval-labels)
+              ;  :eval-labels-shape [460 1]
                :batch-size batch-size})))))
 
 
