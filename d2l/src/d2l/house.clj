@@ -300,7 +300,7 @@
               ; (sym/fully-connected "fc1" {:data data :num-hidden 64})
               ; (sym/activation "relu1" {:data data :act-type "relu"})
 
-              (sym/fully-connected "fc2" {:data data :num-hidden 354})
+              (sym/fully-connected "fc2" {:data data :num-hidden 128})
               (sym/activation "relu2" {:data data :act-type "relu"})
 
               ; (sym/fully-connected "fc3" {:data data :num-hidden 64})
@@ -331,7 +331,7 @@
                              :fit-params (m/fit-params {:kvstore kvstore
                                                         :optimizer optimizer
                                                         :eval-metric eval-metric})})]
-        (def mxm _mxm)
+        (do (def mxm _mxm))
         (m/save-checkpoint _mxm {:prefix model-prefix :epoch num-epoch}))
       (println "Finish fit"))))
 
@@ -396,7 +396,7 @@
                     :dtype dtype/FLOAT32
                     :layout layout/NT})
 
-#_(m/predict {:eval-data eval-data})
+#_(m/predict mxm {:eval-data eval-data})
 
 
 
