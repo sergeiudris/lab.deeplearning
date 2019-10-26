@@ -296,9 +296,7 @@
     "calva.syncReplNamespaceToCurrentFile": true,
     "calva.openBrowserWhenFigwheelStarted": false,
     "calva.highlight.commentFormStyle": {"textDecoration": "none; opacity: 1"},
-    "clojureWarrior.commentFormStyle": {"textDecoration": "none; opacity: 1"},
     "explorer.openEditors.visible": 0,
     "calva.highlight.enableBracketColors": true,
-    "clojureWarrior.enableBracketColors": true
-
+    "calva.sendAsyncOutputTo": "REPL Window"
 }
