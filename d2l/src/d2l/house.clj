@@ -20,9 +20,12 @@
             [org.apache.clojure-mxnet.kvstore-server :as kvstore-server]
             [org.apache.clojure-mxnet.eval-metric :as eval-metric]
             [org.apache.clojure-mxnet.optimizer :as optimizer]
+            [org.apache.clojure-mxnet.lr-scheduler :as lr-scheduler]
+            [org.apache.clojure-mxnet.initializer :as initializer]
             [org.apache.clojure-mxnet.resource-scope :as resource-scope]
             [org.apache.clojure-mxnet.ndarray :as nd]
             [org.apache.clojure-mxnet.dtype :as dtype]
+            [org.apache.clojure-mxnet.callback :as callback]
             [org.apache.clojure-mxnet.layout :as layout]
             [org.apache.clojure-mxnet.random :as random]
             [org.apache.clojure-mxnet.shape :as shape])
@@ -98,14 +101,50 @@
 #_(def nulls ["NA"])
 #_(contained? "NA" nulls)
 
+(defn square [n] (* n n))
+
+(defn mean [a] (/ (reduce + a) (count a)))
+
+
+(defn standarddev [a]
+  (Math/sqrt (/
+              (reduce + (map square (map - a (repeat (mean a)))))
+              (- (count a) 1))))
 
 (defn standardize
   [v]
-  (scalar-divide (vec-standard-deviation-2 v) (scalar-subtract  (vec-mean v) v)))
+  (->> (scalar-subtract  (vec-mean v) v)
+       (scalar-divide (vec-standard-deviation-2 v))))
+
+(defn standardize-2
+  [v]
+  (->> (scalar-subtract  (mean v) v)
+       (scalar-divide (standarddev v))))
+
+#_(def a-row (with-open [reader (io/reader (str data-dir "train.csv"))]
+               (let [data (read-csv reader)
+                     rows (rest data)]
+                 (->> (nth rows 0)
+                      (rest)
+                      (butlast)
+                      (map str>>float)
+                      (filter number?)
+                      (vec)))))
 
 #_(standardize [10 20 30 40])
 #_(vec-mean [1 2 3])
 #_(standardize [1 2 3 2])
+
+#_(standardize a-row)
+#_(standardize-2 a-row)
+
+#_(vec-standard-deviation-2 a-row)
+#_(standarddev a-row)
+#_(vec-mean a-row)
+#_(mean a-row)
+#_(scalar-subtract  (vec-mean a-row) a-row)
+ 
+
 
 
 (defn read-features
@@ -232,12 +271,12 @@
 
     ; (def train-features (->> train-features-raw (take 1000) (flatten) (vec)))
     ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
-    (def eval-features (->> train-features-raw (drop 1000) (flatten) (vec)))
-    (def eval-labels (->> train-labels-raw (drop 1000)  (vec)))
+    (def eval-features (->> train-features-raw (drop 1200) (flatten) (vec)))
+    (def eval-labels (->> train-labels-raw (drop 1200)  (vec)))
     (def test-features (->> test-features-raw (take 10) (flatten) (vec)))
     
-    (def train-features (->> train-features-raw  (flatten) (vec)))
-    (def train-labels (->> train-labels-raw   (vec)))
+    (def train-features (->> train-features-raw (take 1200) (flatten) (vec)))
+    (def train-labels (->> train-labels-raw (take 1200)  (vec)))
 
   ;
     ))
@@ -262,6 +301,7 @@
 #_(count eval-labels) ; 460
 #_(count test-features)
 #_(/ (count train-features) 354)
+#_(/ (count eval-features) 354)
 #_(count (->> train-labels (filter number?)))
 #_(take 354 train-features)
 
@@ -271,6 +311,9 @@
 #_(count (flatten (nth train-features-raw 703))) ; 354
 #_(count (flatten (nth test-features-raw 703))) ; 354
 
+#_(count (->> train-features-raw  (flatten) (filter number?) (vec)))
+#_(count (->> train-labels-raw  (filter number?) (vec) ))
+
 #_(read-nth-line (str data-dir "train.csv") 9)
 #_(nth train-features-raw 7) ; second value should be 0 (NA is normalized to 0)
 
@@ -279,7 +322,7 @@
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
-(def num-epoch 5) ;; the number of training epochs
+(def num-epoch 20) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
 (def role "worker") ;; scheduler/server/worker
@@ -288,55 +331,84 @@
 (def num-workers 1) ;; # of workers
 (def num-servers 1) ;; # of servers
 
+(defn get-symbol
+  []
+  (as-> (sym/variable "data") data
+    (sym/fully-connected "fc1" {:data data :num-hidden 512})
+    (sym/activation "act1" {:data data :act-type "relu"})
+    (sym/dropout "drop1" {:data data :p 0.5})
+    (sym/fully-connected "fc2" {:data data :num-hidden 128})
+    (sym/activation "act2" {:data data :act-type "relu"})
+    (sym/dropout "drop2" {:data data :p 0.5})
+    (sym/fully-connected "fc3" {:data data :num-hidden 16})
+    (sym/activation "act3" {:data data :act-type "relu"})
+    (sym/fully-connected "fc4" {:data data :num-hidden 1})
+    (sym/linear-regression-output "linear_regression" {:data data})))
+
 (defn train
-  [{:keys [contexts batch-size  train-features train-features-shape
-           eval-features eval-features-shape
-           train-labels train-labels-shape
-           eval-labels eval-labels-shape
-           ]}]
-  (letfn [(get-symbol
-            []
-            (as-> (sym/variable "data") data
-              
-              ; (sym/fully-connected "fc1" {:data data :num-hidden 64})
-              ; (sym/activation "relu1" {:data data :act-type "relu"})
+  [{:keys [model-mod
+           batch-size]}]
+  (let [train-iter (mx-io/ndarray-iter [(nd/array (resolve-var 'train-features) [1200 354])]
+                                       {:label [(nd/array (resolve-var 'train-labels) [1200 1])]
+                                        :label-name "linear_regression_label"
+                                        :data-batch-size batch-size})
 
-              (sym/fully-connected "fc2" {:data data :num-hidden 128})
-              (sym/activation "relu2" {:data data :act-type "relu"})
-
-              ; (sym/fully-connected "fc3" {:data data :num-hidden 64})
-              ; (sym/activation "relu3" {:data data :act-type "relu"})
-
-              (sym/fully-connected "fc4" {:data data :num-hidden 1})
-              (sym/softmax-output "softmax" {:data data})))
-
-          (train-data
-            []
-            (mx-io/ndarray-iter [(nd/array train-features train-features-shape)]
-                                {:label [(nd/array train-labels train-labels-shape)]
-                                 :label-name "softmax_label"
-                                 :data-batch-size batch-size
-                                 :last-batch-handle "pad"}))
-
-          (eval-data
-            []
-            (mx-io/ndarray-iter [(nd/array eval-features eval-features-shape)]
-                                {:label [(nd/array eval-labels eval-labels-shape)]
-                                 :label-name "softmax_label"
-                                 :data-batch-size batch-size
-                                 :last-batch-handle "pad"}))]
-    (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
-      (as-> _mod v
-        (m/fit v {:train-data (train-data)
+        test-iter (mx-io/ndarray-iter [(nd/array (resolve-var 'eval-features) [260 354])]
+                                      {:label [(nd/array (resolve-var 'eval-labels) [260 1])]
+                                       :label-name "linear_regression_label"
+                                       :data-batch-size batch-size})]
+    (->
+     model-mod
+     (m/bind {:data-shapes (mx-io/provide-data train-iter)
+              :label-shapes (mx-io/provide-label test-iter)})
+     (m/fit  {:train-data train-iter
+              :eval-data test-iter
+              :num-epoch num-epoch
+              :fit-params
+              (m/fit-params
+               {; :kvstore kvstore
+                :initializer (initializer/xavier)
+                ; :batch-end-callback (callback/speedometer batch-size 100)
+                :optimizer (optimizer/sgd
+                            {:learning-rate 0.01
+                             :momentum 0.001
+                             :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
+                :eval-metric (eval-metric/mse)})}))
+    #_(resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
+        (as-> _mod v
+          (m/fit v {:train-data (train-data)
                   ; :eval-data (eval-data)
-                  :num-epoch num-epoch
-                  :fit-params (m/fit-params {:kvstore kvstore
-                                             :optimizer optimizer
-                                             :eval-metric eval-metric})})
-        (m/save-checkpoint v {:prefix model-prefix :epoch num-epoch})
-        (do (def module0 _mod)
-            (def module v)))
-      (println "Finish fit"))))
+                    :num-epoch num-epoch
+                    :fit-params (m/fit-params {:kvstore kvstore
+                                               :initializer (initializer/xavier)
+                                               ; :batch-end-callback (callback/speedometer batch-size 100)
+                                               :optimizer (optimizer/sgd
+                                                           {:learning-rate 0.01
+                                                            :momentum 0.001
+                                                            :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
+                                               :eval-metric (eval-metric/mse)})})
+          (m/save-checkpoint v {:prefix model-prefix :epoch num-epoch})
+          (do (def module0 _mod)
+              (def module v)))
+        (println "Finish fit"))))
+
+(comment
+
+  (def data-names ["data"])
+  (def label-names ["linear_regression_label"])
+
+  (def model-mod
+    (m/module (get-symbol)
+              {:data-names data-names
+               :label-names label-names
+               :contexts [(context/cpu)]}))
+
+
+  (train {:model-mod model-mod
+          :batch-size 20})
+
+  ;
+  )
 
 (def envs (cond-> {"DMLC_ROLE" role}
             scheduler-host (merge {"DMLC_PS_ROOT_URI" scheduler-host
@@ -361,9 +433,9 @@
          (init-data!))
        (train {:contexts devices
                :train-features  (resolve-var 'train-features)
-               :train-features-shape [1460 354 ]
+               :train-features-shape [1200 354]
                :train-labels (resolve-var 'train-labels)
-               :train-labels-shape [1460 1]
+               :train-labels-shape [260 1]
               ;  :eval-features  (resolve-var 'eval-features)
               ;  :eval-features-shape [460 304]
               ;  :eval-labels (resolve-var 'eval-labels)
@@ -371,8 +443,11 @@
                :batch-size batch-size})))))
 
 
+
 #_(time (start [(context/cpu)]))
 #_(m/get-params module0)
+
+
 
 
 
