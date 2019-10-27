@@ -41,6 +41,18 @@
         "editorWarning.foreground": "#000"
     },
     "editor.tokenColorCustomizations": {
+        "[Default Light+]": {
+            "textMateRules": [
+                {
+                    "scope": [
+                        "constant.keyword.clojure"
+                    ],
+                    "settings": {
+                        "foreground": "#1d526e"
+                    }
+                }
+            ]
+        },
         "[-One Dark Pro Vivid]": {
             "functions": "#ef596f",
             // "variables": "#ef596f"
