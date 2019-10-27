@@ -234,7 +234,7 @@
     ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
     (def eval-features (->> train-features-raw (drop 1000) (flatten) (vec)))
     (def eval-labels (->> train-labels-raw (drop 1000)  (vec)))
-    (def test-features (->> test-features-raw (take 1) (flatten) (vec)))
+    (def test-features (->> test-features-raw (take 10) (flatten) (vec)))
     
     (def train-features (->> train-features-raw  (flatten) (vec)))
     (def train-labels (->> train-labels-raw   (vec)))
@@ -326,14 +326,16 @@
                                  :data-batch-size batch-size
                                  :last-batch-handle "pad"}))]
     (resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
-      (let [_mxm (m/fit _mod {:train-data (train-data)
+      (as-> _mod v
+        (m/fit v {:train-data (train-data)
                   ; :eval-data (eval-data)
-                             :num-epoch num-epoch
-                             :fit-params (m/fit-params {:kvstore kvstore
-                                                        :optimizer optimizer
-                                                        :eval-metric eval-metric})})]
-        (do (def mxm _mxm))
-        (m/save-checkpoint _mxm {:prefix model-prefix :epoch num-epoch}))
+                  :num-epoch num-epoch
+                  :fit-params (m/fit-params {:kvstore kvstore
+                                             :optimizer optimizer
+                                             :eval-metric eval-metric})})
+        (m/save-checkpoint v {:prefix model-prefix :epoch num-epoch})
+        (do (def module0 _mod)
+            (def module v)))
       (println "Finish fit"))))
 
 (def envs (cond-> {"DMLC_ROLE" role}
@@ -370,15 +372,15 @@
 
 
 #_(time (start [(context/cpu)]))
-#_(m/get-params mxm)
+#_(m/get-params module0)
 
 
 
-#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [1 354])]
+#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [10 354])]
                                      {:label
-                                      [(nd/array (->> train-labels (take 1) (vec)) [1 1])]
+                                      [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
                                       :label-name "softmax_label"
-                                      :data-batch-size 1
+                                      :data-batch-size 10
                                       :last-batch-handle "pad"}))
 
 #_(def mxmod
