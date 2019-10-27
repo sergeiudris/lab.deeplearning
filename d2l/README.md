@@ -116,3 +116,13 @@ Oct 14, 2019
       too precariously on the exact activation pathway through the network. The original authors of the dropout
       technique described their intuition as an effort to prevent the `co-adaptation` of feature detectors.
 
+- 328
+  - > The key distinction between regular RNNs and GRUs is that the latter support gating of the hidden state.
+      This means that we have dedicated mechanisms for when the hidden state should be updated and also when
+      it should be reset.
+
+- 565 
+  - > As its name implies, a word vector is a vector used to represent a
+      word. It can also be thought of as the feature vector of a word. The technique of mapping words to vectors
+      of real numbers is also known as word embedding.
+
