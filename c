@@ -100,4 +100,8 @@ link_spaces_d2l(){
 
 }
 
+permissions(){
+    sudo chmod -R 777 d2l/tmp/ 
+}
+
 "$@"

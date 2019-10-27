@@ -36,6 +36,7 @@
   (when-not  (.exists (io/file (str data-dir "train.csv")))
     (do
       (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))
+      (:exit (sh "bash" "-c" "sudo chmod -R 777 tmp/" :dir "/opt/app"))
       (sh "bash" "-c" "mkdir -p tmp/data/house" :dir "/opt/app")
       (sh "bash" "-c" "mkdir -p tmp/model/house" :dir "/opt/app")
       )))
