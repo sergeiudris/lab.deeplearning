@@ -271,11 +271,11 @@
 
     ; (def train-features (->> train-features-raw (take 1000) (flatten) (vec)))
     ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
-    (def eval-features (->> train-features-raw (drop 1200) (flatten) (vec)))
+    (def eval-features (->> train-features-raw (drop 1200) (flatten) #_(map #(Math/abs %)) (vec)))
     (def eval-labels (->> train-labels-raw (drop 1200)  (vec)))
     (def test-features (->> test-features-raw (take 10) (flatten) (vec)))
     
-    (def train-features (->> train-features-raw (take 1200) (flatten) (vec)))
+    (def train-features (->> train-features-raw (take 1200) (flatten) #_(map #(Math/abs %)) (vec)))
     (def train-labels (->> train-labels-raw (take 1200)  (vec)))
 
   ;
