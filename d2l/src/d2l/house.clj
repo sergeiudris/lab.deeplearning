@@ -313,10 +313,13 @@
                {; :kvstore kvstore
                 :initializer (initializer/xavier)
                 ; :batch-end-callback (callback/speedometer batch-size 100)
+                
+                ; use optimizer/adam instead
                 :optimizer (optimizer/sgd
                             {:learning-rate 0.01
                              :momentum 0.001
                              :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
+                
                 ; need log-rmse metric instead
                 :eval-metric (eval-metric/mse)})}))))
 
