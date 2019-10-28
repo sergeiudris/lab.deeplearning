@@ -96,12 +96,12 @@
 #_(def a-row (with-open [reader (io/reader (str data-dir "train.csv"))]
                (let [data (read-csv reader)
                      rows (rest data)]
-                 (->> (nth rows 0)
+                 (->> (nth rows 16)
                       (rest)
                       (butlast)
                       (map str>>float)
                       (filter number?)
-                      (vec)))))
+                      (vec))))) ; 11241
 
 #_(standardize [1 0 0 0])
 #_(vec-mean [1 0 0 0])
@@ -109,8 +109,14 @@
 
 #_(vec-mean [1 2 3])
 #_(standardize [1 2 3 2])
+#_(standardize [1000000 2 0 1])
+
 
 #_(standardize a-row)
+#_(std a-row) ; 1920.3065877667573 1920.3065877668 
+#_(vec-mean a-row) ;702.4571428571429 702.45714285714
+#_(scalar-subtract  (vec-mean a-row) a-row)
+
 #_(standardize-2 a-row)
 
 #_(vec-standard-deviation-2 a-row)
@@ -155,7 +161,7 @@
           (row>>float-null-features [row ]
                                     (->> row
                                          (filter string?)
-                                         (map (fn [_] 0))
+                                         (map (fn [_] 0.0))
                                          ))
           (row>>string-features [row]
             (filter coll? row))
