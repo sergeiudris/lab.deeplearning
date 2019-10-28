@@ -284,7 +284,7 @@
     (sym/linear-regression-output "linear_regression" {:data data})))
 
 (defn train
-  [{:keys [model-mod]}]
+  [{:keys [mdl]}]
   (let [train-xy (train-XY)
         test-xy (test-XY)
         train-iter (mx-io/ndarray-iter [(:X train-xy)]
@@ -296,7 +296,7 @@
                                        :label-name "linear_regression_label"
                                        :data-batch-size batch-size})]
     (->
-     model-mod
+     mdl
      (m/bind {:data-shapes (mx-io/provide-data train-iter)
               :label-shapes (mx-io/provide-label test-iter)})
      (m/fit  {:train-data train-iter
@@ -318,14 +318,14 @@
   (def data-names ["data"])
   (def label-names ["linear_regression_label"])
 
-  (def model-mod
+  (def model
     (m/module (get-symbol)
               {:data-names data-names
                :label-names label-names
                :contexts [(context/cpu)]}))
 
 
-  (train {:model-mod model-mod})
+  (train {:mdl model})
 
   ;
   )
