@@ -221,16 +221,18 @@
 
 (defn train-XY
   []
-  (->
-   (str data-dir "train.csv.txt")
+  (->>
+   (str data-dir "train.txt")
    (edn-file>>data!)
+   (take 1460)
    (data>>XY)))
 
 (defn test-XY
   []
-  (->
-   (str data-dir "test.csv.txt")
+  (->>
+   (str data-dir "test.txt")
    (edn-file>>data!)
+   (take 1460)
    (data>>XY)))
 
 #_(def train-xy (train-XY))
@@ -251,27 +253,6 @@
                                          (-> row (rest)))
                         :row>>score (fn [row]
                                       [100000])})
-
-#_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
-                        :filename-out (str data-dir "train.csv.txt")
-                        :nulls ["NA"]
-                        :data>>rows (fn [data]
-                                      (->> data (rest) (take 1200)))
-                        :row>>row-vals (fn [row]
-                                         (-> row (rest) (butlast)))
-                        :row>>score (fn [row]
-                                      [(str>>float (last row))])})
-
-#_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
-                        :filename-out (str data-dir "test.csv.txt")
-                        :nulls ["NA"]
-                        :data>>rows (fn [data]
-                                      (->> data (rest) (drop 1200)))
-                        :row>>row-vals (fn [row]
-                                         (-> row (rest) (butlast)))
-                        :row>>score (fn [row]
-                                      [(str>>float (last row))])})
-
 
 
 #_(-> (slurp (str data-dir "test.csv.txt")) (read-string) (count) )
