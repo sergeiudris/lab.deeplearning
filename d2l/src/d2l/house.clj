@@ -216,7 +216,10 @@
         n-features (-> data (first) :features (count))]
     {:X (nd/array (->> data (map :features) (flatten) (vec))
                   [n-samples n-features])
-     :Y (nd/array (->> data (map :score) (flatten) #_(map #(/ % 10000)) (vec))
+     
+     ; <!!!> (standardize) is improvisation, need to be removed
+     ; the right approach: implement log-rmse and use adam optimizer
+     :Y (nd/array (->> data (map :score) (flatten) (standardize) (vec))
                   [n-samples 1])}))
 
 (defn train-XY
@@ -238,6 +241,8 @@
 
 #_(def train-xy (train-XY))
 #_(def test-xy (test-XY))
+#_(def labels (->> test-xy (map :score) (flatten)))
+#_(standardize labels)
 
 #_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
                         :filename-out (str data-dir "train.csv.txt")
