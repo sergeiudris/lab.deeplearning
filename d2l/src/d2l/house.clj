@@ -11,7 +11,7 @@
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide
-                                   mk-one-hot-vec]]
+                                   mk-one-hot-vec std]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -83,24 +83,15 @@
 
 #_(read-column-mdata {:nulls ["NA"]})
 
-(defn square [n] (* n n))
 
-(defn mean [a] (/ (reduce + a) (count a)))
-
-(defn standarddev [a]
-  (Math/sqrt (/
-              (reduce + (map square (map - a (repeat (mean a)))))
-              (- (count a) 1))))
+#_(std [1 2 -1 0 4])
+#_(std [10, 12, 23, 23, 16, 23, 21, 16]) ;4.898979485566356 4.8989794855664
+#_(standarddev [1 2 -1 0 4])
 
 (defn standardize
   [v]
   (->> (scalar-subtract  (vec-mean v) v)
-       (scalar-divide (vec-standard-deviation-2 v))))
-
-(defn standardize-2
-  [v]
-  (->> (scalar-subtract  (mean v) v)
-       (scalar-divide (standarddev v))))
+       (scalar-divide (std v))))
 
 #_(def a-row (with-open [reader (io/reader (str data-dir "train.csv"))]
                (let [data (read-csv reader)
@@ -112,7 +103,10 @@
                       (filter number?)
                       (vec)))))
 
-#_(standardize [10 20 30 40])
+#_(standardize [1 0 0 0])
+#_(vec-mean [1 0 0 0])
+#_(standardize [1 0 0 0 1/4])
+
 #_(vec-mean [1 2 3])
 #_(standardize [1 2 3 2])
 
@@ -157,7 +151,12 @@
           (row>>float-features [row]
             (->> row
                  (filter number?)
-                 (standardize-2)))
+                 (standardize)))
+          (row>>float-null-features [row ]
+                                    (->> row
+                                         (filter string?)
+                                         (map (fn [_] 0))
+                                         ))
           (row>>string-features [row]
             (filter coll? row))
           (attr>>val [idx v row rows colsm row-mean]
@@ -165,7 +164,7 @@
                   dtype (:dtype colm)]
               (cond
                 (val-string? v dtype) (string-field>>val colm v)
-                (val-null-float? v dtype) row-mean
+                (val-null-float? v dtype) v
                 (val-float? v dtype) v
                 :else (throw (Exception. "uknown/missing column :dtype")))))]
     (with-open [reader (io/reader filename)]
@@ -176,16 +175,18 @@
                 (let [row-vals (row>>row-vals row)
                       row-nums (row>>row-nums row-vals colsm)
                       row-mean (row>>mean row-nums)
-                      row-denulled (map-indexed
-                                    (fn [idx v]
-                                      (attr>>val idx v row-vals rows colsm row-mean))
-                                    row-nums)
+                      row-hots (map-indexed
+                                (fn [idx v]
+                                  (attr>>val idx v row-vals rows colsm row-mean))
+                                row-nums)
                       float-features
                       #_(->> (range 0 36) (mapv (fn [_] (rand))))
-                      (row>>float-features row-denulled)
-                      string-features (row>>string-features row-denulled)]
+                      (row>>float-features row-hots)
+                      float-null-features (row>>float-null-features row-hots)
+
+                      string-features (row>>string-features row-hots)]
                   {:id (first row)
-                   :features (-> (concat  float-features string-features) (flatten) (vec))
+                   :features (-> (concat  float-features float-null-features string-features) (flatten) (vec))
                    :score (row>>score row)})) rows)))))
 
 (defn csv-file>>edn-file!
@@ -245,7 +246,6 @@
 #_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (count))
 #_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (first) :features (count))
 #_(-> (slurp (str data-dir "test.csv.txt")) (read-string)  (first) :features (count))
-
 
 #_(read-nth-line (str data-dir "train.csv") 704)
 #_(read-nth-line (str data-dir "test.csv") 1)
