@@ -326,7 +326,7 @@
                              :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
                 
                 ; need log-rmse metric instead
-                :eval-metric (eval-metric/mse)})}))))
+                :eval-metric (eval-metric/rmse)})}))))
 
 
 (def data-names ["data"])
