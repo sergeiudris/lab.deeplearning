@@ -46,15 +46,6 @@
 
 #_(load-data!)
 
-(defn read-column
-  [filename idx]
-  (with-open [reader (io/reader filename)]
-    (let [data (read-csv reader)
-          rows (rest data)]
-      (mapv #(nth % idx) rows))))
-
-#_(distinct (read-column (str data-dir "train.csv")  65))
-
 (defn read-column-mdata
   [{:keys [nulls] :or {nulls []}}]
   (letfn [(val>>column-type [v]
@@ -90,21 +81,11 @@
                    (sorted-map) (vec attrs))))
     ))
 
-#_(with-open [reader (io/reader (str data-dir "train.csv"))]
-    (let [data (read-csv reader)
-          attrs (first data)
-          rows (rest data)]
-      (column-mdata attrs rows)))
-
 #_(read-column-mdata {:nulls ["NA"]})
-
-#_(def nulls ["NA"])
-#_(contained? "NA" nulls)
 
 (defn square [n] (* n n))
 
 (defn mean [a] (/ (reduce + a) (count a)))
-
 
 (defn standarddev [a]
   (Math/sqrt (/
@@ -143,186 +124,135 @@
 #_(vec-mean a-row)
 #_(mean a-row)
 #_(scalar-subtract  (vec-mean a-row) a-row)
- 
 
 
-
-(defn read-features
-  [{:keys [filename nulls data>>rows data>>attrs]}]
+(defn csv>>data
+  [{:keys [filename nulls row>>row-vals row>>score]}]
   (letfn [(val-null-float? [v dtype]
-                           (and  (= dtype :float) (contained? v nulls)))
+            (and  (= dtype :float) (contained? v nulls)))
           (val-string? [v dtype]
-                       (= dtype :string))
+            (= dtype :string))
           (val-float? [v dtype]
-                      (= dtype :float))
+            (= dtype :float))
           (col-idx-float? [idx colsm]
-                          (= (get-in colsm [idx :dtype]) :float))
+            (= (get-in colsm [idx :dtype]) :float))
           (row>>row-nums [row colsm]
-                         (map-indexed (fn [i x]
-                                        (if  (col-idx-float? i colsm)
-                                          (str>>float x)
-                                          x)) row))
+            (map-indexed (fn [i x]
+                           (if  (col-idx-float? i colsm)
+                             (str>>float x)
+                             x)) row))
           (string-field>>val [colm v]
-                             (->> (:distinct colm)
-                                  (keep-indexed (fn [i x]
-                                                  (if (= x v)
-                                                    (mk-one-hot-vec (count (:distinct colm)) i)
-                                                    nil)))
-                                  (first)))
+            (->> (:distinct colm)
+                 (keep-indexed (fn [i x]
+                                 (if (= x v)
+                                   (mk-one-hot-vec (count (:distinct colm)) i)
+                                   nil)))
+                 (first)))
           (float-field>>val [colm v row row-mean])
           (row>>mean [row]
-                     (->> row
-                          (keep-indexed (fn [i v]
-                                          (if (number? v) v nil)))
-                          (vec-mean)))
+            (->> row
+                 (keep-indexed (fn [i v]
+                                 (if (number? v) v nil)))
+                 (vec-mean)))
           (row>>float-features [row]
-                               (->> row
-                                    (filter number?)
-                                    (standardize)))
+            (->> row
+                 (filter number?)
+                 (standardize)))
           (row>>string-features [row]
-                                (filter coll? row))
+            (filter coll? row))
           (attr>>val [idx v row rows colsm row-mean]
-                     (let [colm (get colsm idx)
-                           dtype (:dtype colm)]
-                       (cond
-                         (val-string? v dtype) (string-field>>val colm v)
-                         (val-null-float? v dtype) row-mean
-                         (val-float? v dtype) v
-                         :else (throw (Exception. "uknown/missing column :dtype")))))]
+            (let [colm (get colsm idx)
+                  dtype (:dtype colm)]
+              (cond
+                (val-string? v dtype) (string-field>>val colm v)
+                (val-null-float? v dtype) row-mean
+                (val-float? v dtype) v
+                :else (throw (Exception. "uknown/missing column :dtype")))))]
     (with-open [reader (io/reader filename)]
       (let [data (read-csv reader)
-            rows (data>>rows data)
-            attrs (data>>attrs data)
+            rows (rest data)
             colsm (read-column-mdata {:nulls nulls})]
         (mapv (fn [row]
-                (let [row-nums (row>>row-nums row colsm)
+                (let [row-vals (row>>row-vals row)
+                      row-nums (row>>row-nums row-vals colsm)
                       row-mean (row>>mean row-nums)
                       row-denulled (map-indexed
                                     (fn [idx v]
-                                      (attr>>val idx v row rows colsm row-mean))
+                                      (attr>>val idx v row-vals rows colsm row-mean))
                                     row-nums)
                       float-features (row>>float-features row-denulled)
                       string-features (row>>string-features row-denulled)]
-                  (vec (concat  float-features string-features)))) rows)))))
+                  {:id (first row)
+                   :features (-> (concat  float-features string-features) (flatten) (vec))
+                   :score (row>>score row)})) rows)))))
+
+(defn csv-file>>edn-file!
+  [opts]
+  (->>
+   (csv>>data opts)
+   (str)
+   (spit (str (:filename opts) ".txt"))))
+
+(defn edn-file>>data!
+  [filename]
+  (-> filename
+      (slurp)
+      (read-string)))
+
+(defn data>>XY
+  [data]
+  (let [n-samples (count data)
+        n-features (-> data (first) :features (count))]
+    {:X (nd/array (->> data (map :features) (flatten) (vec))
+                  [n-samples n-features])
+     :Y (nd/array (->> data (map :score) (flatten) (vec))
+                  [n-samples 1])}))
+
+(defn train-XY
+  []
+  (->
+   (str data-dir "train.txt")
+   (edn-file>>data!)
+   (data>>XY)))
+
+(defn test-XY
+  []
+  (->
+   (str data-dir "test.txt")
+   (edn-file>>data!)
+   (data>>XY)))
+
+#_(def train-xy (train-XY))
+#_(def test-xy (test-XY))
+
+#_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
+                        :nulls ["NA"]
+                        :row>>row-vals (fn [row]
+                                         (-> row (rest) (butlast)))
+                        :row>>score (fn [row]
+                                      [(str>>float (last row))])})
+
+#_(csv-file>>edn-file! {:filename (str data-dir "test.csv")
+                        :nulls ["NA"]
+                        :row>>row-vals (fn [row]
+                                         (-> row (rest)))
+                        :row>>score (fn [row]
+                                      [100000])})
+
+#_(-> (slurp (str data-dir "test.csv.txt")) (read-string) (count) )
+#_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (count))
+#_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (first) :features (count))
+#_(-> (slurp (str data-dir "test.csv.txt")) (read-string)  (first) :features (count))
+
 
 #_(read-nth-line (str data-dir "train.csv") 704)
 #_(read-nth-line (str data-dir "test.csv") 1)
 
-(defn init-data!
-  []
-  (do
-    (def fields
-      (->
-       (read-nth-line (str data-dir "train.csv") 1)
-       (str/split  #",")))
 
-    (def attrs (-> fields (rest) (vec)))
-
-    (def train-samples
-      (->>
-       (with-open [reader (io/reader (str data-dir "train.csv"))]
-         (->> (read-csv reader)
-              (rest)
-              (mapv #(-> % (rest) (butlast) (vec)))))))
-
-    (def test-samples
-      (->>
-       (with-open [reader (io/reader (str data-dir "test.csv"))]
-         (->> (read-csv reader)
-              (rest)
-              (mapv #(-> % (rest)  (vec)))))))
-
-
-    (def samples (vec (concat train-samples test-samples)))
-
-    (def train-labels-raw (with-open [reader (io/reader (str data-dir "train.csv"))]
-                            (->> (read-csv reader)
-                                 (rest)
-                                 (mapv #(-> % (nth 80) (str>>float))))))
-
-    (def train-features-raw (read-features {:filename (str data-dir "train.csv")
-                                            :nulls ["NA"]
-                                            :data>>rows (fn [data]
-                                                          (->> data
-                                                               (rest)
-                                                               (map #(rest (butlast %)))))
-                                            :data>>attrs (fn [data]
-                                                           (->
-                                                            (first data)
-                                                            (rest)
-                                                            (butlast)))}))
-
-    (def test-features-raw (read-features {:filename (str data-dir "test.csv")
-                                           :nulls ["NA"]
-                                           :data>>rows (fn [data]
-                                                         (->> data
-                                                              (rest)
-                                                              (map #(rest %))))
-                                           :data>>attrs (fn [data]
-                                                          (with-open [reader (io/reader (str data-dir "train.csv"))]
-                                                            (->
-                                                             (read-csv reader)
-                                                             (first)
-                                                             (rest)
-                                                             (butlast)))
-                                                          #_(->
-                                                             (first data)
-                                                             (rest)))}))
-
-    ; (def train-features (->> train-features-raw (take 1000) (flatten) (vec)))
-    ; (def train-labels (->> train-labels-raw (take 1000)  (vec)))
-    (def eval-features (->> train-features-raw (drop 1200) (flatten) #_(map #(Math/abs %)) (vec)))
-    (def eval-labels (->> train-labels-raw (drop 1200)  (vec)))
-    (def test-features (->> test-features-raw (take 10) (flatten) (vec)))
-    
-    (def train-features (->> train-features-raw (take 1200) (flatten) #_(map #(Math/abs %)) (vec)))
-    (def train-labels (->> train-labels-raw (take 1200)  (vec)))
-
-  ;
-    ))
-
-#_(init-data!)
-
-#_(count fields) ; 81
-#_(count attrs) ; 80
-#_(count train-samples) ; 1460
-#_(count test-samples) ; 1459
-#_(count train-labels-raw) ; 1460
-#_(take 5 train-labels)
-
-#_(count (first train-samples))
-#_(count (first test-samples))
-#_(count train-features-raw)
-#_(count test-features-raw)
-#_(count (var-get (resolve 'train-features))) ; 304000
-#_(count (resolve-var 'train-features))
-#_(count eval-features) ; 139840
-#_(count train-labels) ; 1000
-#_(count eval-labels) ; 460
-#_(count test-features)
-#_(/ (count train-features) 354)
-#_(/ (count eval-features) 354)
-#_(count (->> train-labels (filter number?)))
-#_(take 354 train-features)
-
-#_(nth train-features-raw 703)
-#_(count (nth train-features-raw 703))
-#_(count (nth test-features-raw 703))
-#_(count (flatten (nth train-features-raw 703))) ; 354
-#_(count (flatten (nth test-features-raw 703))) ; 354
-
-#_(count (->> train-features-raw  (flatten) (filter number?) (vec)))
-#_(count (->> train-labels-raw  (filter number?) (vec) ))
-
-#_(read-nth-line (str data-dir "train.csv") 9)
-#_(nth train-features-raw 7) ; second value should be 0 (NA is normalized to 0)
-
-
-
-(def batch-size 10) ;; the batch size
+(def batch-size 2000) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
 (def eval-metric (eval-metric/accuracy))
-(def num-epoch 20) ;; the number of training epochs
+(def num-epoch 100) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
 (def role "worker") ;; scheduler/server/worker
@@ -346,15 +276,15 @@
     (sym/linear-regression-output "linear_regression" {:data data})))
 
 (defn train
-  [{:keys [model-mod
-           batch-size]}]
-  (let [train-iter (mx-io/ndarray-iter [(nd/array (resolve-var 'train-features) [1200 354])]
-                                       {:label [(nd/array (resolve-var 'train-labels) [1200 1])]
+  [{:keys [model-mod]}]
+  (let [train-xy (train-XY)
+        test-xy (test-XY)
+        train-iter (mx-io/ndarray-iter [(:X train-xy)]
+                                       {:label [(:Y train-xy)]
                                         :label-name "linear_regression_label"
                                         :data-batch-size batch-size})
-
-        test-iter (mx-io/ndarray-iter [(nd/array (resolve-var 'eval-features) [260 354])]
-                                      {:label [(nd/array (resolve-var 'eval-labels) [260 1])]
+        test-iter (mx-io/ndarray-iter [(:X test-xy)]
+                                      {:label [(:Y test-xy)]
                                        :label-name "linear_regression_label"
                                        :data-batch-size batch-size})]
     (->
@@ -373,24 +303,7 @@
                             {:learning-rate 0.01
                              :momentum 0.001
                              :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
-                :eval-metric (eval-metric/mse)})}))
-    #_(resource-scope/with-let [_mod (m/module (get-symbol) {:contexts contexts})]
-        (as-> _mod v
-          (m/fit v {:train-data (train-data)
-                  ; :eval-data (eval-data)
-                    :num-epoch num-epoch
-                    :fit-params (m/fit-params {:kvstore kvstore
-                                               :initializer (initializer/xavier)
-                                               ; :batch-end-callback (callback/speedometer batch-size 100)
-                                               :optimizer (optimizer/sgd
-                                                           {:learning-rate 0.01
-                                                            :momentum 0.001
-                                                            :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
-                                               :eval-metric (eval-metric/mse)})})
-          (m/save-checkpoint v {:prefix model-prefix :epoch num-epoch})
-          (do (def module0 _mod)
-              (def module v)))
-        (println "Finish fit"))))
+                :eval-metric (eval-metric/mse)})}))))
 
 (comment
 
@@ -404,80 +317,10 @@
                :contexts [(context/cpu)]}))
 
 
-  (train {:model-mod model-mod
-          :batch-size 20})
+  (train {:model-mod model-mod})
 
   ;
   )
 
-(def envs (cond-> {"DMLC_ROLE" role}
-            scheduler-host (merge {"DMLC_PS_ROOT_URI" scheduler-host
-                                   "DMLC_PS_ROOT_PORT" (str scheduler-port)
-                                   "DMLC_NUM_WORKER" (str num-workers)
-                                   "DMLC_NUM_SERVER" (str num-servers)})))
-(defn start
-  ([devices] (start devices num-epoch))
-  ([devices _num-epoch]
-   (when scheduler-host
-     (println "Initing PS enviornments with " envs)
-     (kvstore-server/init envs))
-
-   (if (not= "worker" role)
-     (do
-       (println "Start KVStoreServer for scheduler and servers")
-       (kvstore-server/start))
-     (do
-       (println "Starting Training of MNIST ....")
-       (println "Running with context devices of" devices)
-       (when-not (bound? #'train-features)
-         (init-data!))
-       (train {:contexts devices
-               :train-features  (resolve-var 'train-features)
-               :train-features-shape [1200 354]
-               :train-labels (resolve-var 'train-labels)
-               :train-labels-shape [260 1]
-              ;  :eval-features  (resolve-var 'eval-features)
-              ;  :eval-features-shape [460 304]
-              ;  :eval-labels (resolve-var 'eval-labels)
-              ;  :eval-labels-shape [460 1]
-               :batch-size batch-size})))))
-
-
-
-#_(time (start [(context/cpu)]))
-#_(m/get-params module0)
-
-
-
-
-
-#_(def eval-data (mx-io/ndarray-iter [(nd/array test-features [10 354])]
-                                     {:label
-                                      [(nd/array (->> train-labels (take 10) (vec)) [10 1])]
-                                      :label-name "softmax_label"
-                                      :data-batch-size 10
-                                      :last-batch-handle "pad"}))
-
-#_(def mxmod
-    (-> (m/load-checkpoint {:prefix model-prefix
-                            :epoch 5
-                            :load-optimizer-states false})
-        (m/bind {:data-shapes (mx-io/provide-data eval-data)
-                 :label-shapes (mx-io/provide-label eval-data)})
-        (m/init-params)))
-
-#_(m/get-params mxmod)
-
-
-#_(mx-io/data-desc {:name "data0"
-                    :shape [1 354]
-                    :dtype dtype/FLOAT32
-                    :layout layout/NT})
-
-#_(m/predict mxm {:eval-data eval-data})
-
-
-
-#_(nd/->vec results)
 
 
