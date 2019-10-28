@@ -157,7 +157,7 @@
           (row>>float-features [row]
             (->> row
                  (filter number?)
-                 (standardize)))
+                 (standardize-2)))
           (row>>string-features [row]
             (filter coll? row))
           (attr>>val [idx v row rows colsm row-mean]
@@ -180,7 +180,9 @@
                                     (fn [idx v]
                                       (attr>>val idx v row-vals rows colsm row-mean))
                                     row-nums)
-                      float-features (row>>float-features row-denulled)
+                      float-features
+                      #_(->> (range 0 36) (mapv (fn [_] (rand))))
+                      (row>>float-features row-denulled)
                       string-features (row>>string-features row-denulled)]
                   {:id (first row)
                    :features (-> (concat  float-features string-features) (flatten) (vec))
@@ -211,14 +213,14 @@
 (defn train-XY
   []
   (->
-   (str data-dir "train.txt")
+   (str data-dir "train.csv.txt")
    (edn-file>>data!)
    (data>>XY)))
 
 (defn test-XY
   []
   (->
-   (str data-dir "test.txt")
+   (str data-dir "test.csv.txt")
    (edn-file>>data!)
    (data>>XY)))
 
