@@ -216,23 +216,24 @@
         n-features (-> data (first) :features (count))]
     {:X (nd/array (->> data (map :features) (flatten) (vec))
                   [n-samples n-features])
-     :Y (nd/array (->> data (map :score) (flatten) (vec))
+     :Y (nd/array (->> data (map :score) (flatten) #_(map #(/ % 10000)) (vec))
                   [n-samples 1])}))
 
 (defn train-XY
   []
   (->>
-   (str data-dir "train.txt")
+   (str data-dir "train.csv.txt")
    (edn-file>>data!)
-   (take 1460)
+   (take 1200)
    (data>>XY)))
 
 (defn test-XY
   []
   (->>
-   (str data-dir "test.txt")
+   (str data-dir "train.csv.txt")
    (edn-file>>data!)
-   (take 1460)
+   (drop 1200)
+   (take 260)
    (data>>XY)))
 
 #_(def train-xy (train-XY))
@@ -264,7 +265,7 @@
 #_(read-nth-line (str data-dir "test.csv") 1)
 
 
-(def batch-size 1000) ;; the batch size
+(def batch-size 200) ;; the batch size
 (def num-epoch 100) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
@@ -316,6 +317,7 @@
                             {:learning-rate 0.01
                              :momentum 0.001
                              :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
+                ; need log-rmse metric instead
                 :eval-metric (eval-metric/mse)})}))))
 
 
