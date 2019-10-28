@@ -127,7 +127,9 @@
 
 
 (defn csv>>data
-  [{:keys [filename nulls row>>row-vals row>>score]}]
+  [{:keys [filename nulls row>>row-vals row>>score data>>rows]
+    :or {data>>rows (fn [data] (rest data) )}
+    }]
   (letfn [(val-null-float? [v dtype]
             (and  (= dtype :float) (contained? v nulls)))
           (val-string? [v dtype]
@@ -175,7 +177,7 @@
                 :else (throw (Exception. "uknown/missing column :dtype")))))]
     (with-open [reader (io/reader filename)]
       (let [data (read-csv reader)
-            rows (rest data)
+            rows (data>>rows data)
             colsm (read-column-mdata {:nulls nulls})]
         (mapv (fn [row]
                 (let [row-vals (row>>row-vals row)
@@ -200,7 +202,7 @@
   (->>
    (csv>>data opts)
    (str)
-   (spit (str (:filename opts) ".txt"))))
+   (spit (:filename-out opts))))
 
 (defn edn-file>>data!
   [filename]
@@ -235,6 +237,7 @@
 #_(def test-xy (test-XY))
 
 #_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
+                        :filename-out (str data-dir "train.csv.txt")
                         :nulls ["NA"]
                         :row>>row-vals (fn [row]
                                          (-> row (rest) (butlast)))
@@ -242,11 +245,34 @@
                                       [(str>>float (last row))])})
 
 #_(csv-file>>edn-file! {:filename (str data-dir "test.csv")
+                        :filename-out (str data-dir "test.csv.txt")
                         :nulls ["NA"]
                         :row>>row-vals (fn [row]
                                          (-> row (rest)))
                         :row>>score (fn [row]
                                       [100000])})
+
+#_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
+                        :filename-out (str data-dir "train.csv.txt")
+                        :nulls ["NA"]
+                        :data>>rows (fn [data]
+                                      (->> data (rest) (take 1200)))
+                        :row>>row-vals (fn [row]
+                                         (-> row (rest) (butlast)))
+                        :row>>score (fn [row]
+                                      [(str>>float (last row))])})
+
+#_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
+                        :filename-out (str data-dir "test.csv.txt")
+                        :nulls ["NA"]
+                        :data>>rows (fn [data]
+                                      (->> data (rest) (drop 1200)))
+                        :row>>row-vals (fn [row]
+                                         (-> row (rest) (butlast)))
+                        :row>>score (fn [row]
+                                      [(str>>float (last row))])})
+
+
 
 #_(-> (slurp (str data-dir "test.csv.txt")) (read-string) (count) )
 #_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (count))
@@ -258,8 +284,6 @@
 
 
 (def batch-size 2000) ;; the batch size
-(def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
-(def eval-metric (eval-metric/accuracy))
 (def num-epoch 100) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
@@ -313,10 +337,12 @@
                              :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
                 :eval-metric (eval-metric/mse)})}))))
 
+
+(def data-names ["data"])
+(def label-names ["linear_regression_label"])
+
 (comment
 
-  (def data-names ["data"])
-  (def label-names ["linear_regression_label"])
 
   (def model
     (m/module (get-symbol)
