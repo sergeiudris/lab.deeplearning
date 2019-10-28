@@ -283,7 +283,7 @@
 #_(read-nth-line (str data-dir "test.csv") 1)
 
 
-(def batch-size 2000) ;; the batch size
+(def batch-size 1000) ;; the batch size
 (def num-epoch 100) ;; the number of training epochs
 (def kvstore "local") ;; the kvstore type
 ;;; Note to run distributed you might need to complile the engine with an option set
@@ -355,6 +355,5 @@
 
   ;
   )
-
 
 
