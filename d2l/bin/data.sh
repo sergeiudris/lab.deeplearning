@@ -70,12 +70,32 @@ viz(){
   mkdir -p $DIR
 
   cd $DIR
-  # wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
-  # wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
 
   wget http://data.mxnet.io/models/imagenet/resnet/18-layers/resnet-18-symbol.json
   wget http://data.mxnet.io/models/imagenet/resnet/18-layers/resnet-18-0000.params
 
+}
+
+inception(){
+
+  set -evx
+
+  DIR=./tmp/data/inception
+
+  mkdir -p $DIR
+
+  cd $DIR
+  
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
+
+  wget http://data.mxnet.io/models/imagenet/inception-bn/Inception-BN-symbol.json
+  wget http://data.mxnet.io/models/imagenet/inception-bn/Inception-BN-0126.params
+  mv Inception-BN-0126.params Inception-BN-0000.params
+
+  wget http://data.mxnet.io/models/imagenet/synset.txt
 }
 
 "$@"
