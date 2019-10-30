@@ -83,7 +83,7 @@
     (sym/softmax-output "softmax" {:data data})))
 
 (defn train!
-  [model-module]
+  [model-module train-iter valid-iter]
   (-> model-module
       (m/bind {:data-shapes (mx-io/provide-data train-iter)
                :label-shapes (mx-io/provide-label valid-iter)})
@@ -110,7 +110,7 @@
 
   (mx-io/reset train-iter)
   (mx-io/reset valid-iter)
-  (train! model-module)
+  (train! model-module train-iter valid-iter)
 
   (m/score model-module {:eval-data valid-iter
                          :eval-metric (eval-metric/accuracy)})

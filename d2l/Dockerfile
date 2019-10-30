@@ -9,7 +9,8 @@ RUN apt-get update && \
             gpg  \
             rlwrap  \
             software-properties-common  \
-            unzip curl net-tools lsof
+            unzip curl net-tools lsof \
+            graphviz
 
 RUN apt-get update && \
     apt-get install -y openjdk-8-jdk
