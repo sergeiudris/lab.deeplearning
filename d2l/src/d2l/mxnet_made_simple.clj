@@ -111,6 +111,11 @@
   (mx-io/reset train-iter)
   (mx-io/reset valid-iter)
   (train! model-module)
+
+  (m/score model-module {:eval-data valid-iter
+                         :eval-metric (eval-metric/accuracy)})
+  
+  
   ;
   )
 
