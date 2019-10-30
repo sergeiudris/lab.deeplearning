@@ -3,6 +3,7 @@
             [d2l.core]
             [d2l.mnist]
             [d2l.house]
+            [d2l.mxnet-made-simple]
    ;
             ))
 

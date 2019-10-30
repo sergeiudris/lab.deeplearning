@@ -40,11 +40,12 @@
 (defn readv-file!
   [filename]
   (with-open [reader (io/reader filename)]
-    (let [data (read-csv reader)]
+    (let [data (read-csv reader :separator \t )]
       (vec data))))
 
 #_(def dset (readv-file! (str data-dir "ner_dataset.csv")))
 #_(take 100 dset)
 #_(read-nth-line (str data-dir "ner_dataset.csv") 5 )
 #_(read-n-lines (str data-dir "ner_dataset.csv"))
-#_(pprn-n-lines (str data-dir "ner_dataset.csv") 0 10)
+#_(count-lines (str data-dir "ner_dataset.csv"))
+#_(pprn-n-lines (str data-dir "ner_dataset.csv") 1048300 200)
