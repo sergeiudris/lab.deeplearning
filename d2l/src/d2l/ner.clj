@@ -1,12 +1,14 @@
-(ns d2l.nlp
+(ns d2l.ner
   (:require [clojure.reflect :refer [reflect]]
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
             [clojure.string :as str]
             [clojure.data.csv :refer [read-csv]]
+            [clojure.java.io :as io]
             [pad.coll.core :refer [contained?]]
-            [pad.io.core :refer [read-nth-line count-lines]]
+            [pad.io.core :refer [read-nth-line read-n-lines count-lines
+                                 pprn-n-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
@@ -30,3 +32,19 @@
             [org.apache.clojure-mxnet.random :as random]
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
+
+
+(def data-dir "./tmp/data/ner/")
+(def model-prefix "tmp/model/ner/test")
+
+(defn readv-file!
+  [filename]
+  (with-open [reader (io/reader filename)]
+    (let [data (read-csv reader)]
+      (vec data))))
+
+#_(def dset (readv-file! (str data-dir "ner_dataset.csv")))
+#_(take 100 dset)
+#_(read-nth-line (str data-dir "ner_dataset.csv") 5 )
+#_(read-n-lines (str data-dir "ner_dataset.csv"))
+#_(pprn-n-lines (str data-dir "ner_dataset.csv") 0 10)

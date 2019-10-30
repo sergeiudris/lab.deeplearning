@@ -51,4 +51,15 @@ house(){
   unzip house-prices-advanced-regression-techniques.zip
 }
 
+ner(){
+
+  # https://www.kaggle.com/abhinavwalia95/entity-annotated-corpus
+  
+  # cannot download via command line, so use the link
+  https://www.kaggle.com/abhinavwalia95/entity-annotated-corpus/downloads/ner_dataset.csv
+
+  # an example of a mv command
+  sudo mv *.csv /home/user/code/sample.ml/d2l/tmp/data/ner/
+}
+
 "$@"
