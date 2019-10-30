@@ -87,7 +87,7 @@ inception(){
   mkdir -p $DIR
 
   cd $DIR
-  
+
   wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
   wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
 
@@ -96,6 +96,11 @@ inception(){
   mv Inception-BN-0126.params Inception-BN-0000.params
 
   wget http://data.mxnet.io/models/imagenet/synset.txt
+
+  # images
+  wget https://arthurcaillau.com/assets/images/cat-egyptian.jpg
+  wget https://arthurcaillau.com/assets/images/dog-2.jpg
+  wget https://arthurcaillau.com/assets/images/guitarplayer.jpg
 }
 
 "$@"

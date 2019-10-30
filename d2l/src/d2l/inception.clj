@@ -3,6 +3,7 @@
             [clojure.java.shell :refer [sh]]
             [clojure.string :as str]
             [org.apache.clojure-mxnet.module :as m]
+            [org.apache.clojure-mxnet.ndarray :as nd]
             [org.apache.clojure-mxnet.symbol :as sym]
             [org.apache.clojure-mxnet.visualization :as viz]
 
@@ -40,7 +41,28 @@
       ;; Flatten matrix
       (cvu/mat->flat-rgb-array)
       ;; Reshape to (1, c, h, w)
-      (ndarray/array [1 c h w])))
+      (nd/array [1 c h w])))
+
+(defn- top-k
+  "Return top `k` from prob-maps with :prob key"
+  [k prob-maps]
+  (->> prob-maps
+       (sort-by :prob)
+       (reverse)
+       (take k)))
+
+(defn predict
+  "Predict with `model` the top `k` labels from `labels` of the ndarray `x`"
+  ([model labels x]
+   (predict model labels x 5))
+  ([model labels x k]
+   (let [probs (-> model
+                   (m/forward {:data [x]})
+                   (m/outputs)
+                   (ffirst)
+                   (nd/->vec))
+         prob-maps (mapv (fn [p l] {:prob p :label l}) probs labels)]
+     (top-k k prob-maps))))
 
 (comment
 
@@ -70,6 +92,79 @@
 
   ;; ImageNet 1000 Labels check
   (assert (= 1000 (count image-net-labels)))
+
+  (->> (str data-dir "cat-egyptian.jpg")
+       (cv/imread)
+       (preprocess-img-mat)
+       (predict inception-mod image-net-labels))
+
+  ; ({:label "n02124075 Egyptian cat", :prob 0.9669786}
+  ;  {:label "n02123045 tabby, tabby cat", :prob 0.020066934}
+  ;  {:label "n02123159 tiger cat", :prob 0.0071042604}
+  ;  {:label "n02127052 lynx, catamount", :prob 0.005353977}
+  ;  {:label "n02123597 Siamese cat, Siamese", :prob 4.658181E-5})
+
+  (->> (str data-dir "cat-egyptian.jpg")
+       (cv/imread)
+       (preprocess-img-mat)
+       (predict vgg-16-mod image-net-labels))
+
+  ; ({:label "n02124075 Egyptian cat", :prob 0.9030159}
+  ;  {:label "n02123045 tabby, tabby cat", :prob 0.05147691}
+  ;  {:label "n02123159 tiger cat", :prob 0.024212532}
+  ;  {:label "n02127052 lynx, catamount", :prob 0.009907055}
+  ;  {:label "n04040759 radiator", :prob 3.7205184E-4})
+
+
+
+
+  (->> (str data-dir "dog-2.jpg")
+       (cv/imread)
+       (preprocess-img-mat)
+       (predict inception-mod image-net-labels))
+
+  ; ({:label "n02110958 pug, pug-dog", :prob 0.73638505}
+  ;  {:label "n02108422 bull mastiff", :prob 0.23988225}
+  ;  {:label "n02108915 French bulldog", :prob 0.013495391}
+  ;  {:label "n02093428 American Staffordshire terrier, Staffordshire terrier, American pit bull terrier, pit bull terrier"
+  ;   :prob 0.0019004609}
+  ;  {:label "n04409515 tennis ball", :prob 0.0013417462})
+
+  (->> (str data-dir "dog-2.jpg")
+       (cv/imread)
+       (preprocess-img-mat)
+       (predict vgg-16-mod image-net-labels))
+
+    ; ({:label "n02110958 pug, pug-dog", :prob 0.9562809}
+    ;  {:label "n02108422 bull mastiff", :prob 0.022715751}
+    ;  {:label "n02108915 French bulldog", :prob 0.007526083}
+    ;  {:label "n02086079 Pekinese, Pekingese, Peke", :prob 0.001468682}
+    ;  {:label "n02108089 boxer", :prob 0.0012910493})
+
+
+
+
+  (->> (str data-dir "guitarplayer.jpg")
+       (cv/imread)
+       (preprocess-img-mat)
+       (predict inception-mod image-net-labels))
+
+  ; ({:label "n03272010 electric guitar", :prob 0.64720076}
+  ;  {:label "n04296562 stage", :prob 0.3371945}
+  ;  {:label "n02676566 acoustic guitar", :prob 0.00880973}
+  ;  {:label "n02787622 banjo", :prob 0.0024602269}
+  ;  {:label "n03759954 microphone, mike", :prob 0.0018765893})
+
+  (->> (str data-dir "guitarplayer.jpg")
+       (cv/imread)
+       (preprocess-img-mat)
+       (predict vgg-16-mod image-net-labels))
+
+  ; ({:label "n03272010 electric guitar", :prob 0.73966444}
+  ;  {:label "n04296562 stage", :prob 0.105859876}
+  ;  {:label "n04141076 sax, saxophone", :prob 0.059584014}
+  ;  {:label "n02787622 banjo", :prob 0.029627405}
+  ;  {:label "n02676566 acoustic guitar", :prob 0.016049426})
 
   ;
   )
