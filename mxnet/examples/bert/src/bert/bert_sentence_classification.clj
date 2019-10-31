@@ -58,7 +58,7 @@
 
 (def model-path-prefix (str data-dir "static_bert_base_net"))
 
-(def fine-tuned-prefix "fine-tune-sentence-bert")
+(def fine-tuned-prefix (str data-dir "fine-tune-sentence-bert"))
 
 ;; the maximum length of the sequence
 (def seq-length 128)
@@ -134,39 +134,37 @@
      :train-num (count processed-datas)}))
 
 (comment
-  
+
   (def raw-data (get-raw-data))
-
   (def vs (prepare-data raw-data))
-  (first raw-data)
-  ;https://gluon-nlp.mxnet.io/examples/sentence_embedding/bert.html#Loading-the-dataset
 
-  (first (mapv #(select-keys % [3 4 0]) raw-data))
+  (def vocab (bert-util/get-vocab data-dir))
+  (->> vocab :idx->token (drop 20000) (take 100))
+  (->> vocab :token->idx (drop 20000) (take 10))
+  (-> vocab :token->idx (get "beautiful"))
+  (-> vocab :idx->token (get 3376))
 
-  (def v
-    (->>
-     (mapv #(select-keys % [3 4 0]) raw-data)
-     (rest)
-     (take 10)))
-  (-> v (first) (get 3))
+  (def data-train-raw (->> (get-raw-data)
+                           (mapv #(vals (select-keys % [3 4 0])))
+                           (rest) ; drop header
+                           (into [])))
+  (take 10 data-train-raw)
 
-  (bert-util/tokenize (string/lower-case (-> v (first) (get 3))))
+  (def idx->token (:idx->token vocab))
+  (def token->idx (:token->idx vocab))
+  (def processed-datas (mapv #(pre-processing idx->token token->idx %) data-train-raw))
+  (def train-count (count processed-datas))
 
-  (select-keys [1 2 3] [1 0 2])
-  (type vs)
-  (count vs)
-  (keys vs)
-  (key (first vs))
-  (take 10 (val (first vs)))
-  (count (second (first)))
-  (ffirst vs)
-  (take 10 (second (first vs)))
-  (take 10 vs)
-  (:train-num vs)
-
-  (doseq [[k v] vs]
-    (prn k)
-    (prn (take 10 v)))
+  (println "Train Count is = " train-count)
+  (println "[PAD] token id = " (get token->idx "[PAD]"))
+  (println "[CLS] token id = " (get token->idx "[CLS]"))
+  (println "[SEP] token id = " (get token->idx "[SEP]"))
+  (println "token ids = \n" (-> (first processed-datas) :input-batch first))
+  (-> (first processed-datas) :tokens (count))
+  (-> (first processed-datas) :input-batch #_(flatten) (first) (count))
+  (println "segment ids = \n" (-> (first processed-datas) :input-batch second))
+  (println "valid length = \n" (-> (first processed-datas) :input-batch last))
+  (println "label = \n" (-> (second processed-datas) :label))
 
   ;
   )
