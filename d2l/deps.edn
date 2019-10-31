@@ -23,4 +23,8 @@
              :sha "HEAD"
              :deps/root "."}}}
   :local {:extra-deps
-          {github.seeris/pad {:local/root "/opt/code/pad"}}}}}
+          {github.seeris/pad {:local/root "/opt/code/pad"}
+           bert {:local/root "/opt/root/mxnet/examples/bert"}
+           }
+          
+          }}}

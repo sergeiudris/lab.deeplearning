@@ -6,6 +6,7 @@
             [d2l.mxnet-made-simple]
             [d2l.viz]
             [d2l.inception]
+            [bert.bert-sentence-classification]
    ;
             ))
 

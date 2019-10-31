@@ -39,8 +39,8 @@
     tokens
     (into tokens (repeat (- num (count tokens)) pad-item))))
 
-(defn get-vocab []
-  (let [vocab (json/parse-stream (io/reader "data/vocab.json"))]
+(defn get-vocab [data-dir]
+  (let [vocab (json/parse-stream (io/reader (str data-dir "vocab.json") ))]
     {:idx->token (get vocab "idx_to_token")
      :token->idx (get vocab "token_to_idx")}))
 

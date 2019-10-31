@@ -54,7 +54,9 @@
 ;; bidirectional representations on a wide range of tasks with minimal
 ;; task-specific parameters, and obtained state-of-the-art results.
 
-(def model-path-prefix "data/static_bert_base_net")
+(def data-dir "/opt/root/mxnet/examples/bert/data/")
+
+(def model-path-prefix (str data-dir "static_bert_base_net"))
 
 (def fine-tuned-prefix "fine-tune-sentence-bert")
 
@@ -108,14 +110,14 @@
        (into [])))
 
 (defn get-raw-data []
-  (csv/parse-csv (string/replace (slurp "data/dev.tsv") "\"" "")
+  (csv/parse-csv (string/replace (slurp (str data-dir "dev.tsv")) "\"" "")
                  :delimiter \tab
                  :strict true))
 
 (defn prepare-data
   "This prepares the sentence pairs into NDArrays for use in NDArrayIterator"
   [raw-data]
-  (let [vocab (bert-util/get-vocab)
+  (let [vocab (bert-util/get-vocab data-dir)
         idx->token (:idx->token vocab)
         token->idx (:token->idx vocab)
         data-train-raw (->> (get-raw-data)
@@ -132,19 +134,22 @@
      :train-num (count processed-datas)}))
 
 (comment
-  (def vs (prepare-data (get-raw-data)))
-  (first (get-raw-data))
+  
+  (def raw-data (get-raw-data))
+
+  (def vs (prepare-data raw-data))
+  (first raw-data)
   ;https://gluon-nlp.mxnet.io/examples/sentence_embedding/bert.html#Loading-the-dataset
 
-  (first (mapv #(select-keys % [3 4 0]) (get-raw-data)))
+  (first (mapv #(select-keys % [3 4 0]) raw-data))
 
   (def v
     (->>
-     (mapv #(select-keys % [3 4 0]) (get-raw-data))
+     (mapv #(select-keys % [3 4 0]) raw-data)
      (rest)
      (take 10)))
-  (-> v (first ) (get 3))
-  
+  (-> v (first) (get 3))
+
   (bert-util/tokenize (string/lower-case (-> v (first) (get 3))))
 
   (select-keys [1 2 3] [1 0 2])
@@ -222,7 +227,7 @@
 (defn predict-equivalence
   "Get the fine-tuned model's opinion on whether two sentences are equivalent:"
   [predictor sentence1 sentence2]
-  (let [vocab (bert.util/get-vocab)
+  (let [vocab (bert-util/get-vocab data-dir)
         processed-test-data (mapv #(pre-processing (:idx->token vocab)
                                                    (:token->idx vocab) %)
                                   [[sentence1 sentence2]])
