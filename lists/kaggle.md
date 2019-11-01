@@ -20,5 +20,14 @@
     - nlp
     - multiclass
 
+#### TensorFlow 2.0 Question Answering
+
+- links
+    - https://www.kaggle.com/c/tensorflow2-question-answering
+- notes
+    - goal is to predict short and long answer responses to real questions about Wikipedia articles
+- tags
+    - nlp
+    - qa
 
 
