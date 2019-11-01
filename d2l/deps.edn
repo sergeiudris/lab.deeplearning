@@ -15,6 +15,7 @@
           nrepl {:mvn/version "0.6.0"}
           cider/cider-nrepl {:mvn/version "0.21.1"}
           org.clojure/data.csv {:mvn/version "0.1.4"}
+          org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
           
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
           origami {:mvn/version "4.0.0-7"}

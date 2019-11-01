@@ -6,9 +6,10 @@
             [d2l.mxnet-made-simple]
             [d2l.viz]
             [d2l.inception]
+            [d2l.arxiv]
             [bert.bert-sentence-classification]
             [cnn-text-classification.classifier]
-   
+
    ;
             ))
 
