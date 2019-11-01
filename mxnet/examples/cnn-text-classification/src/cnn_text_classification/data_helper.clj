@@ -25,15 +25,17 @@
            (java.nio ByteBuffer ByteOrder))
   (:gen-class))
 
+(def data-dir "/opt/root/mxnet/examples/cnn-text-classification/data/")
+
 (def w2v-file-path "../../data/GoogleNews-vectors-negative300.bin") ;; the word2vec file path
 (def EOS "</s>")  ;; end of sentence word
 
 (defn glove-file-path
   "Returns the file path to GloVe embedding of the input size"
   [embedding-size]
-  (format "data/glove/glove.6B.%dd.txt" embedding-size))
+  (format (str data-dir "glove/glove.6B.%dd.txt") embedding-size))
 
-(def fasttext-file-path "data/fasttext/wiki.simple.vec")
+(def fasttext-file-path (str data-dir "fasttext/wiki.simple.vec"))
 
 (defn r-string
   "Reads a string from the given DataInputStream `dis` until a space or newline is reached."
@@ -131,6 +133,8 @@
       (string/replace #"\?" " ? ")
       (string/replace #" {2,}" " ")
       (string/trim)))
+
+#_(string/replace "asd" #"^A-Za-z0-9(),!?'`]"  " ")
 
 (defn load-mr-data-and-labels
   "Loads MR polarity data from files, splits the data into words and generates labels. 

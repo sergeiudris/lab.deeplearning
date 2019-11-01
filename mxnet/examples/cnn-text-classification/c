@@ -3,7 +3,7 @@
 
 repl(){
 
-  lein repl :start :host "0.0.0.0" :port 7888
+  lein repl :start :host "0.0.0.0" :port 7889
 
 }
 

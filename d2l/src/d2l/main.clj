@@ -7,6 +7,7 @@
             [d2l.viz]
             [d2l.inception]
             [bert.bert-sentence-classification]
+            [cnn-text-classification.classifier]
    ;
             ))
 

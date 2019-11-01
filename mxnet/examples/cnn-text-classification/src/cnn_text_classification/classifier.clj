@@ -30,13 +30,13 @@
             [clojure.reflect :refer [reflect]])
   (:gen-class))
 
-(def data-dir "data/")
-(def mr-dataset-path "data/mr-data") ;; the MR polarity dataset path
+(def data-dir "/opt/root/mxnet/examples/cnn-text-classification/data/")
+(def mr-dataset-path (str data-dir "mr-data")) ;; the MR polarity dataset path
 (def num-filter 100)
 (def num-label 2)
 (def dropout 0.5)
 
-(when-not (.exists (io/file (str data-dir)))
+#_(when-not (.exists (io/file (str data-dir)))
   (do (println "Retrieving data for cnn text classification...") (sh "./get_data.sh")))
 
 (defn shuffle-data [test-num {:keys [data label sentence-count sentence-size vocab-size embedding-size pretrained-embedding]}]

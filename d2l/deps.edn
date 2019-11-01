@@ -25,6 +25,7 @@
   :local {:extra-deps
           {github.seeris/pad {:local/root "/opt/code/pad"}
            bert {:local/root "/opt/root/mxnet/examples/bert"}
+           cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
            }
           
           }}}
