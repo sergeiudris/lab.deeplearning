@@ -89,3 +89,12 @@
     (xml-file>>edn-file! (str data-dir "oai2-" c "-1000.xml")
                          (str data-dir "oai2-" c "-1000.edn.txt")))
 
+#_(def data (->> categories
+                 (mapcat (fn [c]
+                           (->> (str data-dir "oai2-" c "-1000.xml")
+                                (arxiv-xml>>edn!)
+                                (vec))))
+                 (vec)))
+
+#_(count data)
+#_(->> data (map :setSpec) (distinct))
