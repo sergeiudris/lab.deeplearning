@@ -53,3 +53,12 @@
     - nlp
     - qa
 
+#### Sentiment Analysis on Movie Reviews
+
+- links 
+    - https://www.kaggle.com/c/sentiment-analysis-on-movie-reviews
+- notes
+    - reviews into 5 categories
+- tags
+    - nlp
+    - multiclass
