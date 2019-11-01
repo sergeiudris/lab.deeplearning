@@ -57,6 +57,8 @@
 
 - links 
     - https://www.kaggle.com/c/sentiment-analysis-on-movie-reviews
+    - other movie review datasets
+        - https://stackoverflow.com/questions/44532859/movie-reviews-dataset
 - notes
     - reviews into 5 categories
 - tags
