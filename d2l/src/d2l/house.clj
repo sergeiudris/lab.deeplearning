@@ -163,7 +163,7 @@
           (row>>float-null-features [row ]
                                     (->> row
                                          (filter string?)
-                                         (map (fn [_] 0.0))
+                                         (map (constantly 0.0))
                                          ))
           (row>>string-features [row]
             (filter coll? row))

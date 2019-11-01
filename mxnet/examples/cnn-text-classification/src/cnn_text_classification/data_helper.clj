@@ -134,7 +134,7 @@
       (string/replace #" {2,}" " ")
       (string/trim)))
 
-#_(string/replace "asd" #"^A-Za-z0-9(),!?'`]"  " ")
+#_(string/replace "" #"^A-Za-z0-9(),!?'`]"  " ")
 
 (defn load-mr-data-and-labels
   "Loads MR polarity data from files, splits the data into words and generates labels. 
