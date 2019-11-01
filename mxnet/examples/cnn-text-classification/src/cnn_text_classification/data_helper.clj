@@ -197,6 +197,11 @@
         sorted-w (map first sorted-wc)]
     (into {} (map vector sorted-w (range (count sorted-w))))))
 
+#_(def f (fnil / 2))
+#_(f nil 1)
+#_(def f (partial / 2))
+
+
 (defn load-ms-with-embeddings
   "Loads the movie review sentences data set for the given
   `:pretrained-embedding` (e.g. `nil`, `:glove` or `:word2vec`)"
