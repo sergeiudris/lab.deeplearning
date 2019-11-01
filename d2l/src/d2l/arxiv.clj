@@ -38,8 +38,6 @@
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
 
-(def filenames (map #(str data-dir "oai2-" % "-1000.xml") categories))
-
 (defn axriv-xml-file>>article-vec!
   "Returns a vector of  articles' metadata in xml-edn"
   [filename]
@@ -75,14 +73,19 @@
 #_(take 5 cs-data)
 #_(count (take-while :description cs-data))
 
-(defn write-edn-files!
-  []
-  (doseq [fl filenames]
-         (->>
-          (arxiv-xml>>edn!)
-          (vec)
-          (str)
-          (spit (str fl ".edn")))))
+(defn xml-file>>edn-file!
+  [in-file out-file]
+  (as-> nil v
+    (arxiv-xml>>edn! in-file)
+    (vec v)
+    (str v)
+    #_(with-out-str (pp/pprint v))
+    (spit out-file v)))
 
-#_(write-edn-files!)
+#_(xml-file>>edn-file! (str data-dir "oai2-cs-1000.xml")
+                       (str data-dir "oai2-cs-1000.edn.txt"))
+
+#_(doseq [c categories]
+    (xml-file>>edn-file! (str data-dir "oai2-" c "-1000.xml")
+                         (str data-dir "oai2-" c "-1000.edn.txt")))
 
