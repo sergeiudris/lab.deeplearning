@@ -20,6 +20,7 @@
             [clojure.string :as string]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.ndarray :as ndarray]
+            [pad.io.core :refer [count-lines]]
             [org.apache.clojure-mxnet.random :as random])
   (:import (java.io DataInputStream)
            (java.nio ByteBuffer ByteOrder))
@@ -156,6 +157,10 @@
         positive-labels (mapv (constantly 1) positive-examples)
         negative-labels (mapv (constantly 0) negative-examples)]
     {:sentences x-text :labels (into positive-labels negative-labels)}))
+
+#_(count-lines "/opt/root/mxnet/examples/cnn-text-classification/data/mr-data/rt-polarity.pos") ; 5331
+#_(count-lines "/opt/root/mxnet/examples/cnn-text-classification/data/mr-data/rt-polarity.neg") ; 5331
+
 
 (defn pad-sentences
   "Pads all sentences to the same length where the length is defined by the longest sentence. Returns padded sentences."
