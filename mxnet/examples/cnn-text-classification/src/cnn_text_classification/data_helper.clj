@@ -36,6 +36,8 @@
   [embedding-size]
   (format (str data-dir "glove/glove.6B.%dd.txt") embedding-size))
 
+#_(glove-file-path 50)
+
 (def fasttext-file-path (str data-dir "fasttext/wiki.simple.vec"))
 
 (defn r-string
