@@ -4,6 +4,8 @@
 - links
     - https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/data
     - https://towardsdatascience.com/building-a-multi-label-text-classifier-using-bert-and-tensorflow-f188e0ecdc5d
+    - multilcass query :
+        - https://www.kaggle.com/search?q=tag%3A%22multiclass+classification%22+in%3Acompetitions
 - notes
     - wikipedia comments to toxicity categories
 - tags
@@ -29,5 +31,16 @@
 - tags
     - nlp
     - qa
+
+
+#### what's cooking
+
+- links
+    - https://www.kaggle.com/c/whats-cooking/data
+- notes
+    - predict cuisine by ingridients
+- tags
+    - nlp
+    - multiclass
 
 
