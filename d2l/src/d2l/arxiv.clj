@@ -54,3 +54,12 @@
 #_(def records (->> cs-data :content (last) :content (butlast)))
 #_(count records)
 #_(first records)
+
+
+; write an edn files
+
+; read edn files, xform data
+
+; define model
+
+; train
