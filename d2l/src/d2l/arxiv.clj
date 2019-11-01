@@ -36,30 +36,53 @@
 
 (def data-dir "./tmp/data/arxiv/")
 
-#_(with-open [input (java.io.FileInputStream. (str data-dir "oai2-cs-1000.xml"))]
-    (let [data (xml/parse input)]
-      (prn data)))
+(def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
 
-#_(def cs-data (with-open [input (java.io.FileInputStream. (str data-dir "oai2-cs-1000.xml"))]
-                 (->> input
-                      (xml/parse)
-                      (:content)
-                      (take 25)
-                      )))
-#_(def cs-data (clojure.xml/parse (str data-dir "oai2-cs-1000.xml")))
-#_(keys cs-data)
-#_(:attrs cs-data)
-#_(->> cs-data :content (last) :content (count)) ; 1001, last element is resumtionToken
+(def filenames (map #(str data-dir "oai2-" % "-1000.xml") categories))
 
-#_(def records (->> cs-data :content (last) :content (butlast)))
+(defn axriv-xml-file>>article-vec!
+  "Returns a vector of  articles' metadata in xml-edn"
+  [filename]
+  (->> filename
+       (clojure.xml/parse)
+       :content
+       (last)
+       :content
+       (butlast)))
+
+#_(def recrods (axriv-xml-file>>article-vec! (str data-dir "oai2-cs-1000.xml")) )
 #_(count records)
 #_(first records)
 
+(defn arxiv-xml>>data
+  [xml]
+  {:identifier (-> xml :content (first) :content (first) :content (first))
+   :title (-> xml :content (second) :content (first) :content (first) :content (first))
+   :setSpec (-> xml :content (first) :content (last) :content (first))
+   :description (->> xml :content (second) :content (first) :content
+                     (reduce #(when (= (:tag %2) :dc:description) (reduced %2)))
+                     :content (first))})
 
-; write an edn files
+(defn arxiv-xml>>edn!
+  "Reads xml, xforms and saves to edn"
+  [filename]
+  (->> filename
+       (axriv-xml-file>>article-vec!)
+       (map arxiv-xml>>data)
+       ))
 
-; read edn files, xform data
+#_(def cs-data (vec (arxiv-xml>>edn! (str data-dir "oai2-cs-1000.xml"))))
+#_(take 5 cs-data)
+#_(count (take-while :description cs-data))
 
-; define model
+(defn write-edn-files!
+  []
+  (doseq [fl filenames]
+         (->>
+          (arxiv-xml>>edn!)
+          (vec)
+          (str)
+          (spit (str fl ".edn")))))
 
-; train
+#_(write-edn-files!)
+
