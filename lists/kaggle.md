@@ -43,4 +43,13 @@
     - nlp
     - multiclass
 
+#### The Allen AI Science Challenge
+
+- links
+    - https://www.kaggle.com/c/the-allen-ai-science-challenge
+- notes
+    - The training data consists of 2,500 multiple choice questions from a typical US 8th grade science curriculum
+- tags
+    - nlp
+    - qa
 
