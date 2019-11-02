@@ -48,11 +48,11 @@
   []
   (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app")))
 
+#_(load-glove!)
+
 (defn glove-path
   [embedding-size]
   (format (str glove-dir "glove.6B.%dd.txt") embedding-size))
-
-#_(load-glove!)
 
 (defn axriv-xml-file>>article-vec!
   "Returns a vector of  articles' metadata in xml-edn"
@@ -122,6 +122,8 @@
                  (->> (str data-dir "oai2-" c "-1000.xml")
                       (arxiv-xml>>edn!)
                       (vec))))))
+
+#_(def data (categories>>data! categories))
 
 (defn lines>>word-embeddings
   "maps lines into  [[word embeddings]..]"
@@ -242,8 +244,7 @@
        (into {})
        ))
 
-#_(def vocab-embeddings
-    (build-vocab-embeddings vocab glove embedding-size))
+#_(def vocab-embeddings (build-vocab-embeddings vocab glove embedding-size))
 #_(count vocab-embeddings)
 #_(first vocab-embeddings)
 
@@ -268,6 +269,17 @@
   []
   
   )
+
+#_(def data (categories>>data! categories))
+#_(def glove (read-glove! (glove-path embedding-size)))
+#_(def data-labeled (data>>labeled data))
+#_(def data-tokened (data>>tokened data-labeled))
+#_(def data-padded (data>>padded data-tokened))
+#_(def vocab (build-vocab (map :tokens data-padded)))
+#_(def vocab-embeddings (build-vocab-embeddings vocab glove embedding-size))
+#_(def data-embedded (data>>embedded data-padded vocab-embeddings))
+#_(def data-shuffled (shuffle data-embedded))
+
 
 (defn train
   [{:keys [data batch-size]}]
