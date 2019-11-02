@@ -41,6 +41,7 @@
 
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
+(def padding-token "</s>")
 
 (defn load-glove!
   []
@@ -191,5 +192,20 @@
   [data]
   (mapv #(assoc % :tokens (-> % :description (text>>tokens))) data))
 
+(defn tokens>>padded
+  [tokens padding-token max-seq-length]
+  (let [diff (- max-seq-length (count tokens))]
+    (into tokens  (repeat diff padding-token))))
+
+(defn data>>padded
+  [data]
+  (let [max-seq-length (->> data (mapv #(count (:tokens %))) (apply max))]
+    (mapv #(assoc % :tokens
+                  (-> % :tokens (tokens>>padded padding-token max-seq-length)))
+          data)))
+
 #_(def data-tokened (data>>tokened data-labeled))
 #_(nth data-tokened 1000)
+
+#_(def data-padded (data>>padded data-tokened))
+#_(nth data-padded 1000)
