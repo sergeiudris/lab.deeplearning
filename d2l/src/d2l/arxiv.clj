@@ -3,7 +3,7 @@
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [clojure.data.csv :refer [read-csv]]
             [clojure.data.xml :as xml]
             [clojure.zip :as zip]
@@ -34,6 +34,8 @@
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
 
+; all the credits to https://github.com/apache/incubator-mxnet/tree/master/contrib/clojure-package/examples/cnn-text-classification
+
 (def data-dir "./tmp/data/arxiv/")
 (def glove-dir "./tmp/data/glove/")
 
@@ -44,12 +46,16 @@
   []
   (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app")))
 
+(defn glove-path
+  [embedding-size]
+  (format (str glove-dir "glove.6B.%dd.txt") embedding-size))
+
 #_(load-glove!)
 
 (defn axriv-xml-file>>article-vec!
   "Returns a vector of  articles' metadata in xml-edn"
-  [filename]
-  (->> filename
+  [path]
+  (->> path
        (clojure.xml/parse)
        :content
        (last)
@@ -107,3 +113,83 @@
 #_(count data)
 #_(->> data (map :setSpec) (distinct))
 
+(defn categories>>data!
+  [categories]
+  (->> categories
+       (mapcat (fn [c]
+                 (->> (str data-dir "oai2-" c "-1000.xml")
+                      (arxiv-xml>>edn!)
+                      (vec))))))
+
+(defn lines>>word-embeddings
+  "maps lines into  [[word embeddings]..]"
+  [lines]
+  (for [^String line lines
+        :let [fields (.split line " ")]]
+    [(first fields)
+     (mapv #(Float/parseFloat %) (rest fields))]))
+
+(defn read-glove!
+  "Reads glove file into {word embeddings}"
+  [path]
+  (prn "-- reading glove from " path)
+  (->> (io/reader path)
+       (line-seq)
+       (lines>>word-embeddings)
+       (into {})))
+
+#_(def glove (read-glove! (glove-path 50)))
+#_(count glove) ; 400000
+#_(get glove "information")
+
+
+(defn clean-str [s]
+  (-> s
+      (string/replace #"^A-Za-z0-9(),!?'`]" " ")
+      (string/replace #"'s" " 's")
+      (string/replace #"'ve" " 've")
+      (string/replace #"n't" " n't")
+      (string/replace #"'re" " 're")
+      (string/replace #"'d" " 'd")
+      (string/replace #"'ll" " 'll")
+      (string/replace #"," " , ")
+      (string/replace #"\." " . ")
+      (string/replace #"!" " ! ")
+      (string/replace #"\(" " ( ")
+      (string/replace #"\)" " ) ")
+      (string/replace #"\?" " ? ")
+      (string/replace #" {2,}" " ")
+      (string/trim)))
+
+(defn data>>labels
+  "Maps article metadata into {label-name normalized-value}"
+  [data]
+  (let [categories (->> data (map :setSpec) (distinct) (vec))
+        size (dec (count categories))]
+    (->> categories (reduce-kv #(assoc %1 %3 (/ (float %2) size)) {}))))
+
+(defn  data>>labeled
+  "Adds :label to data "
+  [data]
+  (let [labels (arxiv-data>>labels data)]
+    (mapv #(->> (get labels (:setSpec %))
+                (assoc % :label)) data)))
+
+#_(def data-labeled (data>>labeled data))
+#_(data>>labels data)
+#_(count data-labeled)
+#_(nth data-labeled 7000)
+
+(defn text>>tokens
+  [text]
+  (-> text
+      (clean-str)
+      (string/split #"\s+")))
+
+(defn data>>tokened
+  "Adds :tokens to datapoints"
+  [data]
+  (mapv #(assoc % :tokens (-> % :description (text>>tokens))) data))
+
+#_(def data-tokened (data>>tokened data-labeled))
+#_(nth data-tokened 1000)
