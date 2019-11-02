@@ -41,8 +41,10 @@
 
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
+(def categories ["cs" "physics" ])
 (def padding-token "</s>")
 (def embedding-size 50)
+(def label-count  (count categories))
 
 (defn load-glove!
   []
@@ -83,6 +85,7 @@
   (->> filename
        (axriv-xml-file>>article-vec!)
        (map arxiv-xml>>data)
+       (take 1000)
        ))
 
 #_(def cs-data (vec (arxiv-xml>>edn! (str data-dir "oai2-cs-1000.xml"))))
@@ -180,7 +183,7 @@
 (defn  data>>labeled
   "Adds :label to data "
   [data]
-  (let [labels (arxiv-data>>labels data)]
+  (let [labels (data>>labels data)]
     (mapv #(->> (get labels (:setSpec %))
                 (assoc % :label)) data)))
 
@@ -197,8 +200,14 @@
 
 (defn data>>tokened
   "Adds :tokens to datapoints"
-  [data]
-  (mapv #(assoc % :tokens (-> % :description (text>>tokens))) data))
+  [data ]
+  (mapv #(assoc % :tokens (->> % :description (text>>tokens))) data))
+
+(defn tokened>>limited
+  "Limits the length of token (sentence)"
+  [data & {:keys [tokens-limit]}]
+  (mapv (fn [v]
+          (update v :tokens #(->> % (take tokens-limit) (vec)))) data))
 
 (defn tokens>>padded
   [tokens padding-token max-seq-length]
@@ -263,38 +272,61 @@
 
 #_(def data-shuffled (shuffle data))
 #_(type data-shuffled)
-#_(->> data-shuffled (take 10 ) (map :setSpec))
 
-(defn get-symbol
-  []
-  
-  )
 
-#_(def data (categories>>data! categories))
-#_(def glove (read-glove! (glove-path embedding-size)))
-#_(def data-labeled (data>>labeled data))
-#_(def data-tokened (data>>tokened data-labeled))
-#_(def data-padded (data>>padded data-tokened))
-#_(def vocab (build-vocab (map :tokens data-padded)))
-#_(def vocab-embeddings (build-vocab-embeddings vocab glove embedding-size))
-#_(def data-embedded (data>>embedded data-padded vocab-embeddings))
-#_(def data-shuffled (shuffle data-embedded))
+; from clojure mxnet example
 
+(def num-filter 100)
+(def dropout 0.5)
+
+(defn get-data-symbol [num-embed sentence-size batch-size vocab-size pretrained-embedding]
+  (if pretrained-embedding
+    (sym/variable "data")
+    (as-> (sym/variable "data") data
+      (sym/embedding "vocab_embed" {:data data :input-dim vocab-size :output-dim num-embed})
+      (sym/reshape {:data data :target-shape [batch-size 1 sentence-size num-embed]}))))
+
+
+(defn make-filter-layers [{:keys [input-x num-embed sentence-size] :as config}
+                          filter-size]
+  (as-> (sym/convolution {:data input-x
+                          :kernel [filter-size num-embed]
+                          :num-filter num-filter}) data
+    (sym/activation {:data data :act-type "relu"})
+    (sym/pooling {:data data
+                  :pool-type "max"
+                  :kernel [(inc (- sentence-size filter-size)) 1]
+                  :stride [1 1]})))
+
+
+
+;;; convnet with multiple filter sizes
+;; from Convolutional Neural Networks for Sentence Classification by Yoon Kim
+(defn get-multi-filter-convnet [num-embed sentence-size batch-size vocab-size pretrained-embedding]
+  (let [filter-list [3 4 5]
+        input-x (get-data-symbol num-embed sentence-size batch-size vocab-size pretrained-embedding)
+        polled-outputs (mapv #(make-filter-layers {:input-x input-x :num-embed num-embed :sentence-size sentence-size} %) filter-list)
+        total-filters (* num-filter (count filter-list))
+        concat (sym/concat "concat" nil polled-outputs {:dim 1})
+        hpool (sym/reshape "hpool" {:data concat :target-shape [batch-size total-filters]})
+        hdrop (if (pos? dropout) (sym/dropout "hdrop" {:data hpool :p dropout}) hpool)
+        fc (sym/fully-connected  "fc1" {:data hdrop :num-hidden label-count})]
+    (sym/softmax-output "softmax" {:data fc})))
 
 (defn train
-  [{:keys [data batch-size]}]
+  [{:keys [data batch-size vocab-size num-epoch]}]
   (let [data (shuffle data)
-        train-count 6000
-        valid-count 2000
+        train-count 1600
+        valid-count 400
         data-x-train (->> data (take train-count) (map :embedded) (flatten) (vec))
         data-y-train (->> data (take train-count) (map :label) (vec))
-        data-x-valid (->> data (take valid-count) (map :embedded) (flatten) (vec))
-        data-y-valid (->> data (take valid-count) (map :label) (vec))
-
-        x-train  (nd/array data-x-train [train-count])
+        data-x-valid (->> data (drop train-count) (take valid-count) (map :embedded) (flatten) (vec))
+        data-y-valid (->> data (drop train-count) (take valid-count) (map :label) (vec))
+        sentence-size (->> data (first) :embedded (count))
+        x-train  (nd/array data-x-train [train-count 1 sentence-size embedding-size])
         y-train  (nd/array data-y-train [train-count])
 
-        x-valid  (nd/array data-x-valid [valid-count])
+        x-valid  (nd/array data-x-valid [valid-count  1 sentence-size embedding-size])
         y-valid  (nd/array data-y-valid [valid-count])
 
         train-iter (mx-io/ndarray-iter [x-train]
@@ -308,7 +340,43 @@
                                         :label-name "softmax_label"
                                         :data-batch-size batch-size
                                         :last-batch-handle "pad"})]
-    (->> (get-symbol)
-         (m/module)
-         (m/fit {}))))
+    (prn "--starting training")
+    (-> (get-multi-filter-convnet embedding-size sentence-size batch-size vocab-size :glove)
+        (m/module {:contexts [(context/cpu)]})
+        (m/fit {:train-data train-iter
+                :eval-data valid-iter
+                :num-epoch num-epoch
+                :fit-params (m/fit-params {:optimizer (optimizer/adam)})}))))
+
+#_(do
+    (def data (categories>>data! categories))
+    (def glove (read-glove! (glove-path embedding-size)))
+    (def data-labeled (data>>labeled data))
+    (def data-tokened (data>>tokened data-labeled))
+    (def data-limited (tokened>>limited data-tokened :tokens-limit 128))
+    (def data-padded (data>>padded data-tokened))
+    (def vocab (build-vocab (map :tokens data-padded)))
+    (def vocab-embeddings (build-vocab-embeddings vocab glove embedding-size))
+    (def data-embedded (data>>embedded data-padded vocab-embeddings))
+    (def data-shuffled (shuffle data-embedded))
+    )
+
+#_(count data-shuffled)
+#_(->> data-shuffled (take 30) (map :setSpec))
+#_(->> data-shuffled (map :setSpec) (distinct))
+#_(->> data-shuffled (first) :embedded (count))
+#_(->> data-tokened (first) :tokens (count))
+#_(->> data-limited (first) :tokens (count))
+
+
+
+(comment
+
+  (def mmod (train {:data data-shuffled
+                    :batch-size 10
+                    :vocab-size (count vocab)
+                    :num-epoch 10}))
+
+  ;
+  )
 
