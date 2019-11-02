@@ -41,7 +41,7 @@
 
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
-(def categories ["cs" "physics" ])
+(def categories ["cs"  "q-fin"  ])
 (def padding-token "</s>")
 (def embedding-size 50)
 (def label-count  (count categories))
@@ -313,11 +313,10 @@
         fc (sym/fully-connected  "fc1" {:data hdrop :num-hidden label-count})]
     (sym/softmax-output "softmax" {:data fc})))
 
-(defn train
-  [{:keys [data batch-size vocab-size num-epoch]}]
+(defn data>>iters
+  [{:keys [data batch-size embedding-size train-count valid-count]}]
   (let [data (shuffle data)
-        train-count 1600
-        valid-count 400
+
         data-x-train (->> data (take train-count) (map :embedded) (flatten) (vec))
         data-y-train (->> data (take train-count) (map :label) (vec))
         data-x-valid (->> data (drop train-count) (take valid-count) (map :embedded) (flatten) (vec))
@@ -340,6 +339,14 @@
                                         :label-name "softmax_label"
                                         :data-batch-size batch-size
                                         :last-batch-handle "pad"})]
+
+    {:train-iter train-iter
+     :valid-iter valid-iter
+     :sentence-size sentence-size}))
+
+(defn train
+  [{:keys [batch-size vocab-size num-epoch iters]}]
+  (let [{:keys [train-iter valid-iter sentence-size]} iters]
     (prn "--starting training")
     (-> (get-multi-filter-convnet embedding-size sentence-size batch-size vocab-size :glove)
         (m/module {:contexts [(context/cpu)]})
@@ -369,13 +376,23 @@
 #_(->> data-limited (first) :tokens (count))
 
 
+(def batch-size 10)
 
 (comment
 
-  (def mmod (train {:data data-shuffled
-                    :batch-size 10
+  (def iters (data>>iters {:data data-shuffled
+                           :embedding-size embedding-size
+                           :train-count 1600
+                           :valid-count 400
+                           :batch-size batch-size}))
+
+  (mx-io/reset (:train-iter iters))
+  (mx-io/reset (:valid-iter iters))
+
+  (def mmod (train {:batch-size batch-size
                     :vocab-size (count vocab)
-                    :num-epoch 10}))
+                    :num-epoch 10
+                    :iters iters}))
 
   ;
   )
