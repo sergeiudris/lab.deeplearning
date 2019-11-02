@@ -42,6 +42,7 @@
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
 (def padding-token "</s>")
+(def embedding-size 50)
 
 (defn load-glove!
   []
@@ -139,7 +140,7 @@
        (lines>>word-embeddings)
        (into {})))
 
-#_(def glove (read-glove! (glove-path 50)))
+#_(def glove (read-glove! (glove-path embedding-size)))
 #_(count glove) ; 400000
 #_(get glove "information")
 
@@ -147,6 +148,10 @@
 (defn clean-str [s]
   (-> s
       (string/replace #"^A-Za-z0-9(),!?'`]" " ")
+      
+      (string/replace #"\." " . ")
+      (string/replace #"\"" "")
+      
       (string/replace #"'s" " 's")
       (string/replace #"'ve" " 've")
       (string/replace #"n't" " n't")
@@ -154,13 +159,14 @@
       (string/replace #"'d" " 'd")
       (string/replace #"'ll" " 'll")
       (string/replace #"," " , ")
-      (string/replace #"\." " . ")
       (string/replace #"!" " ! ")
       (string/replace #"\(" " ( ")
       (string/replace #"\)" " ) ")
       (string/replace #"\?" " ? ")
       (string/replace #" {2,}" " ")
       (string/trim)))
+
+#_(string/replace "$\\sigma>0$" #"\$" "")
 
 (defn data>>labels
   "Maps article metadata into {label-name normalized-value}"
@@ -209,3 +215,88 @@
 
 #_(def data-padded (data>>padded data-tokened))
 #_(nth data-padded 1000)
+
+(defn build-vocab
+  "Returns {word idx}"
+  [tokens]
+  (let [words (flatten tokens)
+        freq (reduce (fn [a word]
+                       (update-in a [word] (fnil inc 0))) {} words)
+        freq-sorted (sort-by second > freq)
+        words-sorted (map first freq-sorted)]
+    (->>
+     (map vector words-sorted (range 0 (count words-sorted)))
+     (into {})
+     )))
+
+#_(def vocab (build-vocab (map :tokens data-padded)))
+#_(count vocab) ; 50953
+#_(nth (seq vocab) 1)
+
+(defn build-vocab-embeddings
+  [vocab embeddings embedding-size]
+  (->> (seq vocab)
+       (map (fn [[word idx]]
+               [word (or (get embeddings word)
+                         (nd/->vec (random/uniform -0.25 0.25 [embedding-size])))]))
+       (into {})
+       ))
+
+#_(def vocab-embeddings
+    (build-vocab-embeddings vocab glove embedding-size))
+#_(count vocab-embeddings)
+#_(first vocab-embeddings)
+
+(defn data>>embedded
+  "Adds :embedded [[..]]"
+  [data embeddings]
+  (mapv
+   (fn [v]
+     (assoc v :embedded (mapv #(embeddings %) (:tokens v)))) data))
+
+#_(def data-embedded (data>>embedded data-padded vocab-embeddings))
+#_(-> data-embedded (nth 5000) :embedded (flatten) (count)) ; 26700 (* 534 50)
+#_(->> data-embedded (map #(-> %  :embedded (flatten) (count))) (reduce + 0)); 213600000
+; = 213600000 (* 8000 26700)
+#_(-> data-embedded   (first) (dissoc :embedded :tokens))
+
+#_(def data-shuffled (shuffle data))
+#_(type data-shuffled)
+#_(->> data-shuffled (take 10 ) (map :setSpec))
+
+(defn get-symbol
+  []
+  
+  )
+
+(defn train
+  [{:keys [data batch-size]}]
+  (let [data (shuffle data)
+        train-count 6000
+        valid-count 2000
+        data-x-train (->> data (take train-count) (map :embedded) (flatten) (vec))
+        data-y-train (->> data (take train-count) (map :label) (vec))
+        data-x-valid (->> data (take valid-count) (map :embedded) (flatten) (vec))
+        data-y-valid (->> data (take valid-count) (map :label) (vec))
+
+        x-train  (nd/array data-x-train [train-count])
+        y-train  (nd/array data-y-train [train-count])
+
+        x-valid  (nd/array data-x-valid [valid-count])
+        y-valid  (nd/array data-y-valid [valid-count])
+
+        train-iter (mx-io/ndarray-iter [x-train]
+                                       {:label [y-train]
+                                        :label-name "softmax_label"
+                                        :data-batch-size batch-size
+                                        :last-batch-handle "pad"})
+
+        valid-iter (mx-io/ndarray-iter [x-valid]
+                                       {:label [y-valid]
+                                        :label-name "softmax_label"
+                                        :data-batch-size batch-size
+                                        :last-batch-handle "pad"})]
+    (->> (get-symbol)
+         (m/module)
+         (m/fit {}))))
+
