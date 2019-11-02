@@ -41,10 +41,9 @@
 
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
-(def categories ["cs"  "q-fin"  ])
+(def categories ["cs"  "physics" ])
 (def padding-token "</s>")
 (def embedding-size 50)
-(def label-count  (count categories))
 
 (defn load-glove!
   []
@@ -276,7 +275,7 @@
 
 ; from clojure mxnet example
 
-(def num-filter 100)
+(def num-filter 200)
 (def dropout 0.5)
 
 (defn get-data-symbol [num-embed sentence-size batch-size vocab-size pretrained-embedding]
@@ -302,7 +301,8 @@
 
 ;;; convnet with multiple filter sizes
 ;; from Convolutional Neural Networks for Sentence Classification by Yoon Kim
-(defn get-multi-filter-convnet [num-embed sentence-size batch-size vocab-size pretrained-embedding]
+(defn get-multi-filter-convnet [num-embed sentence-size batch-size 
+                                vocab-size pretrained-embedding num-categories]
   (let [filter-list [3 4 5]
         input-x (get-data-symbol num-embed sentence-size batch-size vocab-size pretrained-embedding)
         polled-outputs (mapv #(make-filter-layers {:input-x input-x :num-embed num-embed :sentence-size sentence-size} %) filter-list)
@@ -310,7 +310,7 @@
         concat (sym/concat "concat" nil polled-outputs {:dim 1})
         hpool (sym/reshape "hpool" {:data concat :target-shape [batch-size total-filters]})
         hdrop (if (pos? dropout) (sym/dropout "hdrop" {:data hpool :p dropout}) hpool)
-        fc (sym/fully-connected  "fc1" {:data hdrop :num-hidden label-count})]
+        fc (sym/fully-connected  "fc1" {:data hdrop :num-hidden num-categories})]
     (sym/softmax-output "softmax" {:data fc})))
 
 (defn data>>iters
@@ -345,11 +345,12 @@
      :sentence-size sentence-size}))
 
 (defn train
-  [{:keys [batch-size vocab-size num-epoch iters]}]
+  [{:keys [batch-size vocab-size num-epoch iters num-categories]}]
   (let [{:keys [train-iter valid-iter sentence-size]} iters]
     (prn "--starting training")
-    (-> (get-multi-filter-convnet embedding-size sentence-size batch-size vocab-size :glove)
-        (m/module {:contexts [(context/cpu)]})
+    (-> (get-multi-filter-convnet embedding-size sentence-size batch-size 
+                                  vocab-size :glove num-categories)
+        (m/module {:contexts [(context/cpu 0) ]})
         (m/fit {:train-data train-iter
                 :eval-data valid-iter
                 :num-epoch num-epoch
@@ -376,7 +377,7 @@
 #_(->> data-limited (first) :tokens (count))
 
 
-(def batch-size 10)
+(def batch-size 200)
 
 (comment
 
@@ -386,12 +387,14 @@
                            :valid-count 400
                            :batch-size batch-size}))
 
-  (mx-io/reset (:train-iter iters))
-  (mx-io/reset (:valid-iter iters))
+  (do
+    (mx-io/reset (:train-iter iters))
+    (mx-io/reset (:valid-iter iters)))
 
   (def mmod (train {:batch-size batch-size
                     :vocab-size (count vocab)
                     :num-epoch 10
+                    :num-categories (count categories)
                     :iters iters}))
 
   ;
