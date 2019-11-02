@@ -35,8 +35,16 @@
   (:gen-class))
 
 (def data-dir "./tmp/data/arxiv/")
+(def glove-dir "./tmp/data/glove/")
+
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
+
+(defn load-glove!
+  []
+  (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app")))
+
+#_(load-glove!)
 
 (defn axriv-xml-file>>article-vec!
   "Returns a vector of  articles' metadata in xml-edn"
@@ -98,3 +106,4 @@
 
 #_(count data)
 #_(->> data (map :setSpec) (distinct))
+

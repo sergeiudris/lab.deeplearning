@@ -103,4 +103,20 @@ inception(){
   wget https://arthurcaillau.com/assets/images/guitarplayer.jpg
 }
 
+glove(){
+
+  set -evx
+
+  DIR=./tmp/data/glove
+
+  mkdir -p $DIR
+
+  cd $DIR
+
+  wget http://nlp.stanford.edu/data/glove.6B.zip
+  
+  unzip *.zip
+
+}
+
 "$@"
