@@ -421,7 +421,6 @@
   []
   (json/parse-stream (io/reader (str bert-dir  "vocab.json"))))
 
-#_(def vocab (read-bert-vocab!))
 
 (defn break-out-punctuation [s str-match]
   (->> (string/split (str s "<punc>") (re-pattern (str "\\" str-match)))
@@ -432,7 +431,7 @@
     (break-out-punctuation s target-char)
     [s]))
 
-(defn tokenize [s]
+(defn text>>bert-tokens [s]
   (->> (string/split s #"\s+")
        (mapcat break-out-punctuations)
        (into [])))
@@ -444,15 +443,48 @@
 
 (defn tokens>>idxs
   [vocab tokens]
-  (let [token-to-idx (get "token_to_idx" vocab)
+  (let [token-to-idx (get  vocab "token_to_idx")
         idx-unk (get token-to-idx "[UNK]")]
     (mapv #(get token-to-idx % idx-unk) tokens)))
 
 (defn idxs>>tokens
   [vocab idxs]
-  (let [idx-to-token (get "idx_to_token" vocab)]
+  (let [idx-to-token (get  vocab "idx_to_token")]
     (mapv #(get idx-to-token %) idxs)))
 
+(defn data>>bert-tokened
+  [data]
+  (mapv #(assoc % :tokens (-> % :description (string/lower-case) (text>>bert-tokens))) data))
 
+(defn data>>bert-padded
+  [data vocab]
+  (let [max-tokens-length (->> data (mapv #(count (:tokens %))) (apply max))
+        seq-length (inc max-tokens-length)]
+    (->> data
+         (mapv (fn [v]
+                 (let [tokens (:tokens v)
+                       valid-length (count tokens)
+                       token-types (pad [] 0 seq-length)
+                       tokens (->> tokens (concat ["[CLS]"]) (vec))
+                       tokens (pad tokens "[PAD]" seq-length)
+                       idxs (tokens>>idxs vocab tokens)
+                       ]
+                   (merge v {:batch {:idxs idxs
+                                     :token-types token-types
+                                     :valid-length [valid-length] }
+                             :tokens tokens
+                             })
+                   ))
+               ))))
+
+#_(def bert-vocab (read-bert-vocab!))
+#_(def data (categories>>data! categories))
+#_(def data-labeled (data>>labeled data))
+#_(-> data-labeled (first))
+#_(def bert-tokened (data>>bert-tokened data-labeled))
+#_(-> bert-tokened (first))
+#_(->> bert-tokened (mapv #(count (:tokens %))) (apply max))
+#_(def bert-padded (data>>bert-padded bert-tokened bert-vocab))
+#_(-> bert-padded (first))
 
 
