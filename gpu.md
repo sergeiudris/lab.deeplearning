@@ -1,5 +1,7 @@
 ## links
   - https://github.com/NVIDIA/nvidia-docker
+      - in 'software&updates' select nvidia driver as active
+      - enter password
       - when laptop restarts, blue screen appears
       - select 'enroll MOK'
       - not sure next
