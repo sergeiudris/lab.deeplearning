@@ -45,7 +45,7 @@
 
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
-(def categories ["cs"  "physics" ])
+(def categories ["cs" "physics" ])
 (def padding-token "</s>")
 (def embedding-size 50)
 
@@ -538,16 +538,21 @@
 
 (defn train-bert!
   [{:keys [data dev num-epoch num-classes
-           dropout batch-size]}]
+           dropout batch-size
+           train-count]}]
   (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
         model-sym (get-symbol-bert bert-base num-classes dropout)
-        iter-data (data>>bert-iter-data data)
-        train-iter (iter-data>>bert-iter iter-data batch-size dev)]
+        train-iter-data (->> data (take train-count) (data>>bert-iter-data))
+        valid-iter-data (->> data (drop train-count) (data>>bert-iter-data))
+        train-iter (iter-data>>bert-iter train-iter-data batch-size dev)
+        valid-iter (iter-data>>bert-iter valid-iter-data batch-size dev)]
     (prn "--starting train")
     (as-> nil mmod
       (m/fit (m/module model-sym {:contexts [dev]
                                   :data-names ["data0" "data1" "data2"]})
-             {:train-data train-iter  :num-epoch num-epoch
+             {:train-data train-iter  
+              :eval-data valid-iter 
+              :num-epoch num-epoch
               :fit-params
               (m/fit-params {:allow-missing true
                              :arg-params (m/arg-params bert-base)
@@ -562,25 +567,32 @@
     (def data (categories>>data! categories))
     (def data-labeled (data>>labeled data))
     (def bert-tokened (data>>bert-tokened data-labeled))
-    (def bert-padded (data>>bert-padded bert-tokened bert-vocab)))
+    (def bert-padded (data>>bert-padded bert-tokened bert-vocab))
+    (def bert-shuffled (shuffle bert-padded)))
 
+#_(count bert-shuffled)
 #_(-> data-labeled (first) )
-#_(-> bert-padded (first) :tokens (count))
-#_(-> bert-padded (first) :batch :token-types (count))
-#_(->> bert-padded (mapv #(count (:tokens %))) (apply max))
-#_(->> bert-padded (mapv #(-> % :batch :token-types (count))) (apply max))
-#_(def iter-data (data>>bert-iter-data bert-padded))
+#_(-> bert-shuffled (first) :tokens (count))
+#_(-> bert-shuffled (first) :batch :token-types (count))
+#_(->> bert-shuffled (mapv #(count (:tokens %))) (apply max))
+#_(->> bert-shuffled (mapv #(-> % :batch :token-types (count))) (apply max))
+#_(def iter-data (data>>bert-iter-data bert-shuffled))
 #_(-> iter-data :data2 (count))
 #_(->> iter-data :labels (count) )
+
+#_(def bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0}))
+#_(count (m/arg-params bert-base))
+
 (comment
 
   
-  (def mmod (train-bert! {:data bert-padded
+  (def mmod (train-bert! {:data bert-shuffled
+                          :train-count 1600
                           :dev (context/cpu)
                           :num-classes (count categories)
                           :dropout 0.1
                           :batch-size 32
-                          :num-epoch 3}))
+                          :num-epoch 10}))
 
   ;
   )
