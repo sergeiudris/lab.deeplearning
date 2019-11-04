@@ -38,15 +38,29 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
         libatlas3-base \
         libcurl3 
 
-# RUN apt-get install -y curl
+RUN apt-get install -y curl
 
-# git tag --list
-# git checkout tags/<version> -b my_mxnet
-# RUN git clone --recursive https://github.com/apache/incubator-mxnet.git && \
+# installing mxnet from source
+
+# RUN apt-get install -y maven
+
+# RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet && \
 #         cd mxnet && \
-#         git submodule update --init --recursive && \
-#         cd contrib/clojure-package
+#         git checkout v1.6.x && \
+#         git submodule update --init --recursive
 
+# RUN apt-get install -y cmake ninja-build libopenblas-dev
+
+# RUN cd mxnet && \
+#         mkdir build && cd build && \
+#         cmake -DUSE_OPENCV=0 -DUSE_CUDA=1 -DUSE_CUDA_PATH=/usr/local/cuda -DUSE_CUDNN=1 -DUSE_MKLDNN=1 -DCMAKE_BUILD_TYPE=Release -GNinja ..
+
+# RUN cd mxnet/scala-package && \
+#         mvn install
+
+# RUN cd mxnet/contrib/clojure-package && \
+#         lein install
+        
 
 WORKDIR /opt/app
 

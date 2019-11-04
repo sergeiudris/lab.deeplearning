@@ -19,6 +19,7 @@
           
         ;   org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
+          ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.6.0-SNAPSHOT"}
           origami {:mvn/version "4.0.0-7"}
 
           #_{:git/url "https://github.com/seeris/pad"
