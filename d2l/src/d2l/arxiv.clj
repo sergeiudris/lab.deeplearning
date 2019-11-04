@@ -35,7 +35,10 @@
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
 
-; all the credits to https://github.com/apache/incubator-mxnet/tree/master/contrib/clojure-package/examples/cnn-text-classification
+; using glove
+
+; code/logic taken (or modified) from https://github.com/apache/incubator-mxnet/tree/master/contrib/clojure-package/examples/cnn-text-classification
+; all the credits go to the authors
 
 (def data-dir "./tmp/data/arxiv/")
 (def glove-dir "./tmp/data/glove/")
@@ -401,8 +404,10 @@
   ;
   )
 
+; using bert
 
-; bert
+; code/logic taken (or modified) from https://github.com/apache/incubator-mxnet/tree/master/contrib/clojure-package/examples/bert
+; all the credits go to the authors
 
 (def bert-dir "./tmp/data/bert/")
 
@@ -414,9 +419,40 @@
 
 (defn read-bert-vocab!
   []
-  (let [vocab (json/parse-stream (io/reader (str bert-dir  "vocab.json")))]
-    {:idx-to-token (get vocab "idx_to_token")
-     :token-to-index (get vocab "token_to_idx")}))
+  (json/parse-stream (io/reader (str bert-dir  "vocab.json"))))
 
 #_(def vocab (read-bert-vocab!))
+
+(defn break-out-punctuation [s str-match]
+  (->> (string/split (str s "<punc>") (re-pattern (str "\\" str-match)))
+       (map #(string/replace % "<punc>" str-match))))
+
+(defn break-out-punctuations [s]
+  (if-let [target-char (first (re-seq #"[.,?!]" s))]
+    (break-out-punctuation s target-char)
+    [s]))
+
+(defn tokenize [s]
+  (->> (string/split s #"\s+")
+       (mapcat break-out-punctuations)
+       (into [])))
+
+(defn pad [tokens pad-item num]
+  (if (>= (count tokens) num)
+    tokens
+    (into tokens (repeat (- num (count tokens)) pad-item))))
+
+(defn tokens>>idxs
+  [vocab tokens]
+  (let [token-to-idx (get "token_to_idx" vocab)
+        idx-unk (get token-to-idx "[UNK]")]
+    (mapv #(get token-to-idx % idx-unk) tokens)))
+
+(defn idxs>>tokens
+  [vocab idxs]
+  (let [idx-to-token (get "idx_to_token" vocab)]
+    (mapv #(get idx-to-token %) idxs)))
+
+
+
 
