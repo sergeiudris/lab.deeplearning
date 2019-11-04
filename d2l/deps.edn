@@ -14,8 +14,8 @@
           org.clojure/data.csv {:mvn/version "0.1.4"}
           org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
 
-          ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
-          org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
+          org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
+        ;   org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           origami {:mvn/version "4.0.0-7"}
           #_{:git/url "https://github.com/seeris/pad"
              :sha "HEAD"
