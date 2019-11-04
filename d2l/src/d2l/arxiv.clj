@@ -539,19 +539,19 @@
 (defn train-bert!
   [{:keys [data dev num-epoch num-classes
            dropout batch-size
-           train-count]}]
+           train-count valid-count]}]
   (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
         model-sym (get-symbol-bert bert-base num-classes dropout)
         train-iter-data (->> data (take train-count) (data>>bert-iter-data))
-        valid-iter-data (->> data (drop train-count) (data>>bert-iter-data))
+        valid-iter-data (->> data (drop train-count) (take valid-count) (data>>bert-iter-data))
         train-iter (iter-data>>bert-iter train-iter-data batch-size dev)
         valid-iter (iter-data>>bert-iter valid-iter-data batch-size dev)]
     (prn "--starting train")
     (as-> nil mmod
       (m/fit (m/module model-sym {:contexts [dev]
                                   :data-names ["data0" "data1" "data2"]})
-             {:train-data train-iter  
-              :eval-data valid-iter 
+             {:train-data train-iter
+              :eval-data valid-iter
               :num-epoch num-epoch
               :fit-params
               (m/fit-params {:allow-missing true
@@ -588,11 +588,12 @@
   
   (def mmod (train-bert! {:data bert-shuffled
                           :train-count 1600
+                          :valid-count 400
                           :dev (context/cpu)
                           :num-classes (count categories)
                           :dropout 0.1
                           :batch-size 32
-                          :num-epoch 10}))
+                          :num-epoch 3}))
 
   ;
   )
