@@ -8,6 +8,7 @@
             [clojure.data.xml :as xml]
             [clojure.zip :as zip]
             [clojure.xml]
+            [cheshire.core :as json]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
@@ -399,4 +400,23 @@
 
   ;
   )
+
+
+; bert
+
+(def bert-dir "./tmp/data/bert/")
+
+(defn load-bert!
+  []
+  (:exit (sh "bash" "-c" "bash bin/data.sh bert" :dir "/opt/app")))
+
+#_(load-bert!)
+
+(defn read-bert-vocab!
+  []
+  (let [vocab (json/parse-stream (io/reader (str bert-dir  "vocab.json")))]
+    {:idx-to-token (get vocab "idx_to_token")
+     :token-to-index (get vocab "token_to_idx")}))
+
+#_(def vocab (read-bert-vocab!))
 

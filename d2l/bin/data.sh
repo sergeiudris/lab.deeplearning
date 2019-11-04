@@ -119,4 +119,23 @@ glove(){
 
 }
 
+bert(){
+
+  set -evx
+
+  DIR=./tmp/data/bert
+
+  mkdir -p $DIR
+
+  cd $DIR
+
+  curl https://s3.us-east-2.amazonaws.com/mxnet-scala/scala-example-ci/BertQA/vocab.json -o vocab.json
+  curl https://s3.us-east-2.amazonaws.com/mxnet-scala/scala-example-ci/BertQA/static_bert_qa-0002.params -o static_bert_qa-0002.params
+  curl https://s3.us-east-2.amazonaws.com/mxnet-scala/scala-example-ci/BertQA/static_bert_qa-symbol.json -o static_bert_qa-symbol.json
+  curl https://s3.us-east-2.amazonaws.com/mxnet-scala/scala-example-ci/BertQA/static_bert_base_net-symbol.json -o static_bert_base_net-symbol.json
+  curl https://s3.us-east-2.amazonaws.com/mxnet-scala/scala-example-ci/BertQA/static_bert_base_net-0000.params -o static_bert_base_net-0000.params
+  curl https://raw.githubusercontent.com/dmlc/gluon-nlp/master/docs/examples/sentence_embedding/dev.tsv -o dev.tsv
+
+}
+
 "$@"

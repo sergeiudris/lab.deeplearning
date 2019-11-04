@@ -3,13 +3,11 @@ FROM ubuntu:18.04
 RUN apt-get update && \
     apt-get install -y \
             sudo  \
-            curl  \
-            wget  \
             git-core  \
             gpg  \
             rlwrap  \
             software-properties-common  \
-            unzip curl net-tools lsof \
+            unzip wget curl net-tools lsof \
             graphviz
 
 RUN apt-get update && \
@@ -31,6 +29,7 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
         libatlas3-base \
         libcurl3 
 
+RUN apt-get install -y curl
 # git tag --list
 # git checkout tags/<version> -b my_mxnet
 # RUN git clone --recursive https://github.com/apache/incubator-mxnet.git && \
