@@ -477,14 +477,103 @@
                    ))
                ))))
 
-#_(def bert-vocab (read-bert-vocab!))
-#_(def data (categories>>data! categories))
-#_(def data-labeled (data>>labeled data))
+(defn get-symbol-bert
+  [pre-model num-classes dropout]
+  (as-> (m/symbol pre-model) data
+    (sym/dropout {:data data :p dropout})
+    (sym/fully-connected "fc-finetune" {:data data :num-hidden num-classes})
+    (sym/softmax-output "softmax" {:data data})))
+
+(defn data>>bert-iter
+  [data batch-size dev]
+  (letfn [(data>>batch-column
+            [data column-key]
+            (->> data
+                 (mapv #(-> % :batch column-key))
+                 (flatten)
+                 (vec)))]
+    (let [seq-length (->> data (first) :tokens (count))
+          data0 (data>>batch-column data :idxs)
+          data1 (data>>batch-column data :token-types)
+          data2 (data>>batch-column data :valid-length)
+          labels (->> data (map :label) (flatten) (vec))
+          total (count data)
+          desc-data0 (mx-io/data-desc {:name "data0"
+                                       :shape [total seq-length]
+                                       :dtype dtype/FLOAT32
+                                       :layout layout/NT})
+          desc-data1 (mx-io/data-desc {:name "data1"
+                                       :shape [total seq-length]
+                                       :dtype dtype/FLOAT32
+                                       :layout layout/NT})
+          desc-data2 (mx-io/data-desc {:name "data2"
+                                       :shape [total]
+                                       :dtype dtype/FLOAT32
+                                       :layout layout/N})
+          desc-label (mx-io/data-desc {:name "softmax_label"
+                                       :shape [total]
+                                       :dtype dtype/FLOAT32
+                                       :layout layout/N})]
+      (mx-io/ndarray-iter {desc-data0 (nd/array data0 [total seq-length]
+                                                {:ctx dev})
+                           desc-data1 (nd/array data1 [total seq-length]
+                                                {:ctx dev})
+                           desc-data2 (nd/array data2 [total]
+                                                {:ctx dev})}
+                          {:label
+                           {desc-label (nd/array labels [total]
+                                                 {:ctx dev})}
+                           :data-batch-size batch-size}))))
+
+(def fine-tuned-prefix (str bert-dir "fine-tune-sentence-bert"))
+(def model-path-prefix (str bert-dir "static_bert_base_net"))
+
+(defn train-bert!
+  [{:keys [data dev num-epoch num-classes
+           dropout batch-size]}]
+  (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
+        model-sym (get-symbol-bert bert-base num-classes dropout)
+        train-iter (data>>bert-iter data batch-size dev)]
+    (prn "--starting train")
+    (as-> nil mmod
+      (m/fit (m/module model-sym {:contexts [dev]
+                                  :data-names ["data0" "data1" "data2"]})
+             {:train-data train-iter  :num-epoch num-epoch
+              :fit-params
+              (m/fit-params {:allow-missing true
+                             :arg-params (m/arg-params bert-base)
+                             :aux-params (m/aux-params bert-base)
+                             :optimizer (optimizer/adam {:learning-rate 5e-6 :epsilon 1e-9})
+                             :batch-end-callback (callback/speedometer batch-size 1)})})
+      (m/save-checkpoint mmod {:prefix fine-tuned-prefix :epoch num-epoch})
+      mmod)))
+
+#_(do
+    (def bert-vocab (read-bert-vocab!))
+    (def data (categories>>data! categories))
+    (def data-labeled (data>>labeled data))
+    (def bert-tokened (data>>bert-tokened data-labeled))
+    (def bert-padded (data>>bert-padded bert-tokened bert-vocab)))
+
 #_(-> data-labeled (first))
-#_(def bert-tokened (data>>bert-tokened data-labeled))
 #_(-> bert-tokened (first))
-#_(->> bert-tokened (mapv #(count (:tokens %))) (apply max))
-#_(def bert-padded (data>>bert-padded bert-tokened bert-vocab))
-#_(-> bert-padded (first))
+#_(-> bert-padded (first) :tokens (count))
+#_(-> bert-padded (first) :batch :token-types (count))
+#_(->> bert-padded (mapv #(count (:tokens %))) (apply max))
+#_(->> bert-padded (mapv #(-> % :batch :token-types (count))) (apply max))
+
+(comment
+
+  
+  (def mmod (train-bert! {:data bert-padded
+                          :dev (context/cpu)
+                          :num-classes (count categories)
+                          :dropout 0.1
+                          :batch-size 32
+                          :num-epoch 3}))
+
+  ;
+  )
+
 
 
