@@ -1,7 +1,7 @@
 {:paths ["src"]
  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo/"}
-             "vendredi" {:url "https://repository.hellonico.info/repository/hellonico/"}
+             "hellonico" {:url "https://repository.hellonico.info/repository/hellonico/"}
              "staging" {:url "https://repository.apache.org/content/repositories/staging"}
              "snapshots" {:url "https://repository.apache.org/content/repositories/snapshots"}}
  :deps {}
@@ -14,11 +14,9 @@
           org.clojure/data.csv {:mvn/version "0.1.4"}
           org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
 
-        ;   org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
-          ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
-          ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.6.0-SNAPSHOT"}
+          ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
+          org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           origami {:mvn/version "4.0.0-7"}
-
           #_{:git/url "https://github.com/seeris/pad"
              :sha "HEAD"
              :deps/root "."}
@@ -29,7 +27,7 @@
            github.seeris/pad {:local/root "/opt/code/pad"}
            bert {:local/root "/opt/root/mxnet/examples/bert"}
            cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
-           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.6.0-SNAPSHOT"}
+          ;  org.apache.mxnet.contrib.clojure/clojure-mxnet {:mvn/version "1.6.0-SNAPSHOT"}
            }
           }
   }
