@@ -40,6 +40,25 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
 
 RUN apt-get install -y curl
 
+ENV LEIN_VERSION=2.9.1
+ENV LEIN_INSTALL=/usr/local/bin/
+
+# Download the whole repo as an archive
+RUN mkdir -p $LEIN_INSTALL \
+  && wget -q https://raw.githubusercontent.com/technomancy/leiningen/$LEIN_VERSION/bin/lein-pkg \
+  # && echo "Comparing lein-pkg checksum ..." \
+  # && echo "019faa5f91a463bf9742c3634ee32fb3db8c47f0 *lein-pkg" | sha1sum -c - \
+  && mv lein-pkg $LEIN_INSTALL/lein \
+  && chmod 0755 $LEIN_INSTALL/lein \
+  && wget -q https://github.com/technomancy/leiningen/releases/download/$LEIN_VERSION/leiningen-$LEIN_VERSION-standalone.zip \
+  && wget -q https://github.com/technomancy/leiningen/releases/download/$LEIN_VERSION/leiningen-$LEIN_VERSION-standalone.zip.asc \
+  && rm leiningen-$LEIN_VERSION-standalone.zip.asc \
+  && mkdir -p /usr/share/java \
+  && mv leiningen-$LEIN_VERSION-standalone.zip /usr/share/java/leiningen-$LEIN_VERSION-standalone.jar
+
+ENV PATH=$PATH:$LEIN_INSTALL
+ENV LEIN_ROOT 1
+
 # installing mxnet from source
 
 # RUN apt-get install -y maven
@@ -61,6 +80,19 @@ RUN apt-get install -y curl
 # RUN cd mxnet/contrib/clojure-package && \
 #         lein install
         
+
+# installing clojure pkg from source
+
+RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet && \
+        cd mxnet && \
+        git checkout c81535ce33a9bb167662af53181f9a42ed5b4bc4 && \
+        git submodule update --init --recursive
+
+RUN cd mxnet/contrib/clojure-package && \
+        sed -i 's/mxnet-full_2.11/mxnet-full_2.11-linux-x86_64-gpu/g' project.clj && \
+        sed -i 's/INTERNAL/1.5.1/g' project.clj && \
+        lein install
+
 
 WORKDIR /opt/app
 
