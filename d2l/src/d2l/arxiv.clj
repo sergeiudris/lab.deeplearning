@@ -459,16 +459,15 @@
 (defn data>>bert-padded
   [data vocab]
   (let [max-tokens-length (->> data (mapv #(count (:tokens %))) (apply max))
-        seq-length (inc max-tokens-length)]
+        seq-length 128 #_(inc max-tokens-length)]
     (->> data
          (mapv (fn [v]
-                 (let [tokens (:tokens v)
+                 (let [tokens (->> v :tokens (take (dec seq-length)))
                        valid-length (count tokens)
                        token-types (pad [] 0 seq-length)
                        tokens (->> tokens (concat ["[CLS]"]) (vec))
                        tokens (pad tokens "[PAD]" seq-length)
-                       idxs (tokens>>idxs vocab tokens)
-                       ]
+                       idxs (tokens>>idxs vocab tokens)]
                    (merge v {:batch {:idxs idxs
                                      :token-types token-types
                                      :valid-length [valid-length] }
@@ -484,46 +483,55 @@
     (sym/fully-connected "fc-finetune" {:data data :num-hidden num-classes})
     (sym/softmax-output "softmax" {:data data})))
 
-(defn data>>bert-iter
-  [data batch-size dev]
+
+(defn data>>bert-iter-data
+  [data]
   (letfn [(data>>batch-column
-            [data column-key]
-            (->> data
-                 (mapv #(-> % :batch column-key))
-                 (flatten)
-                 (vec)))]
+           [data column-key]
+           (->> data
+                (mapv #(-> % :batch column-key))
+                (flatten)
+                (vec)))]
     (let [seq-length (->> data (first) :tokens (count))
-          data0 (data>>batch-column data :idxs)
-          data1 (data>>batch-column data :token-types)
-          data2 (data>>batch-column data :valid-length)
-          labels (->> data (map :label) (flatten) (vec))
-          total (count data)
-          desc-data0 (mx-io/data-desc {:name "data0"
-                                       :shape [total seq-length]
-                                       :dtype dtype/FLOAT32
-                                       :layout layout/NT})
-          desc-data1 (mx-io/data-desc {:name "data1"
-                                       :shape [total seq-length]
-                                       :dtype dtype/FLOAT32
-                                       :layout layout/NT})
-          desc-data2 (mx-io/data-desc {:name "data2"
-                                       :shape [total]
-                                       :dtype dtype/FLOAT32
-                                       :layout layout/N})
-          desc-label (mx-io/data-desc {:name "softmax_label"
-                                       :shape [total]
-                                       :dtype dtype/FLOAT32
-                                       :layout layout/N})]
-      (mx-io/ndarray-iter {desc-data0 (nd/array data0 [total seq-length]
-                                                {:ctx dev})
-                           desc-data1 (nd/array data1 [total seq-length]
-                                                {:ctx dev})
-                           desc-data2 (nd/array data2 [total]
-                                                {:ctx dev})}
-                          {:label
-                           {desc-label (nd/array labels [total]
-                                                 {:ctx dev})}
-                           :data-batch-size batch-size}))))
+          total (count data)]
+      {:seq-length seq-length
+       :data0 (data>>batch-column data :idxs)
+       :data1 (data>>batch-column data :token-types)
+       :data2 (data>>batch-column data :valid-length)
+       :labels (->> data (map :label) (flatten) (vec))
+       :total total
+       :desc-data0 (mx-io/data-desc {:name "data0"
+                                     :shape [total seq-length]
+                                     :dtype dtype/FLOAT32
+                                     :layout layout/NT})
+       :desc-data1 (mx-io/data-desc {:name "data1"
+                                     :shape [total seq-length]
+                                     :dtype dtype/FLOAT32
+                                     :layout layout/NT})
+       :desc-data2 (mx-io/data-desc {:name "data2"
+                                     :shape [total]
+                                     :dtype dtype/FLOAT32
+                                     :layout layout/N})
+       :desc-label (mx-io/data-desc {:name "softmax_label"
+                                     :shape [total]
+                                     :dtype dtype/FLOAT32
+                                     :layout layout/N})})))
+
+(defn iter-data>>bert-iter
+  [iter-data batch-size dev]
+  (let [{:keys [data0 data1 data2
+                labels total desc-data0 desc-data1
+                desc-data2 desc-label seq-length]} iter-data]
+    (mx-io/ndarray-iter {desc-data0 (nd/array data0 [total seq-length]
+                                              {:ctx dev})
+                         desc-data1 (nd/array data1 [total seq-length]
+                                              {:ctx dev})
+                         desc-data2 (nd/array data2 [total]
+                                              {:ctx dev})}
+                        {:label
+                         {desc-label (nd/array labels [total]
+                                               {:ctx dev})}
+                         :data-batch-size batch-size})))
 
 (def fine-tuned-prefix (str bert-dir "fine-tune-sentence-bert"))
 (def model-path-prefix (str bert-dir "static_bert_base_net"))
@@ -533,7 +541,8 @@
            dropout batch-size]}]
   (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
         model-sym (get-symbol-bert bert-base num-classes dropout)
-        train-iter (data>>bert-iter data batch-size dev)]
+        iter-data (data>>bert-iter-data data)
+        train-iter (iter-data>>bert-iter iter-data batch-size dev)]
     (prn "--starting train")
     (as-> nil mmod
       (m/fit (m/module model-sym {:contexts [dev]
@@ -555,13 +564,14 @@
     (def bert-tokened (data>>bert-tokened data-labeled))
     (def bert-padded (data>>bert-padded bert-tokened bert-vocab)))
 
-#_(-> data-labeled (first))
-#_(-> bert-tokened (first))
+#_(-> data-labeled (first) )
 #_(-> bert-padded (first) :tokens (count))
 #_(-> bert-padded (first) :batch :token-types (count))
 #_(->> bert-padded (mapv #(count (:tokens %))) (apply max))
 #_(->> bert-padded (mapv #(-> % :batch :token-types (count))) (apply max))
-
+#_(def iter-data (data>>bert-iter-data bert-padded))
+#_(-> iter-data :data2 (count))
+#_(->> iter-data :labels (count) )
 (comment
 
   
