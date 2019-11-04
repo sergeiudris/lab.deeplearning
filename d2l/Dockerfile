@@ -1,11 +1,17 @@
 # FROM ubuntu:18.04
 FROM nvidia/cuda:9.2-devel-ubuntu18.04
+# FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
+# FROM nvidia/cuda:9.0-devel-ubuntu16.04
+# FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
+# FROM nvidia/cuda:9.1-devel-ubuntu16.04
+# FROM nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
+
 
 RUN apt-get update && \
     apt-get install -y \
             sudo  \
             git-core  \
-            gpg  \
+        #     gpg  \
             rlwrap  \
             software-properties-common  \
             unzip wget curl net-tools lsof \
@@ -30,7 +36,8 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
         libatlas3-base \
         libcurl3 
 
-RUN apt-get install -y curl
+# RUN apt-get install -y curl
+
 # git tag --list
 # git checkout tags/<version> -b my_mxnet
 # RUN git clone --recursive https://github.com/apache/incubator-mxnet.git && \
