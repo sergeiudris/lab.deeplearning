@@ -13,4 +13,6 @@
       - https://stackoverflow.com/questions/41409842/ubuntu-16-04-cuda-8-cuda-driver-version-is-insufficient-for-cuda-runtime-vers
       - driver compatibility table
             - https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
-  
+  - docker run --rm --runtime=nvidia nvidia/cuda:9.2-base nvidia-smidocker
+        - Error response from daemon: Unknown runtime specified nvidia
+            - https://github.com/docker/compose/issues/6691
