@@ -1,9 +1,9 @@
 # FROM ubuntu:18.04
-# FROM nvidia/cuda:9.0-devel-ubuntu16.04
+FROM nvidia/cuda:9.0-devel-ubuntu16.04
 # FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
 # FROM nvidia/cuda:9.1-devel-ubuntu16.04
 # FROM nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
-FROM nvidia/cuda:9.2-devel-ubuntu18.04
+# FROM nvidia/cuda:9.2-devel-ubuntu18.04
 # FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 # FROM nvidia/cuda:9.2-base-ubuntu18.04
 # FROM nvidia/cuda:9.2-runtime-ubuntu18.04 
@@ -86,15 +86,15 @@ ENV LEIN_ROOT 1
 
 # installing clojure pkg from source
 
-RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet && \
-        cd mxnet && \
-        git checkout c81535ce33a9bb167662af53181f9a42ed5b4bc4 && \
-        git submodule update --init --recursive
+# RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet && \
+#         cd mxnet && \
+#         git checkout c81535ce33a9bb167662af53181f9a42ed5b4bc4 && \
+#         git submodule update --init --recursive
 
-RUN cd mxnet/contrib/clojure-package && \
-        sed -i 's/mxnet-full_2.11/mxnet-full_2.11-linux-x86_64-gpu/g' project.clj && \
-        sed -i 's/INTERNAL/1.6.0-SNAPSHOT/g' project.clj && \
-        lein install
+# RUN cd mxnet/contrib/clojure-package && \
+#         sed -i 's/mxnet-full_2.11/mxnet-full_2.11-linux-x86_64-gpu/g' project.clj && \
+#         sed -i 's/INTERNAL/1.6.0-SNAPSHOT/g' project.clj && \
+#         lein install
 
 
 WORKDIR /opt/app
