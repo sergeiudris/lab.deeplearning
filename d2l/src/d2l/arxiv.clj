@@ -541,13 +541,14 @@
 (defn train-bert!
   [{:keys [data dev num-epoch num-classes
            dropout batch-size
-           train-count valid-count]}]
+           train-count valid-count train-iter valid-iter]}]
   (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
         model-sym (get-symbol-bert bert-base num-classes dropout)
-        train-iter-data (->> data (take train-count) (data>>bert-iter-data))
-        valid-iter-data (->> data (drop train-count) (take valid-count) (data>>bert-iter-data))
-        train-iter (iter-data>>bert-iter train-iter-data batch-size (context/cpu))
-        valid-iter (iter-data>>bert-iter valid-iter-data batch-size (context/cpu))]
+        ; train-iter-data (->> data (take train-count) (data>>bert-iter-data))
+        ; valid-iter-data (->> data (drop train-count) (take valid-count) (data>>bert-iter-data))
+        ; train-iter (iter-data>>bert-iter train-iter-data batch-size (context/cpu))
+        ; valid-iter (iter-data>>bert-iter valid-iter-data batch-size (context/cpu))
+        ]
     (prn "--starting train")
     (as-> nil mmod
       (m/fit (m/module model-sym {:contexts [dev]
@@ -587,11 +588,25 @@
 
 (comment
 
+  (def train-count 1600)
+  (def valid-count 400)
+  
+  (def train-iter (iter-data>>bert-iter
+                   (->> bert-shuffled (take train-count) (data>>bert-iter-data))
+                   batch-size
+                   (context/gpu)))
+  
+  (def valid-iter (iter-data>>bert-iter
+                   (->> bert-shuffled (drop train-count) (take valid-count) (data>>bert-iter-data))
+                   batch-size
+                   (context/gpu)))
   
   (def mmod (train-bert! {:data bert-shuffled
                           :train-count 1600
                           :valid-count 400
-                          :dev (context/gpu 0)
+                          :train-iter train-iter
+                          :valid-iter valid-iter
+                          :dev (context/gpu)
                           :num-classes (count categories)
                           :dropout 0.1
                           :batch-size 32
