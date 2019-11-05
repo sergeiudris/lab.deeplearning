@@ -111,12 +111,13 @@ d2l() {
     docker run --gpus all \
                 --rm \
                 --name d2l \
+                -it \
                 -p 7888:7888 \
                 -v "$(pwd)"/d2l:/opt/app \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.d2l \
-                 tail -f /dev/null
+                 bash
 }
 
 "$@"
