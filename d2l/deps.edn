@@ -14,9 +14,10 @@
           cider/cider-nrepl {:mvn/version "0.21.1"}
           org.clojure/data.csv {:mvn/version "0.1.4"}
           org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
+          cheshire {:mvn/version "5.8.1"}
 
           ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
-          ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
+          org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           ; origami {:mvn/version "4.0.0-7"}
           
         ;   github.seeris/pad {:git/url "https://github.com/seeris/pad"
@@ -27,9 +28,10 @@
   :local {:extra-deps
           {
            github.seeris/pad {:local/root "/opt/code/pad"}
-           bert {:local/root "/opt/root/mxnet/examples/bert"}
-           cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
-           org.apache.mxnet.contrib.clojure/clojure-mxnet {:mvn/version "1.6.0-SNAPSHOT"}}
+          ;  bert {:local/root "/opt/root/mxnet/examples/bert"}
+          ;  cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
+          ;  org.apache.mxnet.contrib.clojure/clojure-mxnet {:mvn/version "1.6.0-SNAPSHOT"}
+           }
           }
   }
 }

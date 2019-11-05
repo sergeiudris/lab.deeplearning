@@ -349,12 +349,12 @@
      :sentence-size sentence-size}))
 
 (defn train
-  [{:keys [batch-size vocab-size num-epoch iters num-categories]}]
+  [{:keys [batch-size vocab-size num-epoch iters num-categories contexts]}]
   (let [{:keys [train-iter valid-iter sentence-size]} iters]
     (prn "--starting training")
     (-> (get-multi-filter-convnet embedding-size sentence-size batch-size 
                                   vocab-size :glove num-categories)
-        (m/module {:contexts [(context/cpu 0) ]})
+        (m/module {:contexts contexts})
         (m/fit {:train-data train-iter
                 :eval-data valid-iter
                 :num-epoch num-epoch
@@ -389,7 +389,8 @@
                            :embedding-size embedding-size
                            :train-count 1600
                            :valid-count 400
-                           :batch-size batch-size}))
+                           :batch-size batch-size
+                           }))
 
   (do
     (mx-io/reset (:train-iter iters))
@@ -397,9 +398,10 @@
 
   (def mmod (train {:batch-size batch-size
                     :vocab-size (count vocab)
-                    :num-epoch 10
+                    :num-epoch 3
                     :num-categories (count categories)
-                    :iters iters}))
+                    :iters iters
+                    :contexts [(context/gpu 0)]}))
 
   ;
   )
