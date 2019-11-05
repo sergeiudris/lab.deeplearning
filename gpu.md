@@ -11,4 +11,6 @@
       - caused by importing other examples into d2l app which had mxnet-linux-cpu deps instead of gpu
   - cudaErrorCudartUnloading: CUDA: CUDA driver version is insufficient for CUDA runtime version
       - https://stackoverflow.com/questions/41409842/ubuntu-16-04-cuda-8-cuda-driver-version-is-insufficient-for-cuda-runtime-vers
+      - driver compatibility table
+            - https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
   
