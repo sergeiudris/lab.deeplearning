@@ -105,6 +105,9 @@ permissions(){
 }
 
 d2l() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
     docker run --gpus all \
                 --rm \
                 --name d2l \
