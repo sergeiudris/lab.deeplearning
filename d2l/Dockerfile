@@ -1,10 +1,11 @@
 # FROM ubuntu:18.04
-FROM nvidia/cuda:9.2-devel-ubuntu18.04
-# FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 # FROM nvidia/cuda:9.0-devel-ubuntu16.04
 # FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
 # FROM nvidia/cuda:9.1-devel-ubuntu16.04
 # FROM nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
+# FROM nvidia/cuda:9.2-devel-ubuntu18.04
+FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
+# FROM  nvidia/cuda:10.1-devel-ubuntu18.04
 
 # supported tags
 # https://gitlab.com/nvidia/container-images/cuda/blob/master/doc/supported-tags.md
@@ -90,7 +91,7 @@ RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet &&
 
 RUN cd mxnet/contrib/clojure-package && \
         sed -i 's/mxnet-full_2.11/mxnet-full_2.11-linux-x86_64-gpu/g' project.clj && \
-        sed -i 's/INTERNAL/1.5.1/g' project.clj && \
+        sed -i 's/INTERNAL/1.6.0-SNAPSHOT/g' project.clj && \
         lein install
 
 
