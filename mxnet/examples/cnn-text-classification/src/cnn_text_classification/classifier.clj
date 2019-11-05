@@ -134,7 +134,7 @@
 
 (comment
 
-  (def mxmodule (train-convnet {:devs (mapv #(context/cpu %) (range (Integer/parseInt "1")))
+  (def mxmodule (train-convnet {:devs [(context/cpu 0)]
                                 :embedding-size 50
                                 :batch-size 10
                                 :test-size 100

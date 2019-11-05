@@ -28,8 +28,8 @@
   :local {:extra-deps
           {
            github.seeris/pad {:local/root "/opt/code/pad"}
-          ;  bert {:local/root "/opt/root/mxnet/examples/bert"}
-          ;  cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
+           bert {:local/root "/opt/root/mxnet/examples/bert"}
+           cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
           ;  org.apache.mxnet.contrib.clojure/clojure-mxnet {:mvn/version "1.6.0-SNAPSHOT"}
            }
           }
