@@ -9,6 +9,7 @@
             [clojure.zip :as zip]
             [clojure.xml]
             [cheshire.core :as json]
+            [pad.prn.core :refer [linst]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
@@ -544,24 +545,20 @@
            train-count valid-count train-iter valid-iter]}]
   (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
         model-sym (get-symbol-bert bert-base num-classes dropout)
-        ; train-iter-data (->> data (take train-count) (data>>bert-iter-data))
-        ; valid-iter-data (->> data (drop train-count) (take valid-count) (data>>bert-iter-data))
-        ; train-iter (iter-data>>bert-iter train-iter-data batch-size (context/cpu))
-        ; valid-iter (iter-data>>bert-iter valid-iter-data batch-size (context/cpu))
         ]
     (prn "--starting train")
     (as-> nil mmod
-      (m/fit (m/module model-sym {:contexts [dev]
-                                  :data-names ["data0" "data1" "data2"]})
-             {:train-data train-iter
-              :eval-data valid-iter
-              :num-epoch num-epoch
-              :fit-params
-              (m/fit-params {:allow-missing true
-                             :arg-params (m/arg-params bert-base)
-                             :aux-params (m/aux-params bert-base)
-                             :optimizer (optimizer/adam {:learning-rate 5e-6 :epsilon 1e-9})
-                             :batch-end-callback (callback/speedometer batch-size 1)})})
+      (m/module model-sym {:contexts [dev]
+                           :data-names ["data0" "data1" "data2"]})
+      (m/fit mmod {:train-data train-iter
+                   :eval-data valid-iter
+                   :num-epoch num-epoch
+                   :fit-params
+                   (m/fit-params {:allow-missing true
+                                  :arg-params (m/arg-params bert-base)
+                                  :aux-params (m/aux-params bert-base)
+                                  :optimizer (optimizer/adam {:learning-rate 5e-6 :epsilon 1e-9})
+                                  :batch-end-callback (callback/speedometer batch-size 1)})})
       (m/save-checkpoint mmod {:prefix fine-tuned-prefix :epoch num-epoch})
       mmod)))
 
@@ -586,32 +583,34 @@
 #_(def bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0}))
 #_(count (m/arg-params bert-base))
 
-(comment
 
-  (def train-count 1600)
-  (def valid-count 400)
+(def train-count 1600)
+(def valid-count 400)
+(def batch-size 32)
+
+(comment
   
   (def train-iter (iter-data>>bert-iter
                    (->> bert-shuffled (take train-count) (data>>bert-iter-data))
                    batch-size
-                   (context/gpu)))
+                   (context/cpu)))
   
   (def valid-iter (iter-data>>bert-iter
                    (->> bert-shuffled (drop train-count) (take valid-count) (data>>bert-iter-data))
                    batch-size
-                   (context/gpu)))
+                   (context/cpu)))
   
   (def mmod (train-bert! {:data bert-shuffled
-                          :train-count 1600
-                          :valid-count 400
                           :train-iter train-iter
                           :valid-iter valid-iter
                           :dev (context/gpu)
                           :num-classes (count categories)
                           :dropout 0.1
-                          :batch-size 32
+                          :batch-size batch-size
                           :num-epoch 3}))
 
+  (-> (context/gpu 0)  (linst))
+  
   ;
   )
 
