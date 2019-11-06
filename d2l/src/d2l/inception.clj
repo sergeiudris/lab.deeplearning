@@ -5,6 +5,7 @@
             [org.apache.clojure-mxnet.module :as m]
             [org.apache.clojure-mxnet.ndarray :as nd]
             [org.apache.clojure-mxnet.symbol :as sym]
+            [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.visualization :as viz]
 
             [opencv4.colors.rgb :as rgb]
@@ -66,9 +67,17 @@
 
 (comment
 
+  (defonce image-net-labels
+    (-> (str data-dir "/synset.txt")
+        (slurp)
+        (str/split #"\n")))
+
+  ;; ImageNet 1000 Labels check
+  (assert (= 1000 (count image-net-labels)))
+
   ;; Loading VGG16
   (defonce vgg-16-mod
-    (-> {:prefix (str data-dir "vgg16") :epoch 0}
+    (-> {:prefix (str data-dir "vgg16") :epoch 0 :contexts [(context/gpu 0)]}
         (m/load-checkpoint)
       ;; Define the shape of input data and bind the name of the input layer
       ;; to "data"
@@ -77,21 +86,12 @@
 
   ;; Loading Inception v3
   (defonce inception-mod
-    (-> {:prefix (str data-dir "Inception-BN") :epoch 0}
+    (-> {:prefix (str data-dir "Inception-BN") :epoch 0 :contexts [(context/gpu 0)]}
         (m/load-checkpoint)
       ;; Define the shape of input data and bind the name of the input layer
       ;; to "data"
         (m/bind {:for-training false
                  :data-shapes [{:name "data" :shape [1 c h w]}]})))
-
-
-  (defonce image-net-labels
-    (-> (str data-dir "/synset.txt")
-        (slurp)
-        (str/split #"\n")))
-
-  ;; ImageNet 1000 Labels check
-  (assert (= 1000 (count image-net-labels)))
 
   (->> (str data-dir "cat-egyptian.jpg")
        (cv/imread)

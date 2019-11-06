@@ -1,7 +1,7 @@
 {:paths ["src"]
  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo/"}
-            ;  "hellonico" {:url "https://repository.hellonico.info/repository/hellonico/"}
+             "hellonico" {:url "https://repository.hellonico.info/repository/hellonico/"}
              "staging" {:url "https://repository.apache.org/content/repositories/staging"}
              "snapshots" {:url "https://repository.apache.org/content/repositories/snapshots"}
              "snapshots2" {:url "https://repository.apache.org/content/groups/snapshots"}
@@ -18,7 +18,7 @@
 
           ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
-          ; origami {:mvn/version "4.0.0-7"}
+          origami {:mvn/version "4.0.0-7"}
           
         ;   github.seeris/pad {:git/url "https://github.com/seeris/pad"
         ;                      :sha "HEAD"
