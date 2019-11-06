@@ -554,11 +554,13 @@
                    :eval-data valid-iter
                    :num-epoch num-epoch
                    :fit-params
-                   (m/fit-params {:allow-missing true
+                   (m/fit-params {
+                                  :allow-missing true
                                   :arg-params (m/arg-params bert-base)
                                   :aux-params (m/aux-params bert-base)
                                   :optimizer (optimizer/adam {:learning-rate 5e-6 :epsilon 1e-9})
-                                  :batch-end-callback (callback/speedometer batch-size 1)})})
+                                  :batch-end-callback (callback/speedometer batch-size 1)
+                                  })})
       (m/save-checkpoint mmod {:prefix fine-tuned-prefix :epoch num-epoch})
       mmod)))
 
@@ -591,6 +593,10 @@
   (def valid-count 400)
   (def batch-size 32)
 
+  (->> bert-shuffled (take train-count) (map :idxs) (flatten) (count)) ; 1600
+  (->> bert-shuffled (take train-count) (map :token-types) (flatten) (count)) ; 1600
+
+
   (def train-iter (iter-data>>bert-iter
                    (->> bert-shuffled (take train-count) (data>>bert-iter-data))
                    batch-size
@@ -604,7 +610,7 @@
   (def mmod (train-bert! {:data bert-shuffled
                           :train-iter train-iter
                           :valid-iter valid-iter
-                          :dev (context/gpu)
+                          :dev (context/gpu 0)
                           :num-classes (count categories)
                           :dropout 0.1
                           :batch-size batch-size
