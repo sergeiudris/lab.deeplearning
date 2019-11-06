@@ -382,16 +382,16 @@
 #_(->> data-limited (first) :tokens (count))
 
 
-(def batch-size 200)
 
 (comment
 
+  (def batch-size 200)
+  
   (def iters (data>>iters {:data data-shuffled
                            :embedding-size embedding-size
                            :train-count 1600
                            :valid-count 400
-                           :batch-size batch-size
-                           }))
+                           :batch-size batch-size}))
 
   (do
     (mx-io/reset (:train-iter iters))
@@ -584,22 +584,23 @@
 #_(count (m/arg-params bert-base))
 
 
-(def train-count 1600)
-(def valid-count 400)
-(def batch-size 32)
 
 (comment
-  
+
+  (def train-count 1600)
+  (def valid-count 400)
+  (def batch-size 32)
+
   (def train-iter (iter-data>>bert-iter
                    (->> bert-shuffled (take train-count) (data>>bert-iter-data))
                    batch-size
                    (context/cpu)))
-  
+
   (def valid-iter (iter-data>>bert-iter
                    (->> bert-shuffled (drop train-count) (take valid-count) (data>>bert-iter-data))
                    batch-size
                    (context/cpu)))
-  
+
   (def mmod (train-bert! {:data bert-shuffled
                           :train-iter train-iter
                           :valid-iter valid-iter
@@ -610,7 +611,7 @@
                           :num-epoch 3}))
 
   (-> (context/gpu 0)  (linst))
-  
+
   ;
   )
 
