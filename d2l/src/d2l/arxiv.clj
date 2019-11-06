@@ -586,7 +586,6 @@
 #_(count (m/arg-params bert-base))
 
 
-
 (comment
 
   (def train-count 1600)
@@ -610,7 +609,7 @@
   (def mmod (train-bert! {:data bert-shuffled
                           :train-iter train-iter
                           :valid-iter valid-iter
-                          :dev (context/gpu 0)
+                          :dev (context/cpu 0)
                           :num-classes (count categories)
                           :dropout 0.1
                           :batch-size batch-size
