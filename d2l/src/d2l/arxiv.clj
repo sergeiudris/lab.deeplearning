@@ -46,7 +46,7 @@
 
 
 (def categories ["cs" "econ" "eess" "math" "physics" "q-bio" "q-fin" "stat"])
-(def categories ["cs" "physics" ])
+(def categories ["cs" "physics" "math" "q-bio" ])
 (def padding-token "</s>")
 (def embedding-size 50)
 
@@ -319,7 +319,7 @@
     (sym/softmax-output "softmax" {:data fc})))
 
 (defn data>>iters
-  [{:keys [data batch-size embedding-size train-count valid-count]}]
+  [{:keys [data batch-size embedding-size train-count valid-count dev]}]
   (let [data (shuffle data)
 
         data-x-train (->> data (take train-count) (map :embedded) (flatten) (vec))
@@ -327,11 +327,11 @@
         data-x-valid (->> data (drop train-count) (take valid-count) (map :embedded) (flatten) (vec))
         data-y-valid (->> data (drop train-count) (take valid-count) (map :label) (vec))
         sentence-size (->> data (first) :embedded (count))
-        x-train  (nd/array data-x-train [train-count 1 sentence-size embedding-size])
-        y-train  (nd/array data-y-train [train-count])
-
-        x-valid  (nd/array data-x-valid [valid-count  1 sentence-size embedding-size])
-        y-valid  (nd/array data-y-valid [valid-count])
+        x-train  (nd/array data-x-train [train-count 1 sentence-size embedding-size] {:ctx dev})
+        y-train  (nd/array data-y-train [train-count] {:ctx dev})
+        
+        x-valid  (nd/array data-x-valid [valid-count  1 sentence-size embedding-size] {:ctx dev})
+        y-valid  (nd/array data-y-valid [valid-count] {:ctx dev})
 
         train-iter (mx-io/ndarray-iter [x-train]
                                        {:label [y-train]
@@ -387,10 +387,13 @@
 
   (def batch-size 200)
   
+  (def dev (context/gpu 0))
+  
   (def iters (data>>iters {:data data-shuffled
                            :embedding-size embedding-size
-                           :train-count 1600
-                           :valid-count 400
+                           :train-count 3200
+                           :valid-count 800
+                           :dev dev
                            :batch-size batch-size}))
 
   (do
@@ -402,8 +405,8 @@
                     :num-epoch 3
                     :num-categories (count categories)
                     :iters iters
-                    :contexts [(context/gpu 0)]}))
-
+                    :contexts [dev]}))
+  
   ;
   )
 
