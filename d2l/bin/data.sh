@@ -138,4 +138,21 @@ bert(){
 
 }
 
+cmu_movies(){
+  
+  set -evx
+
+  DIR=./tmp/data/recom
+
+  mkdir -p $DIR
+
+  cd $DIR
+
+  wget http://www.cs.cmu.edu/~ark/personas/data/MovieSummaries.tar.gz
+
+  tar -xvzf MovieSummaries.tar.gz
+
+  mv ./MovieSummaries/* ./
+}
+
 "$@"
