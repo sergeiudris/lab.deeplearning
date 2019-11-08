@@ -48,9 +48,64 @@
 
 (comment
   
-  (read-nth-line (str data-dir "plot_summaries.txt") 2)
+  (read-nth-line (str data-dir "plot_summaries.txt") 1)
   (-> (read-nth-line (str data-dir "movie.metadata.tsv") 2) (string/split #"\t"))
   
   
   ;
   )
+
+(defn csv-file>>vec!
+  [filename & {:keys [separator] :or {separator "\t"}}]
+  (with-open [reader (io/reader filename)]
+    (->> reader
+         (line-seq)
+         (map #(string/split % (re-pattern (str separator))))
+         (vec))))
+
+#_(def mdata (csv-file>>vec! (str data-dir "movie.metadata.tsv")))
+#_(-> mdata (first))
+
+(defn csv-vec>>entities
+  [columns data]
+  (->> data
+       (mapv #(reduce-kv
+               (fn [a i v]
+                 (assoc a (get columns i) v)) {} %))))
+
+(defn read-metadata!
+  []
+  (->> (str data-dir "movie.metadata.tsv")
+       (csv-file>>vec!)
+       (csv-vec>>entities [:id-wiki :id-freebase :name
+                           :release-date :box-office
+                           :runtime :languages
+                           :countries :genres])))
+
+#_(def mdata (read-metadata! ))
+#_(first mdata)
+
+(defn read-summaries!
+  []
+  (->> (str data-dir "plot_summaries.txt")
+       (csv-file>>vec!)
+       (csv-vec>>entities [:id-wiki :summary])
+       (reduce #(assoc %1 (:id-wiki %2) %2) {} )
+       ))
+
+#_(def summs (read-summaries!))
+#_(first summs)
+#_(count summs)
+
+(defn data>>joined
+  [mdata summs]
+  (->> mdata
+       (mapv (fn [v]
+               (assoc v :summary (-> summs (get (:id-wiki v)) :summary))))
+       (filterv :summary)))
+
+#_(def data (data>>joined mdata summs))
+#_(nth data 3)
+#_(count data)
+#_(->> data (filter :summary) (count))
+
