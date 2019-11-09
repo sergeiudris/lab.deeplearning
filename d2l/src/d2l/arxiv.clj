@@ -380,6 +380,7 @@
 #_(->> data-shuffled (first) :embedded (count))
 #_(->> data-tokened (first) :tokens (count))
 #_(->> data-limited (first) :tokens (count))
+#_(->> data-shuffled (first) :tokens (count))
 
 
 
@@ -393,7 +394,7 @@
                            :embedding-size embedding-size
                            :train-count 3200
                            :valid-count 800
-                           :dev dev
+                           :dev (context/cpu 0)
                            :batch-size batch-size}))
 
   (do
@@ -402,7 +403,7 @@
 
   (def mmod (train {:batch-size batch-size
                     :vocab-size (count vocab)
-                    :num-epoch 3
+                    :num-epoch 10
                     :num-categories (count categories)
                     :iters iters
                     :contexts [dev]}))
