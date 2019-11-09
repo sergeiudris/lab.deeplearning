@@ -288,4 +288,22 @@
                        "The weather is great"
                        "The weather seems great")
   ; [0.44371074 0.5562893] 
+
+  (predict-equivalence fine-tuned-predictor
+                       "Freedom of information is an essential component of health"
+                       "String theory may unify quantom mechanics and general relativity")
+
+  ; [0.66989374 0.3301062]
+
+  (predict-equivalence fine-tuned-predictor
+                       "Freedom of information is an essential component of health"
+                       "Open access to information is a key component of well-being")
+  ; [0.54690504 0.45309496]
+  
+  (predict-equivalence fine-tuned-predictor
+                       "Deeplearning has been growing rapidly in recent years"
+                       "Machine leanring is on the uprise")
+  ; [0.4134582 0.5865418]
+  
+  
   )

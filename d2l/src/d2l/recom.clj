@@ -34,7 +34,9 @@
             [org.apache.clojure-mxnet.callback :as callback]
             [org.apache.clojure-mxnet.layout :as layout]
             [org.apache.clojure-mxnet.random :as random]
-            [org.apache.clojure-mxnet.shape :as shape])
+            [org.apache.clojure-mxnet.shape :as shape]
+            [org.apache.clojure-mxnet.infer :as infer]
+            )
   (:gen-class))
 
 (def data-dir "./tmp/data/recom/")
@@ -44,7 +46,12 @@
   []
   (:exit (sh "bash" "-c" "bash bin/data.sh cmu_movies" :dir "/opt/app")))
 
+(defn load-bert!
+  []
+  (:exit (sh "bash" "-c" "bash bin/data.sh bert_base" :dir "/opt/app")))
+
 #_(load-data!)
+#_(load-bert!)
 #_(-> (sh "bash" "-c" (format "cat %s" (str data-dir "README.txt"))) :out)
 
 (comment
@@ -81,7 +88,10 @@
        (csv-vec>>entities [:id-wiki :id-freebase :name
                            :release-date :box-office
                            :runtime :languages
-                           :countries :genres])))
+                           :countries :genres])
+       (mapv (fn [v]
+               (update v :box-office #(if-not (empty? %) (Float/parseFloat %) 0))))
+       ))
 
 #_(def mdata (read-metadata! ))
 #_(first mdata)
@@ -110,24 +120,71 @@
 #_(count data)
 #_(->> data (filter :summary) (count))
 
+#_(do
+    (def mdata (read-metadata!))
+    (def summs (read-summaries!))
+    (def data (data>>joined mdata summs))
+    (def bert-vocab (bert/read-vocab-json! (str bert-dir "vocab.json")))
+    (def data-tokened (bert/data>>tokened data #(:summary %)))
+    (def data-filtered (->> data-tokened (filterv #(<= (-> % :tokens (count)) 128))))
+    (def data-padded (bert/data>>padded data-filtered bert-vocab))
+    (def data-sorted (->> data-padded (sort-by :box-office >)))
+    (def seq-length (->> data-padded (first) :tokens (count) ))
+    (def data-sorted-map (->> data-sorted (reduce #(assoc %1 (:id-wiki %2) %2) {})  ))
+    )
 
-#_(def mdata (read-metadata!))
-#_(def summs (read-summaries!))
-#_(def data (data>>joined mdata summs))
-#_(def bert-vocab (bert/read-vocab! (str bert-dir "vocab.json")))
-#_(def data-tokened (bert/data>>tokened data #(:summary %)))
-#_(def data-padded (bert/data>>padded data bert-vocab))
+#_(->> (get bert-vocab "idx_to_token") (count)) ; 30522
+#_(->> (get bert-vocab "token_to_idx") (count)) ; 30522
 
-#_(count data-tokened)
+#_(count data-padded)
 #_(->> data-tokened (map #(count (:tokens %))) (apply max))
-#_(def data-sorted (->> data-tokened (sort-by :tokens #(> (count %1) (count %2)))))
-#_(-> data-sorted (nth 5) :tokens (count))
-#_(-> data-sorted (nth 5) :summary)
-#_(-> data-sorted (nth 5) :name)
-#_(-> data-sorted (last) :tokens (count))
 #_(-> data-padded (first) :tokens (count))
+#_(->> data-tokened (filter #(< (-> % :tokens (count)) 128)) (count))
+#_(->> data-tokened (map :box-office) (take 10))
+#_(->> data-tokened
+       (filter #(< (-> % :tokens (count)) 128))
+       (sort-by :box-office >)
+       (take 20)
+       (map #(select-keys % [:name :box-office])))
+#_(count data-sorted)
+#_(-> data-sorted (first) :tokens (count))
+#_(->> data-sorted (take 20) (map #(select-keys % [:id-wiki :name :box-office])))
+#_(-> data-sorted-map (get "161190") (select-keys [:id-wiki :name :box-office]))
 
+(defn find-equivalent
+  "Get the fine-tuned model's opinion on whether two sentences are equivalent:"
+  [{:keys [predictor seq-length data target]}]
+  (->> data
+       (mapv (fn [v]
+               (let [pair [target v]]
+                 (->>
+                  (infer/predict-with-ndarray
+                   predictor
+                   [(nd/array (bert/data>>batch-column pair :idxs) [1 seq-length])
+                    (nd/array (bert/data>>batch-column pair :token-types) [1 seq-length])
+                    (nd/array (bert/data>>batch-column pair :valid-length) [1])])
+                  (first)
+                  (nd/->vec)))))
+       (sort-by first >)))
 
+(comment
+
+  (def fine-tuned-predictor
+    (infer/create-predictor
+     (infer/model-factory (str bert-dir "fine-tune-sentence-bert")
+                          [{:name "data0" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
+                           {:name "data1" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
+                           {:name "data2" :shape [1]            :dtype dtype/FLOAT32 :layout layout/N}])
+     {:epoch 3}))
+
+  (def rlt (find-equivalent {:predictor fine-tuned-predictor
+                             :data data-sorted
+                             :seq-length seq-length
+                             :target (get data-sorted-map "161190")}))
+  
+  
+  
+  )
 
 
 
