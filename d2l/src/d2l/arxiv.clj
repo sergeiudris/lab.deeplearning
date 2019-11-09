@@ -469,10 +469,10 @@
         seq-length 128 #_(inc max-tokens-length)]
     (->> data
          (mapv (fn [v]
-                 (let [tokens (->> v :tokens (take (dec seq-length)))
+                 (let [tokens (->> v :tokens (take (- seq-length 2)))
                        valid-length (count tokens)
                        token-types (pad [] 0 seq-length)
-                       tokens (->> tokens (concat ["[CLS]"]) (vec))
+                       tokens (->> (concat ["[CLS]"] tokens ["[SEP]"] )  (vec))
                        tokens (pad tokens "[PAD]" seq-length)
                        idxs (tokens>>idxs vocab tokens)]
                    (merge v {:batch {:idxs idxs

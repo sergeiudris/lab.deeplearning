@@ -17,6 +17,7 @@
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide
                                    mk-one-hot-vec std]]
+            [pad.ml.bert :as bert]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -108,4 +109,25 @@
 #_(nth data 3)
 #_(count data)
 #_(->> data (filter :summary) (count))
+
+
+#_(def mdata (read-metadata!))
+#_(def summs (read-summaries!))
+#_(def data (data>>joined mdata summs))
+#_(def bert-vocab (bert/read-vocab! (str bert-dir "vocab.json")))
+#_(def data-tokened (bert/data>>tokened data #(:summary %)))
+#_(def data-padded (bert/data>>padded data bert-vocab))
+
+#_(count data-tokened)
+#_(->> data-tokened (map #(count (:tokens %))) (apply max))
+#_(def data-sorted (->> data-tokened (sort-by :tokens #(> (count %1) (count %2)))))
+#_(-> data-sorted (nth 5) :tokens (count))
+#_(-> data-sorted (nth 5) :summary)
+#_(-> data-sorted (nth 5) :name)
+#_(-> data-sorted (last) :tokens (count))
+#_(-> data-padded (first) :tokens (count))
+
+
+
+
 
