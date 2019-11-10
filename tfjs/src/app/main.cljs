@@ -1,4 +1,8 @@
-(ns app.main)
+(ns app.main
+  (:require [app.mnist]
+            [app.baseball]))
+
+#_(enable-console-print!)
 
 (defn reload
   []
@@ -10,3 +14,5 @@
 
 #_(main)
 
+#_(prn 3)
+#_(js/console.log 3)
