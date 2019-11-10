@@ -75,18 +75,18 @@
 
 (defn csv-transform
   [opts]
-  (let [xs (get opts "xs")
-        ys (get opts "ys")
-        values #js [(normalize (get xs "vx0") VX0_MIN VX0_MAX)
-                    (normalize (get xs "vy0") VY0_MIN VY0_MAX)
-                    (normalize (get xs "vz0") VZ0_MIN VZ0_MAX)
-                    (normalize (get xs "ax") AX_MIN AX_MAX)
-                    (normalize (get xs "ay") AY_MIN AY_MAX)
-                    (normalize (get xs "az") AZ_MIN AZ_MAX)
-                    (normalize (get xs "start_speed") START_SPEED_MIN START_SPEED_MAX)
-                    (get xs "left_handed_pitcher")]]
+  (let [xs (aget opts "xs")
+        ys (aget opts "ys")
+        values #js [(normalize (aget xs "vx0") VX0_MIN VX0_MAX)
+                    (normalize (aget xs "vy0") VY0_MIN VY0_MAX)
+                    (normalize (aget xs "vz0") VZ0_MIN VZ0_MAX)
+                    (normalize (aget xs "ax") AX_MIN AX_MAX)
+                    (normalize (aget xs "ay") AY_MIN AY_MAX)
+                    (normalize (aget xs "az") AZ_MIN AZ_MAX)
+                    (normalize (aget xs "start_speed") START_SPEED_MIN START_SPEED_MAX)
+                    (aget xs "left_handed_pitcher")]]
     #js {"xs" values
-         "ys" (get ys "pitch_code")}))
+         "ys" (aget ys "pitch_code")}))
 
 (defn create-model
   []
@@ -165,12 +165,23 @@
         results-p2)
       results-p)))
 
-#_(defn predict-sample
-  [sample]
-  (let [results (-> model
-                    (.predict (tf/tensor sample #js [1 (.. sample -length) ] ))
-                    (.arraySync))])
-  )
+(defn predict-sample
+  [model sample]
+  (let [result (-> model
+                    (.predict (tf/tensor (clj->js sample) #js [1 (count sample) ]))
+                    (.arraySync))]
+    (->>
+     (reduce (fn [a i]
+               (if (> (aget result 0 i) (:vmax a))
+                 (merge a {:predicted-pitch-idx i
+                           :vmax (aget result 0 i)})
+                 a
+                 ))
+             {:vmax 0
+              :predicted-pitch-idx 7}
+             (range 0 NUM_PITCH_CLASSES))
+     :predicted-pitch-idx
+     (class-num>>pitch))))
 
 (def TIMEOUT_BETWEEN_EPOCHS_MS 500)
 (def NUM_EPOCHS 10)
@@ -200,8 +211,10 @@
 
   (def results$ (atom nil))
   
+  (do @results$)
+  
   (-> model
-      (.fitDataset  train-data #js {:epochs 1})
+      (.fitDataset  train-data #js {:epochs 10})
       (.then (fn [his]
                (evaluate model train-valid-data test-valid-data true)
                ))
@@ -209,6 +222,14 @@
                (prn "--finished, reset results atom")
                (reset! results$ results))
              ))
+  
+  (def curveball [2.668 -114.333 -1.908 4.786 25.707 -45.21 78 0])
+  
+  (predict-sample model curveball)
+  ; "Fastball (2-seam)"
+  
+  (predict-sample model [2.668 -154.333 -1.908 4.786 25.707 -45.21 78 0])
+  ; "Fastball (4-seam)"
   
   
   )
