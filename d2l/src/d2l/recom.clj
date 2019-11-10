@@ -136,9 +136,9 @@
 #_(->> (get bert-vocab "idx_to_token") (count)) ; 30522
 #_(->> (get bert-vocab "token_to_idx") (count)) ; 30522
 
-#_(count data-padded)
+#_(count data-sorted)
 #_(->> data-tokened (map #(count (:tokens %))) (apply max))
-#_(-> data-padded (first) :tokens (count))
+#_(-> data-sorted (first) :tokens (count))
 #_(->> data-tokened (filter #(< (-> % :tokens (count)) 128)) (count))
 #_(->> data-tokened (map :box-office) (take 10))
 #_(->> data-tokened
@@ -146,7 +146,6 @@
        (sort-by :box-office >)
        (take 20)
        (map #(select-keys % [:name :box-office])))
-#_(count data-sorted)
 #_(-> data-sorted (first) :tokens (count))
 #_(->> data-sorted (take 20) (map #(select-keys % [:id-wiki :name :box-office])))
 #_(-> data-sorted-map (get "161190") (select-keys [:id-wiki :name :box-office]))

@@ -100,6 +100,20 @@ link_spaces_d2l(){
 
 }
 
+link_spaces_tf(){
+    SPACE=tf
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+
+    ln -s ../../tf/deps.edn spaces/$SPACE/deps.edn
+    ln -s ../../tf/src/tf spaces/$SPACE/tf
+    ln -s ../../tf/tmp spaces/$SPACE/tmp
+    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
+
+
+}
+
 permissions(){
     sudo chmod -R 777 d2l/tmp/ 
 }
@@ -117,6 +131,22 @@ d2l() {
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.d2l \
+                 bash
+}
+
+tf() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
+    docker run --gpus all \
+                --rm \
+                --name tf \
+                -it \
+                -p 7878:7888 \
+                -v "$(pwd)"/tf:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.tf \
                  bash
 }
 
