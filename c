@@ -114,6 +114,18 @@ link_spaces_tf(){
 
 }
 
+link_spaces_tfjs(){
+    SPACE=tfjs
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+
+    ln -s ../../tfjs/shadow-cljs.edn spaces/$SPACE/shadow-cljs.edn
+    ln -s ../../tfjs/src/app spaces/$SPACE/app
+    ln -s ../../tfjs/tmp spaces/$SPACE/tmp
+    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
+}
+
 permissions(){
     sudo chmod -R 777 d2l/tmp/ 
 }
@@ -149,6 +161,27 @@ tf() {
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.tf \
                  bash
+}
+
+tfjs() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
+                # -u $(id -u):$(id -g) \
+    docker run --gpus all \
+                --rm \
+                --name tfjs \
+                -it \
+                -p 7878:7888 \
+                -v "$(pwd)"/tfjs:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.tfjs \
+                 bash
+}
+
+term_tfjs(){
+    docker exec -it tfjs bash
 }
 
 "$@"

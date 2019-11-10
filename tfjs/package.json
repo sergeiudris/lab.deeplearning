@@ -1,0 +1,17 @@
+{
+  "name": "app",
+  "version": "0.1.0",
+  "description": "",
+  "main": "target/main.js",
+  "scripts": {
+    "watch": "shadow-cljs watch app",
+    "compile": "shadow-cljs compile app",
+    "release": "shadow-cljs release app"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "shadow-cljs": "2.8.69"
+  }
+}
