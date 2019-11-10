@@ -1,6 +1,4 @@
-# FROM ubuntu:18.04
-# FROM nvidia/cuda:9.2-devel-ubuntu18.04
-FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
+FROM tensorflow/tensorflow:1.15.0-gpu
 
 # supported tags
 # https://gitlab.com/nvidia/container-images/cuda/blob/master/doc/supported-tags.md
@@ -26,16 +24,6 @@ RUN curl -O https://download.clojure.org/install/$CLOJURE_SCRIPT_VERSION && \
 
 WORKDIR /opt
 
-RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
-    apt-get update && \
-    apt-get install -y  \
-        libopencv-imgcodecs3.4 \
-        libopenblas-base \
-        libatlas3-base \
-        libcurl3 
-
-RUN apt-get install -y curl
-
 ENV LEIN_VERSION=2.9.1
 ENV LEIN_INSTALL=/usr/local/bin/
 
@@ -54,41 +42,6 @@ RUN mkdir -p $LEIN_INSTALL \
 
 ENV PATH=$PATH:$LEIN_INSTALL
 ENV LEIN_ROOT 1
-
-# installing mxnet from source
-
-# RUN apt-get install -y maven
-
-# RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet && \
-#         cd mxnet && \
-#         git checkout v1.6.x && \
-#         git submodule update --init --recursive
-
-# RUN apt-get install -y cmake ninja-build libopenblas-dev
-
-# RUN cd mxnet && \
-#         mkdir build && cd build && \
-#         cmake -DUSE_OPENCV=0 -DUSE_CUDA=1 -DUSE_CUDA_PATH=/usr/local/cuda -DUSE_CUDNN=1 -DUSE_MKLDNN=1 -DCMAKE_BUILD_TYPE=Release -GNinja ..
-
-# RUN cd mxnet/scala-package && \
-#         mvn install
-
-# RUN cd mxnet/contrib/clojure-package && \
-#         lein install
-        
-
-# installing clojure pkg from source
-
-# RUN git clone --recursive https://github.com/apache/incubator-mxnet.git mxnet && \
-#         cd mxnet && \
-#         git checkout c81535ce33a9bb167662af53181f9a42ed5b4bc4 && \
-#         git submodule update --init --recursive
-
-# RUN cd mxnet/contrib/clojure-package && \
-#         sed -i 's/mxnet-full_2.11/mxnet-full_2.11-linux-x86_64-gpu/g' project.clj && \
-#         sed -i 's/INTERNAL/1.6.0-SNAPSHOT/g' project.clj && \
-#         lein install
-
 
 WORKDIR /opt/app
 

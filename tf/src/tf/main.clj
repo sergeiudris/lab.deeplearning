@@ -1,6 +1,7 @@
 (ns tf.main
   (:require [pad.nrepl.core :refer [start-nrepl-server]]
             [tf.core]
+            [tf.tensorflow]
    ;
             ))
 

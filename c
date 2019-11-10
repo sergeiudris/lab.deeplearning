@@ -138,6 +138,7 @@ tf() {
     # use docker directly while docker-compose does not support --gpus flag
     # https://github.com/docker/compose/issues/6691
   
+                # -u $(id -u):$(id -g) \
     docker run --gpus all \
                 --rm \
                 --name tf \
