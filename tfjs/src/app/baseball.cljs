@@ -119,39 +119,51 @@
 (defn calc-pitch-class-eval
   [pitch-idx class-size vals]
   (let [idx (+ (* pitch-idx class-size NUM_PITCH_CLASSES) pitch-idx)]
-    (reduce (fn [a i]
-              (+ a (aget vals (* i NUM_PITCH_CLASSES))))
-            0 (range 0 class-size))))
+    (/
+     (reduce (fn [a i]
+               (+ a (aget vals (+ idx (* i NUM_PITCH_CLASSES)))))
+             0 (range 0 class-size))
+     class-size)
+    ))
 
 (defn evaluate
   [model train-valid-data test-valid-data user-test-data?]
-  (let [presults (.forEachAsync
-                  train-valid-data
-                  (fn [pitch-type-batch]
-                    (let [vals (-> model
-                                   (.predict (get pitch-type-batch "xs"))
-                                   (.dataSync))
-                          class-size (/ TRAINING_DATA_LENGTH NUM_PITCH_CLASSES)]
-                      (reduce (fn [a i]
-                                (assoc-in a [(class-num>>pitch i) :training]
-                                          (calc-pitch-class-eval i class-size vals)))
-                              {} (range 0 NUM_PITCH_CLASSES)))))]
+  (let [results-a (atom nil)
+        results-p (-> train-valid-data
+                      (.forEachAsync
+                       (fn [pitch-type-batch]
+                         (let [vals (-> model
+                                        (.predict (aget pitch-type-batch "xs"))
+                                        (.dataSync))
+                               class-size (/ TRAINING_DATA_LENGTH NUM_PITCH_CLASSES)
+                               results (reduce (fn [a i]
+                                                 (assoc-in a [(class-num>>pitch i) :training]
+                                                           (calc-pitch-class-eval i class-size vals)))
+                                               {} (range 0 NUM_PITCH_CLASSES))]
+                           (do (reset! results-a results)))))
+                      (.then (fn [_]
+                               @results-a)))]
     (if user-test-data?
-      (-> presults
-          (.then
-           (fn [results]
-             (.forEachAsync
-              test-valid-data
-              (fn [pitch-type-batch]
-                (let [vals (-> model
-                               (.predict (get pitch-type-batch "xs"))
-                               (.dataSync))
-                      class-size (/ TEST_DATA_LENGTH NUM_PITCH_CLASSES)]
-                  (reduce (fn [a i]
-                            (assoc-in a [(class-num>>pitch i) :validation]
-                                      (calc-pitch-class-eval i class-size vals)))
-                          results (range 0 NUM_PITCH_CLASSES))))))))
-      presults)))
+      (let [results-a2 (atom nil)
+            results-p2 (-> results-p
+                          (.then
+                           (fn [results]
+                             (-> test-valid-data
+                                 (.forEachAsync
+                                  (fn [pitch-type-batch]
+                                    (let [vals (-> model
+                                                   (.predict (aget pitch-type-batch "xs"))
+                                                   (.dataSync))
+                                          class-size (/ TEST_DATA_LENGTH NUM_PITCH_CLASSES)
+                                          results (reduce (fn [a i]
+                                                            (assoc-in a [(class-num>>pitch i) :validation]
+                                                                      (calc-pitch-class-eval i class-size vals)))
+                                                          results (range 0 NUM_PITCH_CLASSES))]
+                                      (reset! results-a2 results))))
+                                 (.then (fn [_]
+                                          @results-a2))))))]
+        results-p2)
+      results-p)))
 
 #_(defn predict-sample
   [sample]
@@ -189,13 +201,13 @@
   (def results$ (atom nil))
   
   (-> model
-      (.fitDataset  train-data #js {:epochs 2})
+      (.fitDataset  train-data #js {:epochs 1})
       (.then (fn [his]
-               (prn "--history" his)
-               (evaluate model  train-valid-data test-valid-data true)))
-      (.then [results]
-               (prn "--res" res)
-             (reset! results$ results)
+               (evaluate model train-valid-data test-valid-data true)
+               ))
+      (.then (fn [results]
+               (prn "--finished, reset results atom")
+               (reset! results$ results))
              ))
   
   
