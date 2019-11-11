@@ -126,44 +126,40 @@
      class-size)
     ))
 
+(defn evaluate-data
+  [{:keys [model data data-count num-classes assoc-key reduce-init-val]}]
+  (js/Promise.
+   (fn [resolve reject]
+     (.forEachAsync data
+                    (fn [pitch-type-batch]
+                      (let [vals (-> model
+                                     (.predict (aget pitch-type-batch "xs"))
+                                     (.dataSync))
+                            class-size (/ data-count num-classes)
+                            results (reduce (fn [a i]
+                                              (assoc-in a [(class-num>>pitch i) assoc-key]
+                                                        (calc-pitch-class-eval i class-size vals)))
+                                            reduce-init-val (range 0 num-classes))]
+                        (resolve results)))))))
+
 (defn evaluate
   [model train-valid-data test-valid-data user-test-data?]
-  (let [results-a (atom nil)
-        results-p (-> train-valid-data
-                      (.forEachAsync
-                       (fn [pitch-type-batch]
-                         (let [vals (-> model
-                                        (.predict (aget pitch-type-batch "xs"))
-                                        (.dataSync))
-                               class-size (/ TRAINING_DATA_LENGTH NUM_PITCH_CLASSES)
-                               results (reduce (fn [a i]
-                                                 (assoc-in a [(class-num>>pitch i) :training]
-                                                           (calc-pitch-class-eval i class-size vals)))
-                                               {} (range 0 NUM_PITCH_CLASSES))]
-                           (do (reset! results-a results)))))
-                      (.then (fn [_]
-                               @results-a)))]
-    (if user-test-data?
-      (let [results-a2 (atom nil)
-            results-p2 (-> results-p
-                          (.then
-                           (fn [results]
-                             (-> test-valid-data
-                                 (.forEachAsync
-                                  (fn [pitch-type-batch]
-                                    (let [vals (-> model
-                                                   (.predict (aget pitch-type-batch "xs"))
-                                                   (.dataSync))
-                                          class-size (/ TEST_DATA_LENGTH NUM_PITCH_CLASSES)
-                                          results (reduce (fn [a i]
-                                                            (assoc-in a [(class-num>>pitch i) :validation]
-                                                                      (calc-pitch-class-eval i class-size vals)))
-                                                          results (range 0 NUM_PITCH_CLASSES))]
-                                      (reset! results-a2 results))))
-                                 (.then (fn [_]
-                                          @results-a2))))))]
-        results-p2)
-      results-p)))
+  (let [results-p (evaluate-data {:model model
+                                  :data train-valid-data
+                                  :data-count TRAINING_DATA_LENGTH
+                                  :num-classes NUM_PITCH_CLASSES
+                                  :assoc-key :training
+                                  :reduce-init-val {}})
+        results-p2 (when user-test-data?
+                     (-> results-p
+                         (.then (fn [results]
+                                  (evaluate-data {:model model
+                                                  :data test-valid-data
+                                                  :data-count TEST_DATA_LENGTH
+                                                  :num-classes NUM_PITCH_CLASSES
+                                                  :assoc-key :validation
+                                                  :reduce-init-val results})))))]
+    (or results-p2 results-p)))
 
 (defn predict-sample
   [model sample]
