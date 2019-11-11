@@ -204,7 +204,7 @@ convert_bert(){
             -sf tensorflow \
             -in  $DIR_BERT/bert_model.ckpt.meta \
             -iw $DIR_BERT/bert_model.ckpt \
-            --dstNodeName "init" \
+            --dstNodeName "should be output node of the model" \
             -df mxnet \
             -om bert_model.mxnet
 }
