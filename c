@@ -196,14 +196,22 @@ mmdnn(){
 }
 
 convert_bert(){
-    cd d2l/tmp/data/recom/uncased_L-12_H-768_A-12
+    DIR_BERT=/opt/root/d2l/tmp/data/recom/uncased_L-12_H-768_A-12
+    DIR=/opt/root/d2l/tmp/data/recom/converted
+    mkdir -p $DIR
+    cd $DIR
     mmconvert \
             -sf tensorflow \
-            -in  bert_model.ckpt.meta \
-            -iw bert_model.ckpt \
-            --dstNodeName "Assign[0-205]" \
+            -in  $DIR_BERT/bert_model.ckpt.meta \
+            -iw $DIR_BERT/bert_model.ckpt \
+            --dstNodeName "init" \
             -df mxnet \
             -om bert_model.mxnet
+}
+
+clean_converted(){
+    DIR=/opt/root/d2l/tmp/data/recom/converted
+    rm -rf $DIR/*
 }
 
 viz_bert(){
