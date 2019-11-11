@@ -39,19 +39,14 @@
             )
   (:gen-class))
 
-(def data-dir "./tmp/data/recom/")
-(def bert-dir "./tmp/data/bert/")
+(def data-dir "./tmp/data/recom/MovieSummaries")
+(def bert-dir "./tmp/data/recom/uncased_L-12_H-768_A-12")
 
 (defn load-data!
   []
-  (:exit (sh "bash" "-c" "bash bin/data.sh cmu_movies" :dir "/opt/app")))
-
-(defn load-bert!
-  []
-  (:exit (sh "bash" "-c" "bash bin/data.sh bert_base" :dir "/opt/app")))
+  (:exit (sh "bash" "-c" "bash bin/data.sh recom" :dir "/opt/app")))
 
 #_(load-data!)
-#_(load-bert!)
 #_(-> (sh "bash" "-c" (format "cat %s" (str data-dir "README.txt"))) :out)
 
 (comment

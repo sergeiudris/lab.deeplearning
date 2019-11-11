@@ -1,15 +1,11 @@
 #!/bin/bash
 
-
+set -evx
 
 fashion_mnist(){
 
-  set -evx
-
   DIR=./tmp/data/fashion-mnist
-
   mkdir -p $DIR
-
   cd $DIR
 
   wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz
@@ -23,12 +19,8 @@ fashion_mnist(){
 
 mnist(){
 
-  set -evx
-
   DIR=./tmp/data/mnist
-
   mkdir -p $DIR
-
   cd $DIR
 
   wget http://data.mxnet.io/mxnet/data/mnist.zip 
@@ -36,12 +28,8 @@ mnist(){
 }
 
 house(){
-   set -evx
-
   DIR=./tmp/data/house
-
   mkdir -p $DIR
-
   cd $DIR
 
   # wget https://www.kaggle.com/c/house-prices-advanced-regression-techniques/download/train.csv
@@ -63,13 +51,11 @@ ner(){
 }
 
 viz(){
-  set -evx
 
   DIR=./tmp/data/viz
-
   mkdir -p $DIR
-
   cd $DIR
+
   wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
   wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
 
@@ -80,12 +66,8 @@ viz(){
 
 inception(){
 
-  set -evx
-
   DIR=./tmp/data/inception
-
   mkdir -p $DIR
-
   cd $DIR
 
   wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
@@ -105,12 +87,8 @@ inception(){
 
 glove(){
 
-  set -evx
-
   DIR=./tmp/data/glove
-
   mkdir -p $DIR
-
   cd $DIR
 
   wget http://nlp.stanford.edu/data/glove.6B.zip
@@ -121,12 +99,8 @@ glove(){
 
 bert(){
 
-  set -evx
-
   DIR=./tmp/data/bert
-
   mkdir -p $DIR
-
   cd $DIR
 
   curl https://s3.us-east-2.amazonaws.com/mxnet-scala/scala-example-ci/BertQA/vocab.json -o vocab.json
@@ -138,38 +112,20 @@ bert(){
 
 }
 
-cmu_movies(){
-  
-  set -evx
+recom(){
 
   DIR=./tmp/data/recom
-
   mkdir -p $DIR
-
   cd $DIR
 
   wget http://www.cs.cmu.edu/~ark/personas/data/MovieSummaries.tar.gz
-
   tar -xvzf MovieSummaries.tar.gz
-
   mv ./MovieSummaries/* ./
-}
-
-bert_base(){
-
-  set -evx
-
-  DIR=./tmp/data/bert-base
-
-  mkdir -p $DIR
-
-  cd $DIR
 
   wget https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip
-
   unzip *.zip
-
   mv ./uncased_L-12_H-768_A-12/* ./
+
 }
 
 "$@"

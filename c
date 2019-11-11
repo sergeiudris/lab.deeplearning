@@ -184,4 +184,14 @@ term_tfjs(){
     docker exec -it tfjs bash
 }
 
+mmdnn(){
+    docker run \
+            --rm \
+            --name mmdnn \
+            -it \
+            -v "$(pwd)":/opt/root \
+                mmdnn/mmdnn:cpu.small \
+                bash -c "cd /opt/root;bash;"
+}
+
 "$@"
