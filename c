@@ -189,9 +189,31 @@ mmdnn(){
             --rm \
             --name mmdnn \
             -it \
+            -p 6006:6006 \
             -v "$(pwd)":/opt/root \
                 mmdnn/mmdnn:cpu.small \
                 bash -c "cd /opt/root;bash;"
 }
+
+convert_bert(){
+    cd d2l/tmp/data/recom/uncased_L-12_H-768_A-12
+    mmconvert \
+            -sf tensorflow \
+            -in  bert_model.ckpt.meta \
+            -iw bert_model.ckpt \
+            --dstNodeName "Assign[0-205]" \
+            -df mxnet \
+            -om bert_model.mxnet
+}
+
+viz_bert(){
+    cd d2l/tmp/data/recom/uncased_L-12_H-768_A-12
+    mmvismeta bert_model.ckpt.meta ./logs/ 
+}
+
+tensorboard(){
+    tensorboard --logdir ./logs/ --port 6006 --host "0.0.0.0"
+}
+
 
 "$@"
