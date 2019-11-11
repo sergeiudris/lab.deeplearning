@@ -24,3 +24,6 @@
             - when training with BERT on CPU , RAM usage is ~10 GB with batch-size 32
 
 
+#### tfjs on node
+    - https://www.tensorflow.org/js/guide/nodejs
+        - as guide clarifies, single threaded nature of node makes tfjs-node unequal to tf itself or mxnet
