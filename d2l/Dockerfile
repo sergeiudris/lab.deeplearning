@@ -89,6 +89,11 @@ ENV LEIN_ROOT 1
 #         sed -i 's/INTERNAL/1.6.0-SNAPSHOT/g' project.clj && \
 #         lein install
 
+RUN apt-get update && \
+    apt-get install -y  \
+    python3-pip \
+    pip3 install gluonnlp mxnet
+
 
 WORKDIR /opt/app
 
