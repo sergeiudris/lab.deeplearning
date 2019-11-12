@@ -30,24 +30,31 @@
             [org.apache.clojure-mxnet.symbol :as sym])
   (:gen-class))
 
-(when-not (.exists (io/file "captcha_example/captcha_train.lst"))
-  (sh "./get_data.sh"))
+(declare train-data)
+(declare eval-data)
 
-(defonce train-data
-  (mx-io/image-record-iter {:path-imgrec "captcha_example/captcha_train.rec"
-                            :path-imglist "captcha_example/captcha_train.lst"
-                            :batch-size batch-size
-                            :label-width label-width
-                            :data-shape data-shape
-                            :shuffle true
-                            :seed 42}))
+(comment
 
-(defonce eval-data
-  (mx-io/image-record-iter {:path-imgrec "captcha_example/captcha_test.rec"
-                            :path-imglist "captcha_example/captcha_test.lst"
-                            :batch-size batch-size
-                            :label-width label-width
-                            :data-shape data-shape}))
+  (when-not (.exists (io/file "captcha_example/captcha_train.lst"))
+    (sh "./get_data.sh"))
+
+  (defonce train-data
+    (mx-io/image-record-iter {:path-imgrec "captcha_example/captcha_train.rec"
+                              :path-imglist "captcha_example/captcha_train.lst"
+                              :batch-size batch-size
+                              :label-width label-width
+                              :data-shape data-shape
+                              :shuffle true
+                              :seed 42}))
+
+  (defonce eval-data
+    (mx-io/image-record-iter {:path-imgrec "captcha_example/captcha_test.rec"
+                              :path-imglist "captcha_example/captcha_test.lst"
+                              :batch-size batch-size
+                              :label-width label-width
+                              :data-shape data-shape}))
+  
+  )
 
 (defn accuracy
   [label pred & {:keys [by-character]
