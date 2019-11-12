@@ -90,8 +90,7 @@ ENV LEIN_ROOT 1
 #         lein install
 
 RUN apt-get update && \
-    apt-get install -y  \
-    python3-pip \
+    apt-get install -y python3-pip  && \
     pip3 install gluonnlp mxnet
 
 

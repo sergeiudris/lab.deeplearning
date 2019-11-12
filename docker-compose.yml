@@ -124,25 +124,25 @@ services:
   #         cpus: '4'
   #         memory: 8192M
 
-  tfjs:
-    image: sample.ml.tfjs
-    volumes:
-      - ./tfjs:/opt/app
-      - ./:/opt/root
-      - ../pad:/opt/code/pad
-    build:
-      context: ./tfjs
-      dockerfile: ./Dockerfile
-    ports:
-      - 7878:7888
-    # command: bash c dev
-    command: tail -f /dev/null
-    environment:
-      - DISPLAY=10.0.75.1:0.0
-    stdin_open: true
-    tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 8192M
+  # tfjs:
+  #   image: sample.ml.tfjs
+  #   volumes:
+  #     - ./tfjs:/opt/app
+  #     - ./:/opt/root
+  #     - ../pad:/opt/code/pad
+  #   build:
+  #     context: ./tfjs
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7878:7888
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   environment:
+  #     - DISPLAY=10.0.75.1:0.0
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 8192M
