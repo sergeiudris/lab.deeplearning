@@ -214,7 +214,7 @@
                                          :epoch 0}))
 #_(render-model! {:model-name "regression"
                   :model-sym (m/symbol bert-exported)
-                  :shape-map {"data0" [1 384]
-                              "data1" [1 384]
+                  :shape-map {"data0" [1 512]
+                              "data1" [1 512]
                               "data2" [1]}
                   :path bert-exported-dir})
