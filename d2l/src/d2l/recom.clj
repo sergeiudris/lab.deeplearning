@@ -17,7 +17,7 @@
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide
                                    mk-one-hot-vec std]]
-            [pad.ml.bert :as bert]
+            [pad.mxnet.bert :as bert]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -39,10 +39,14 @@
             )
   (:gen-class))
 
-(def data-dir "./tmp/data/recom/MovieSummaries")
+(def data-dir "./tmp/data/recom/MovieSummaries/")
 (def models-dir "./tmp/models/")
 (def bert-model-filename "bert_12_768_12_book_corpus_wiki_en_uncased-75cc780f.params")
 (def bert-vocab-filename "book_corpus_wiki_en_uncased-a6607397.vocab")
+
+(def bert-dir "./tmp/data/bert/")
+(def bert-base-prefix "static_bert_base_net")
+(def bert-base-vocab-filename "vocab.json")
 
 (defn load-data!
   []
@@ -123,9 +127,9 @@
     (def mdata (read-metadata!))
     (def summs (read-summaries!))
     (def data (data>>joined mdata summs))
-    (def bert-vocab (bert/read-vocab-json! (str bert-dir "vocab.json")))
+    (def bert-vocab (bert/read-vocab-json! (str bert-dir bert-base-vocab-filename)))
     (def data-tokened (bert/data>>tokened data #(:summary %)))
-    (def data-filtered (->> data-tokened (filterv #(<= (-> % :tokens (count)) 128))))
+    (def data-filtered (->> data-tokened (filterv #(<= (-> % :tokens (count)) 510))))
     (def data-padded (bert/data>>padded data-filtered bert-vocab))
     (def data-sorted (->> data-padded (sort-by :box-office >)))
     (def seq-length (->> data-padded (first) :tokens (count) ))
@@ -137,7 +141,6 @@
 
 #_(count data-sorted)
 #_(->> data-tokened (map #(count (:tokens %))) (apply max))
-#_(-> data-sorted (first) :tokens (count))
 #_(->> data-tokened (filter #(< (-> % :tokens (count)) 128)) (count))
 #_(->> data-tokened (map :box-office) (take 10))
 #_(->> data-tokened
@@ -169,11 +172,12 @@
 
   (def fine-tuned-predictor
     (infer/create-predictor
-     (infer/model-factory (str bert-dir "fine-tune-sentence-bert")
-                          [{:name "data0" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
-                           {:name "data1" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
-                           {:name "data2" :shape [1]            :dtype dtype/FLOAT32 :layout layout/N}])
-     {:epoch 3}))
+     (infer/model-factory
+      (str bert-dir bert-base-prefix)
+      [{:name "data0" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
+       {:name "data1" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
+       {:name "data2" :shape [1]            :dtype dtype/FLOAT32 :layout layout/N}])
+     {:epoch 0}))
 
   (def rlt (find-equivalent {:predictor fine-tuned-predictor
                              :data data-sorted
