@@ -145,4 +145,17 @@ export_py_bert(){
     --output_dir /opt/app/tmp/models/bert_exported
 }
 
+fasttext(){
+  DIR=./tmp/data/fasttext
+
+  mkdir -p $DIR
+  cd $DIR
+  https://dl.fbaipublicfiles.com/fasttext/vectors-wiki/wiki.simple.vec
+  
+}
+
+glove(){
+  
+}
+
 "$@"
