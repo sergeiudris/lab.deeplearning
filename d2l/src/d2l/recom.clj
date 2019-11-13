@@ -127,21 +127,50 @@
 #_(count data)
 #_(->> data (filter :summary) (count))
 
+(defn predict-equivalent
+  [{:keys [predictor vocab seq-length sentence-a sentence-b]}]
+  (let [pair  (bert/pair>>padded [sentence-a
+                                  sentence-b]
+                                 vocab
+                                 {:seq-length seq-length})]
+    (->>
+     (infer/predict-with-ndarray
+      predictor
+      [(nd/array (-> pair :batch :idxs) [1 seq-length])
+       (nd/array (-> pair :batch :token-types) [1 seq-length])
+       (nd/array (-> pair :batch :valid-length) [1])])
+     (first)
+     (nd/->vec))))
+
+(defn find-equivalents
+  [{:keys [predictor data vocab seq-length sentence]}]
+  (->> data
+       (mapv (fn [v]
+               (predict-equivalent {:predictor predictor
+                                    :vocab vocab
+                                    :seq-length seq-length
+                                    :sentence-a sentence
+                                    :sentence-b v})))
+       (mapv (fn [v score]
+               (assoc v :score (first score))) data)
+       (sort-by :score >)))
+
 #_(do
     (def mdata (read-metadata!))
     (def summs (read-summaries!))
     (def data (data>>joined mdata summs))
     (def bert-vocab (bert/read-vocab-json! (str bert-dir bert-base-vocab-filename)))
     (def data-tokened (bert/data>>tokened data #(:summary %)))
-    (def data-filtered (->> data-tokened (filterv #(<= (-> % :tokens (count)) 510))))
-    (def data-padded (bert/data>>padded data-filtered bert-vocab))
-    (def data-sorted (->> data-padded (sort-by :box-office >)))
-    (def seq-length (->> data-padded (first) :tokens (count) ))
+    (def data-filtered (->> data-tokened (filterv #(<= (-> % :tokens (count)) 254))))
+    ; (def data-padded (bert/data>>padded data-filtered bert-vocab {:seq-length 512}))
+    (def data-sorted (->> data-filtered (sort-by :box-office >)))
+    (def seq-length 512)
     (def data-sorted-map (->> data-sorted (reduce #(assoc %1 (:id-wiki %2) %2) {})  ))
     )
 
 #_(->> (get bert-vocab "idx_to_token") (count)) ; 30522
 #_(->> (get bert-vocab "token_to_idx") (count)) ; 30522
+#_(-> (get bert-vocab "token_to_idx") (get "[SEP]" ))
 
 #_(count data-sorted)
 #_(->> data-tokened (map #(count (:tokens %))) (apply max))
@@ -156,40 +185,44 @@
 #_(->> data-sorted (take 20) (map #(select-keys % [:id-wiki :name :box-office])))
 #_(-> data-sorted-map (get "161190") (select-keys [:id-wiki :name :box-office]))
 
-(defn find-equivalent
-  "Get the fine-tuned model's opinion on whether two sentences are equivalent:"
-  [{:keys [predictor seq-length data target]}]
-  (->> data
-       (mapv (fn [v]
-               (let [pair [target v]]
-                 (->>
-                  (infer/predict-with-ndarray
-                   predictor
-                   [(nd/array (bert/data>>batch-column pair :idxs) [1 seq-length])
-                    (nd/array (bert/data>>batch-column pair :token-types) [1 seq-length])
-                    (nd/array (bert/data>>batch-column pair :valid-length) [1])])
-                  (first)
-                  (nd/->vec)))))
-       (sort-by first >)))
-
 (comment
 
-  (def fine-tuned-predictor
+  (def predictor
     (infer/create-predictor
      (infer/model-factory
-      (str bert-dir bert-base-prefix)
+      (str bert-exported-dir "regression")
       [{:name "data0" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
        {:name "data1" :shape [1 seq-length] :dtype dtype/FLOAT32 :layout layout/NT}
        {:name "data2" :shape [1]            :dtype dtype/FLOAT32 :layout layout/N}])
      {:epoch 0}))
 
-  (def rlt (find-equivalent {:predictor fine-tuned-predictor
-                             :data data-sorted
-                             :seq-length seq-length
-                             :target (get data-sorted-map "161190")}))
-  
-  
-  
+  (def pair-padded (bert/pair>>padded [(get data-sorted-map "161190")
+                                       (get data-sorted-map "20688153")]
+                                      bert-vocab
+                                      {:seq-length 512}))
+  (-> pair-padded :tokens (count))
+  (-> pair-padded :batch :idxs (count))
+  (-> pair-padded :batch :token-types (count))
+  (-> pair-padded :batch :valid-length (count))
+
+  (def rlt (predict-equivalent {:predictor predictor
+                                :seq-length seq-length
+                                :vocab bert-vocab
+                                :sentence-a (get data-sorted-map "20688153")
+                                :sentence-b (get data-sorted-map "161190")
+                                #_(get data-sorted-map "161190")
+                                #_(get data-sorted-map "20688153")}))
+
+
+  (def rlts (find-equivalents {:predictor predictor
+                               :data data-sorted
+                               :vocab bert-vocab
+                               :seq-length seq-length
+                               :sentence (get data-sorted-map "20688153")}))
+
+  (-> rlts (count))
+
+  ;
   )
 
 (defn render-model!

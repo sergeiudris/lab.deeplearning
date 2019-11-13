@@ -140,7 +140,7 @@ bert_base(){
 export_py_bert(){
   # regression classification question_answering
   python3 python/bert/export/export.py \
-    --task regression \
+    --task classification \
     --seq_length 512 \
     --output_dir /opt/app/tmp/models/bert_exported
 }
