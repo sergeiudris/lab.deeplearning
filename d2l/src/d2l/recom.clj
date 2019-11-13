@@ -40,11 +40,15 @@
   (:gen-class))
 
 (def data-dir "./tmp/data/recom/MovieSummaries")
-(def bert-dir "./tmp/data/recom/uncased_L-12_H-768_A-12")
+(def models-dir "./tmp/models/")
+(def bert-model-filename "bert_12_768_12_book_corpus_wiki_en_uncased-75cc780f.params")
+(def bert-vocab-filename "book_corpus_wiki_en_uncased-a6607397.vocab")
 
 (defn load-data!
   []
-  (:exit (sh "bash" "-c" "bash bin/data.sh recom" :dir "/opt/app")))
+  (:exit (sh "bash" "-c" "bash bin/data.sh recom" :dir "/opt/app"))
+  (when-not (.exists (io/file (str models-dir bert-model-filename)))
+    (:out (sh "bash" "-c" "bash bin/data.sh bert_base" :dir "/opt/app"))))
 
 #_(load-data!)
 #_(-> (sh "bash" "-c" (format "cat %s" (str data-dir "README.txt"))) :out)

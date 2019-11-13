@@ -115,6 +115,7 @@ bert(){
 recom(){
 
   DIR=./tmp/data/recom
+
   mkdir -p $DIR
   cd $DIR
 
@@ -122,9 +123,17 @@ recom(){
   tar -xvzf MovieSummaries.tar.gz
   mv ./MovieSummaries/* ./
 
-  wget https://storage.googleapis.com/bert_models/2018_10_18/uncased_L-12_H-768_A-12.zip
-  unzip *.zip
-  mv ./uncased_L-12_H-768_A-12/* ./
+}
+
+bert_base(){
+
+  MXNET_MODELS_DIR=/root/.mxnet/models
+  MODELS_DIR="$(pwd)"/tmp/models
+
+  mkdir -p $MODELS_DIR
+
+  python3 python/bert.py
+  mv $MXNET_MODELS_DIR/* $MODELS_DIR
 
 }
 
