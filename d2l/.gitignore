@@ -41,6 +41,7 @@ build/
 .cpcache
 .m2/settings.xml
 
+__pycache__
 
 # data
 tmp

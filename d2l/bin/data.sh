@@ -137,4 +137,10 @@ bert_base(){
 
 }
 
+export_py_bert(){
+  python3 python/bert/export/export.py \
+    --task regression \
+    --output_dir /opt/app/tmp/models/bert_exported
+}
+
 "$@"

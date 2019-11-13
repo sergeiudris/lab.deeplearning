@@ -49,6 +49,11 @@
 (def bert-base-prefix "static_bert_base_net")
 (def bert-base-vocab-filename "vocab.json")
 
+(def bert-exported-dir "./tmp/models/bert_exported/")
+(def bert-exported-name "regression")
+(def bert-exported-prefix (str bert-exported-dir bert-exported-name))
+
+
 (defn load-data!
   []
   (:exit (sh "bash" "-c" "bash bin/data.sh recom" :dir "/opt/app"))
@@ -207,3 +212,10 @@
                               "data2" [1]}
                   :path bert-dir})
 
+#_(def bert-exported (m/load-checkpoint {:prefix bert-exported-prefix :epoch 0}))
+#_(render-model! {:model-name "bert"
+                  :model-sym (m/symbol bert-base)
+                  :shape-map {"data0" [1 384]
+                              "data1" [1 384]
+                              "data2" [1]}
+                  :path bert-exported-dir})
