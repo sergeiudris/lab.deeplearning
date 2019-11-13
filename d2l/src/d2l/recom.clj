@@ -36,6 +36,7 @@
             [org.apache.clojure-mxnet.random :as random]
             [org.apache.clojure-mxnet.shape :as shape]
             [org.apache.clojure-mxnet.infer :as infer]
+            [org.apache.clojure-mxnet.visualization :as viz]
             )
   (:gen-class))
 
@@ -188,5 +189,21 @@
   
   )
 
+(defn render-model!
+  "Render the `model-sym` and saves it as a pdf file in `path/model-name.pdf`"
+  [{:keys [model-name model-sym shape-map path]}]
+  (let [dot (viz/plot-network
+             model-sym
+             shape-map
+             {:title model-name
+              :node-attrs {:shape "oval" :fixedsize "false"}})]
+    (viz/render dot model-name path)))
 
+#_(def bert-base (m/load-checkpoint {:prefix (str bert-dir bert-base-prefix) :epoch 0}))
+#_(render-model! {:model-name "bert"
+                  :model-sym (m/symbol bert-base)
+                  :shape-map {"data0" [1 128]
+                              "data1" [1 128]
+                              "data2" [1]}
+                  :path bert-dir})
 
