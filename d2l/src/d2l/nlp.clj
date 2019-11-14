@@ -51,31 +51,29 @@
 
 #_(load-data!)
 
+(defn vec>>ndarray
+  [v]
+  (nd/array v [(count v)]))
+
 (comment
-
-  (def glove (-> (glove-path glove-dir 50) (read-glove!)))
-  (def glove-embeddings (:token-to-embedding glove))
-  (def glove-idxs (:idx-to-token glove))
-
+  
+  (nd/concatenate [(nd/array [1 2] [2]) (nd/array [1 2] [2])])
   (def v (get glove-embeddings "matrix"))
 
-  (def glove-normalized (->> glove-embeddings
-                             (seq)
-                             (reduce (fn [a [k v]]
-                                       (assoc a k (vec-normalize v))) {})))
-
-  (nd/concatenate [(nd/array [1 2] [2]) (nd/array [1 2] [2])])
-
-  (def glove-nd (nd/array
-                 (mapcat second (seq glove-normalized))
-                 [(count glove-normalized) (-> glove-normalized (first) (second) (count))]))
-
-  (def glove-arrayed (->> glove-normalized
-                          (seq)
-                          (reduce (fn [a [k v]]
-                                    (assoc a k (nd/array v [(count v)]))) {})))
-
-  (def w-baby (get glove-arrayed "baby"))
+  (do
+    (def glove (-> (glove-path glove-dir 50) (read-glove!)))
+    (def glove-embeddings (:token-to-embedding glove))
+    (def glove-idxs (:idx-to-token glove))
+    (def glove-normalized (->> glove-embeddings
+                               (seq)
+                               (reduce (fn [a [k v]]
+                                         (assoc a k (vec-normalize v))) {})))
+    (def glove-mx (nd/array
+                   (mapcat second (seq glove-normalized))
+                   [(count glove-normalized) (-> glove-normalized (first) (second) (count))]))
+    )
+  
+  (def w-baby (vec>>ndarray (get glove-normalized "baby")))
   (nd/norm w-baby)
   (def w-baby-reshaped (nd/reshape w-baby [-1 1]))
   (def w-dot (nd/dot glove-nd w-baby-reshaped))
