@@ -137,12 +137,14 @@ bert_base(){
 
 }
 
-export_py_bert(){
+export_bert(){
   # regression classification question_answering
   python3 python/bert/export/export.py \
     --task classification \
+    --prefix "bert-cls-4" \
     --seq_length 512 \
-    --output_dir /opt/app/tmp/models/bert_exported
+    --num_classes 4 \
+    --output_dir /opt/app/tmp/data/bert-base
 }
 
 fasttext(){

@@ -94,6 +94,16 @@ parser.add_argument('--dropout',
                     type=float,
                     default=0.1,
                     help='The dropout probability for the classification/regression head.')
+                    
+parser.add_argument('--num_classes',
+                    type=int,
+                    default=2,
+                    help='The number of classes  for the classification head.')
+
+parser.add_argument('--prefix',
+                    type=str,
+                    default=None,
+                    help='The prefix to save as')
 
 args = parser.parse_args()
 
@@ -134,7 +144,7 @@ if args.task == 'classification':
         use_decoder=False,
         use_classifier=False,
         seq_length=args.seq_length)
-    net = HybridBERTClassifier(bert, num_classes=2, dropout=args.dropout)
+    net = HybridBERTClassifier(bert, num_classes=args.num_classes, dropout=args.dropout)
 elif args.task == 'regression':
     bert, _ = get_hybrid_model(
         name=args.model_name,
@@ -212,6 +222,7 @@ def infer(batch, prefix):
 #                              Export the model                               #
 ###############################################################################
 if __name__ == '__main__':
-    prefix = os.path.join(args.output_dir, args.task)
+    file_name =  args.prefix or args.task
+    prefix = os.path.join(args.output_dir,file_name)
     export(batch, prefix)
     infer(batch, prefix)
