@@ -16,7 +16,7 @@
             [pad.math.core :refer [vec-standard-deviation-2
                                    scalar-subtract elwise-divide
                                    vec-mean scalar-divide
-                                   mk-one-hot-vec std vec-normalize vec-norm]]
+                                   mk-one-hot-vec std scalar-divide dot-prod]]
             [pad.mxnet.bert :as bert]
             [pad.mxnet.core :refer [read-glove! glove-path normalize normalize-row]]
             [org.apache.clojure-mxnet.io :as mx-io]
@@ -55,6 +55,23 @@
   [v]
   (nd/array v [(count v)]))
 
+(defn vec-norm
+  "Returns the  Euclidean norm (length or magnitude) of a vector.
+   L2 norm"
+  [a]
+  ; (bigdec (Math/sqrt (dot-prod a a)))
+  (Math/sqrt (+ (dot-prod a a) 1E-10)))
+
+(defn vec-normalize
+  "Returns the unit vector (normalizes) of a"
+  [a]
+  (scalar-divide (vec-norm a) a))
+
+(defn word>>slice
+  [word index mx]
+  (-> (nd/slice mx (get index word))
+      (nd/reshape [-1 1])))
+
 (comment
 
   (nd/concatenate [(nd/array [1 2] [2]) (nd/array [1 2] [2])])
@@ -62,21 +79,43 @@
 
   (do
     (def glove (-> (glove-path glove-dir 50) (read-glove!)))
-    (def glove-embeddings (:token-to-embedding glove))
-    (def glove-idxs (:idx-to-token glove))
-    (def glove-normalized (->> glove-embeddings
-                               (seq)
-                               (reduce (fn [a [k v]]
-                                         (assoc a k (vec-normalize v))) {})))
-    (def glove-mx (nd/array
-                   (mapcat second (seq glove-normalized))
-                   [(count glove-normalized) (-> glove-normalized (first) (second) (count))])))
+    (def glove-vec (:vec glove))
+    (def glove-to-embedding (:token-to-embedding glove))
+    (def glove-to-token (:idx-to-token glove))
+    (def glove-to-idx (:token-to-idx glove))
 
-  (def w-baby (vec>>ndarray (get glove-normalized "baby")))
-  (nd/norm w-baby)
-  (def w-dot (nd/dot glove-mx w-baby))
-  (def topk (-> (ndapi/topk {:data w-dot :axis 0 :k 5 :ret-typ "indices"})))
-  (->> topk (nd/->vec) (mapv #(get glove-idxs (int %))))
+    (first glove-vec)
+    (get glove-to-embedding "the")
+    (get glove-to-token 0)
+    (get glove-to-idx "the")
+
+    (def mx (nd/array
+             (mapcat second glove-vec)
+             [(count glove-vec) (-> glove-vec (first) (second) (count))]))
+    (def mx-norm (ndapi/l2-normalization {:data mx :eps 1E-10})))
+
+  ; word similarity
+
+  (def word (word>>slice "computers" glove-to-idx mx))
+  (def word-dot-prod (-> (nd/dot mx-norm word)
+                         (nd/reshape [(count glove-vec)])))
+  (def topk (-> (ndapi/topk {:data word-dot-prod :axis 0 :k 10 :ret-typ "indices"})))
+  (->> topk (nd/->vec) (mapv #(get glove-to-token (int %))))
+
+  ; word analogy
+
+  (def word1 (word>>slice "man" glove-to-idx mx))
+  (def word2 (word>>slice "woman" glove-to-idx mx))
+  (def word3 (word>>slice "son" glove-to-idx mx))
+
+  (def word-diff (nd/+ word3 (nd/- word2 word1)))
+  (def word-diff-dot-prod (-> (nd/dot mx-norm word-diff)
+                              (nd/reshape [(count glove-vec)])))
+  (def topk (-> (ndapi/topk {:data word-diff-dot-prod :axis 0 :k 1 :ret-typ "indices"})))
+  (->> topk (nd/->vec) (mapv #(get glove-to-token (int %))))
+
+
+
 
   ;
   )
