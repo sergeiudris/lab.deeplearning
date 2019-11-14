@@ -84,9 +84,9 @@
 
   ; word analogy
 
-  (def word1 (word>>slice "man" glove-to-idx mx))
-  (def word2 (word>>slice "woman" glove-to-idx mx))
-  (def word3 (word>>slice "son" glove-to-idx mx))
+  (def word1 (word>>slice "do" glove-to-idx mx))
+  (def word2 (word>>slice "did" glove-to-idx mx))
+  (def word3 (word>>slice "go" glove-to-idx mx))
 
   (def word-diff (nd/+ word3 (nd/- word2 word1)))
   (def word-diff-dot-prod (-> (nd/dot mx-norm word-diff)
