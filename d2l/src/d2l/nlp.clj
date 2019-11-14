@@ -14,7 +14,8 @@
             [pad.io.core :refer [read-nth-line count-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
             [pad.mxnet.bert :as bert]
-            [pad.mxnet.core :refer [read-glove! glove-path normalize normalize-row]]
+            [pad.mxnet.core :refer [read-glove! glove-path normalize normalize-row
+                                    build-vocab]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -114,8 +115,29 @@
   (take 10 (nth sens 1))
   (take 10 (nth sens 2))
   (take 10 (nth sens 3))
+
+  (def vocab (build-vocab text8))
+  (->> vocab :frequencies (take 10))
+  (->> vocab :frequencies-sorted (take 10))
+  (->> vocab :indexes (take 10))
+  (def indices (into {} (filter (fn [[word idx]]
+                                  (>= (get (:frequencies vocab) word) 5)) (:indexes vocab))))
+  (->> indices (sort-by second <) (take 10))
+
+  (def text8-tokens (->> text8
+                         (keep (fn [token]
+                                 (get indices token)))))
+  (count tokens) ;16680599
+  (take 20 text8)
+  (take 20 tokens)
   
-  
+  (def sens-tokens (map #(keep (fn [token]
+                                (get indices token)) %) sens))
+  (-> sens-tokens (nth 1) (count)) ; 9895 9858 9926
+
+
+
+
 
 
   ;
