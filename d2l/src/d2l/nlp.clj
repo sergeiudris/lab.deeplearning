@@ -56,7 +56,7 @@
   (nd/array v [(count v)]))
 
 (comment
-  
+
   (nd/concatenate [(nd/array [1 2] [2]) (nd/array [1 2] [2])])
   (def v (get glove-embeddings "matrix"))
 
@@ -70,17 +70,13 @@
                                          (assoc a k (vec-normalize v))) {})))
     (def glove-mx (nd/array
                    (mapcat second (seq glove-normalized))
-                   [(count glove-normalized) (-> glove-normalized (first) (second) (count))]))
-    )
-  
+                   [(count glove-normalized) (-> glove-normalized (first) (second) (count))])))
+
   (def w-baby (vec>>ndarray (get glove-normalized "baby")))
   (nd/norm w-baby)
-  (def w-baby-reshaped (nd/reshape w-baby [-1 1]))
-  (def w-dot (nd/dot glove-nd w-baby-reshaped))
-  (def w-dot-reshaped (nd/reshape w-dot [(count glove-arrayed)]))
-  (def topk (-> (ndapi/topk {:data w-dot-reshaped :axis 0 :k 5 :ret-typ "indices"}) (nd/->vec)))
-  (def topk (nd/topk w-dot 0  5 "indices"))
-  (->> topk (mapv #(get glove-idxs (int %))))
+  (def w-dot (nd/dot glove-mx w-baby))
+  (def topk (-> (ndapi/topk {:data w-dot :axis 0 :k 5 :ret-typ "indices"})))
+  (->> topk (nd/->vec) (mapv #(get glove-idxs (int %))))
 
   ;
   )
