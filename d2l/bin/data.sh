@@ -154,8 +154,14 @@ fasttext(){
   
 }
 
-glove(){
-  
+text8(){
+  DIR=./tmp/data/text8
+
+  mkdir -p $DIR
+  cd $DIR
+  wget https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/gluon/dataset/large_text_compression_benchmark/text8-6c70299b.zip
+  unzip *.zip
+
 }
 
 "$@"

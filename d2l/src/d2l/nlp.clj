@@ -41,9 +41,12 @@
 (def glove-dir "./tmp/data/glove/")
 
 
+
 (defn load-data!
   []
-  (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app")))
+  (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app"))
+  (:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
+  )
 
 #_(load-data!)
 
@@ -94,7 +97,25 @@
   (def topk (-> (ndapi/topk {:data word-diff-dot-prod :axis 0 :k 1 :ret-typ "indices"})))
   (->> topk (nd/->vec) (mapv #(get glove-to-token (int %))))
 
+  ;
+  )
 
+(def text8-dir "./tmp/data/text8/")
+
+
+(comment
+
+  (def text8-raw (slurp (str text8-dir "text8")))
+  (def text8 (-> text8-raw (string/split  #"\s") (rest)))
+  (nth text8 10000)
+  (count text8)
+  (def sens (partition 10000 10000 ["[PAD]"] text8))
+  (count sens)
+  (take 10 (nth sens 1))
+  (take 10 (nth sens 2))
+  (take 10 (nth sens 3))
+  
+  
 
 
   ;
