@@ -13,10 +13,6 @@
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
-            [pad.math.core :refer [vec-standard-deviation-2
-                                   scalar-subtract elwise-divide
-                                   vec-mean scalar-divide
-                                   mk-one-hot-vec std scalar-divide dot-prod]]
             [pad.mxnet.bert :as bert]
             [pad.mxnet.core :refer [read-glove! glove-path normalize normalize-row]]
             [org.apache.clojure-mxnet.io :as mx-io]
@@ -50,22 +46,6 @@
   (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app")))
 
 #_(load-data!)
-
-(defn vec>>ndarray
-  [v]
-  (nd/array v [(count v)]))
-
-(defn vec-norm
-  "Returns the  Euclidean norm (length or magnitude) of a vector.
-   L2 norm"
-  [a]
-  ; (bigdec (Math/sqrt (dot-prod a a)))
-  (Math/sqrt (+ (dot-prod a a) 1E-10)))
-
-(defn vec-normalize
-  "Returns the unit vector (normalizes) of a"
-  [a]
-  (scalar-divide (vec-norm a) a))
 
 (defn word>>slice
   [word index mx]
