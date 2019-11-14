@@ -108,9 +108,7 @@
 
   (def text8-raw (slurp (str text8-dir "text8")))
   (def text8 (-> text8-raw (string/split  #"\s") (rest)))
-  (nth text8 10000)
-  (count text8)
-  (def sens (partition 10000 10000 ["[PAD]"] text8))
+  (def sens (partition 10000 10000 [] text8))
   (count sens)
   (take 10 (nth sens 1))
   (take 10 (nth sens 2))
@@ -119,25 +117,17 @@
   (def vocab (build-vocab text8))
   (->> vocab :frequencies (take 10))
   (->> vocab :frequencies-sorted (take 10))
-  (->> vocab :indexes (take 10))
+  (-> vocab :indexes (get "the"))
   (def indices (into {} (filter (fn [[word idx]]
                                   (>= (get (:frequencies vocab) word) 5)) (:indexes vocab))))
   (->> indices (sort-by second <) (take 10))
 
-  (def text8-tokens (->> text8
-                         (keep (fn [token]
-                                 (get indices token)))))
-  (count tokens) ;16680599
-  (take 20 text8)
-  (take 20 tokens)
-  
   (def sens-tokens (map #(keep (fn [token]
-                                (get indices token)) %) sens))
+                                 (get indices token)) %) sens))
   (-> sens-tokens (nth 1) (count)) ; 9895 9858 9926
+  (->> (nth sens-tokens 1) (take 5)) ; 18228 17322 36981 4 1754
 
-
-
-
+  (partition  2 2 [] [1 2 3 4 5 6 7])
 
 
   ;
