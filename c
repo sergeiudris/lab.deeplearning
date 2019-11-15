@@ -106,6 +106,21 @@ link_spaces_d2l(){
 
 }
 
+link_spaces_el(){
+    SPACE=el
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+    ln -s ../../el/deps.edn spaces/$SPACE/deps.edn
+    ln -s ../../el/src/el spaces/$SPACE/el
+    ln -s ../../el/tmp spaces/$SPACE/tmp
+
+    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
+    ln -s ../../spaces/mxnet spaces/$SPACE/mxnet
+    ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
+
+}
+
 link_spaces_tf(){
     SPACE=tf
     mkdir -p spaces/$SPACE
@@ -188,6 +203,23 @@ tfjs() {
 
 term_tfjs(){
     docker exec -it tfjs bash
+}
+
+el() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
+                # -u $(id -u):$(id -g) \
+    docker run --gpus all \
+                --rm \
+                --name el \
+                -it \
+                -p 7878:7888 \
+                -v "$(pwd)"/el:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.el \
+                 bash
 }
 
 mmdnn(){

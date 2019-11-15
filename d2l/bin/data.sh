@@ -132,14 +132,14 @@ bert_base(){
 
   mkdir -p $MODELS_DIR
 
-  python3 python/bert.py
+  python3 /opt/root/python/bert.py
   mv $MXNET_MODELS_DIR/* $MODELS_DIR
 
 }
 
 export_bert(){
   # regression classification question_answering
-  python3 python/bert/export/export.py \
+  python3 /opt/root/python/bert/export/export.py \
     --task classification \
     --prefix "bert-cls-4" \
     --seq_length 512 \
