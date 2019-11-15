@@ -1,4 +1,5 @@
 ## links
+
     - https://github.com/NVIDIA/nvidia-docker
         - in 'software&updates' select nvidia driver as active
         - create password
