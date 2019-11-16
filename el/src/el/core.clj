@@ -4,6 +4,7 @@
             [clojure.java.shell :refer [sh]]
             [clojure.string :as string]
             [clojure.xml]
+            [clojure.data.xml :as xml]
             [pad.prn.core :refer [linst]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
@@ -40,10 +41,46 @@
 (def wiki-sample-dir "./tmp/data/wiki-sample/")
 (def wiki-sample-file "enwiki-20191101-pages-articles1.xml-p10p30302")
 
-(comment 
-  
+(comment
+
   (def data-raw (slurp (str wiki-sample-dir wiki-sample-file)))
-  (def data-xml (clojure.xml/parse data-raw))
+  (def data-xml (xml/parse data-raw))
+
+  (with-open [input (java.io.FileInputStream. (str wiki-sample-dir wiki-sample-file))]
+    (->> input
+         (xml/parse)
+         (type)))
+
+  (def input-stream (java.io.FileInputStream. (str wiki-sample-dir wiki-sample-file)))
+  (def data-xml (xml/parse input-stream))
+  (def data-sample-lazy (->> data-xml
+                             :content
+                             (filter #(->> (:content %) (map :tag) (into #{}) :redirect (not)))
+                             (take 3)
+                             (mapv (fn [v]
+                                     (update
+                                      v :content
+                                      (partial
+                                       map
+                                       (fn [x]
+                                         (if (= (:tag x) :revision)
+                                           (update
+                                            x :content
+                                            (partial
+                                             map
+                                             (fn [y]
+                                               (if (= (:tag y) :text)
+                                                 (let [s (-> y :content (first) (str)) ]
+                                                   (assoc
+                                                    y :content (list (subs s 0 (min 300 (count s)))) )
+                                                   )
+                                                 y))))
+                                           x))))))
+                             ))
+  
+  (def data-sample-edn (read-string (str data-sample-lazy)))
+  
+  
   
   ;
   )
