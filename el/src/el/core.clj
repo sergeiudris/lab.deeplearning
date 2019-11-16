@@ -41,6 +41,7 @@
 (def wiki-sample-dir "./tmp/data/wiki-sample/")
 (def wiki-sample-file "enwiki-20191101-pages-articles1.xml-p10p30302")
 
+
 (comment
 
   (def data-raw (slurp (str wiki-sample-dir wiki-sample-file)))
@@ -53,32 +54,45 @@
 
   (def input-stream (java.io.FileInputStream. (str wiki-sample-dir wiki-sample-file)))
   (def data-xml (xml/parse input-stream))
-  (def data-sample-lazy (->> data-xml
-                             :content
-                             (filter #(->> (:content %) (map :tag) (into #{}) :redirect (not)))
-                             (take 3)
-                             (mapv (fn [v]
-                                     (update
-                                      v :content
-                                      (partial
-                                       map
-                                       (fn [x]
-                                         (if (= (:tag x) :revision)
-                                           (update
-                                            x :content
-                                            (partial
-                                             map
-                                             (fn [y]
-                                               (if (= (:tag y) :text)
-                                                 (let [s (-> y :content (first) (str)) ]
-                                                   (assoc
-                                                    y :content (list (subs s 0 (min 300 (count s)))) )
-                                                   )
-                                                 y))))
-                                           x))))))
-                             ))
   
-  (def data-sample-edn (read-string (str data-sample-lazy)))
+  (->> data-xml :content (count))
+  
+  (def data-sample-xml (->> data-xml
+                            :content
+                            (rest)
+                            (filter #(->> (:content %) (map :tag) (into #{}) :redirect (not)))
+                            (take 10)
+                            (mapv (fn [v]
+                                    (update
+                                     v :content
+                                     (partial
+                                      map
+                                      (fn [x]
+                                        (if (= (:tag x) :revision)
+                                          (update
+                                           x :content
+                                           (partial
+                                            map
+                                            (fn [y]
+                                              (if (= (:tag y) :text)
+                                                (let [s (-> y :content (first) (str))]
+                                                  (assoc
+                                                   y :content (list (subs s 0 (min 500 (count s))))))
+                                                y))))
+                                          x))))))))
+  
+  (def data-sample-edn (read-string (str data-sample-xml)))
+  
+  (def data (->> data-sample-edn
+                 (map (fn [x]
+                        {:title (->> x :content (filter #(= (:tag %) :title))
+                                     (first) :content (first))
+                         :id (->> x :content (filter #(= (:tag %) :id))
+                                  (first) :content (first))
+                         :text (->> x :content (filter #(= (:tag %) :revision))
+                                    (first) :content (filter #(= (:tag %) :text))
+                                    (first) :content (first))}))))
+  (map :title data)
   
   
   
