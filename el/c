@@ -3,7 +3,7 @@
 
 dev(){
 
-  clojure -A:core:local -m el.main
+  clojure -A:core:local -O:mem -m el.main 
 
 }
 

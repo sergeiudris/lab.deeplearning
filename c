@@ -216,6 +216,8 @@ el() {
     docker run --gpus all \
                 --rm \
                 --name el \
+                --memory 12g \
+                --cpus 4.000 \
                 -it \
                 -p 7878:7888 \
                 -v "$(pwd)"/el:/opt/app \

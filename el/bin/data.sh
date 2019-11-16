@@ -12,5 +12,18 @@ export_bert(){
     --output_dir /opt/app/tmp/data/bert-base
 }
 
+wiki_sample(){
+
+  DIR=./tmp/data/wiki-sample
+  mkdir -p $DIR
+  cd $DIR
+
+  FILE=enwiki-20191101-pages-articles1.xml-p10p30302.bz2
+
+  wget https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/enwiki/20191101/$FILE
+  bzip2 -d $FILE
+
+}
+
 
 "$@"

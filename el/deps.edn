@@ -3,6 +3,7 @@
              "clojars" {:url "https://clojars.org/repo/"}
              }
  :deps {}
+
  :aliases
  {:core {:extra-deps
          {org.clojure/clojure {:mvn/version "1.10.1"}
@@ -20,5 +21,6 @@
            github.seeris/pad {:local/root "/opt/code/pad"}
            }
           }
+  :mem {:jvm-opts ["-Xms1024m" "-Xmx11998m"]}
   }
 }

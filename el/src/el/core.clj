@@ -34,3 +34,16 @@
   (:gen-class))
 
 #_(:out (sh "bash" "-c" "bash bin/data.sh export_bert" :dir "/opt/app"))
+#_(:out (sh "bash" "-c" "bash bin/data.sh wiki_sample" :dir "/opt/app"))
+
+
+(def wiki-sample-dir "./tmp/data/wiki-sample/")
+(def wiki-sample-file "enwiki-20191101-pages-articles1.xml-p10p30302")
+
+(comment 
+  
+  (def data-raw (slurp (str wiki-sample-dir wiki-sample-file)))
+  (def data-xml (clojure.xml/parse data-raw))
+  
+  ;
+  )
