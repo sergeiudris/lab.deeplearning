@@ -39,7 +39,7 @@
 
 
 (def wiki-sample-dir "./tmp/data/wiki-sample/")
-(def wiki-sample-file "enwiki-20191101-pages-articles1.xml-p10p30302")
+(def wiki-sample-file "enwiki-20191101-pages-articles1.xml-p10p30302") ; 64417 categories
 
 
 (comment
@@ -54,47 +54,67 @@
 
   (def input-stream (java.io.FileInputStream. (str wiki-sample-dir wiki-sample-file)))
   (def data-xml (xml/parse input-stream))
-  
+
   (->> data-xml :content (count))
-  
+
   (def data-sample-xml (->> data-xml
                             :content
                             (rest)
                             (filter #(->> (:content %) (map :tag) (into #{}) :redirect (not)))
-                            (take 10)
-                            (mapv (fn [v]
-                                    (update
-                                     v :content
-                                     (partial
-                                      map
-                                      (fn [x]
-                                        (if (= (:tag x) :revision)
-                                          (update
-                                           x :content
-                                           (partial
-                                            map
-                                            (fn [y]
-                                              (if (= (:tag y) :text)
-                                                (let [s (-> y :content (first) (str))]
-                                                  (assoc
-                                                   y :content (list (subs s 0 (min 500 (count s))))))
-                                                y))))
-                                          x))))))))
-  
-  (def data-sample-edn (read-string (str data-sample-xml)))
-  
-  (def data (->> data-sample-edn
+                            #_(take 1)
+                            #_(mapv (fn [v]
+                                      (update
+                                       v :content
+                                       (partial
+                                        map
+                                        (fn [x]
+                                          (if (= (:tag x) :revision)
+                                            (update
+                                             x :content
+                                             (partial
+                                              map
+                                              (fn [y]
+                                                (if (= (:tag y) :text)
+                                                  (let [s (-> y :content (first) (str))]
+                                                    (assoc
+                                                     y :content (list (subs s 0 (min 500 (count s))))))
+                                                  y))))
+                                            x))))))))
+
+  ; (def data-sample-edn (read-string (str data-sample-xml)))
+
+  (def data (->> data-sample-xml
                  (map (fn [x]
                         {:title (->> x :content (filter #(= (:tag %) :title))
-                                     (first) :content (first))
+                                     (first) :content (first) (str))
                          :id (->> x :content (filter #(= (:tag %) :id))
-                                  (first) :content (first))
+                                  (first) :content (first) (str))
                          :text (->> x :content (filter #(= (:tag %) :revision))
                                     (first) :content (filter #(= (:tag %) :text))
-                                    (first) :content (first))}))))
-  (map :title data)
+                                    (first) :content (first) (str))}))
+                 (map (fn [x]
+                        (assoc x :categories
+                               (->> (:text x)
+                                    (re-seq #"\[\[Category:(.+)\]\]")
+                                    (mapv last)))))))
   
+  ; (map #(select-keys % [:title :categories]) data)
   
-  
+  (->> data (mapcat :categories) (distinct) (count))
+
+  (def text (-> data (first) :text))
+
+
+  (def cats "\n \n [[Category:Anarchism|]] 
+    \n [[Category:Anti-capitalism]] 
+    \n [[Category:Anti-fascism]] 
+    \n [[Category:Far-left politics]] 
+    \n [[Category:Libertarian socialism]] 
+    \n [[Category:Political culture]] 
+    \n [[Category:Political ideologies]] 
+    \n [[Category:Social theories]]")
+
+  (re-seq #"\[\[Category:(.+)\]\]" text)
+
   ;
   )
