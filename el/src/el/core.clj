@@ -41,8 +41,30 @@
 (def wiki-sample-dir "./tmp/data/wiki-sample/")
 (def wiki-sample-file "enwiki-20191101-pages-articles1.xml-p10p30302") ; 64417 categories
 
+(defn shorten-text
+  [v]
+  (update
+   v :content
+   (partial
+    map
+    (fn [x]
+      (if (= (:tag x) :revision)
+        (update
+         x :content
+         (partial
+          map
+          (fn [y]
+            (if (= (:tag y) :text)
+              (let [s (-> y :content (first) (str))]
+                (assoc
+                 y :content (list (subs s 0 (min 500 (count s))))))
+              y))))
+        x)))))
+
 
 (comment
+
+  ; https://stackoverflow.com/questions/47832579/clojure-reducing-large-lazy-collection-eats-up-memory
 
   (def data-raw (slurp (str wiki-sample-dir wiki-sample-file)))
   (def data-xml (xml/parse data-raw))
@@ -62,24 +84,20 @@
                             (rest)
                             (filter #(->> (:content %) (map :tag) (into #{}) :redirect (not)))
                             #_(take 1)
-                            #_(mapv (fn [v]
-                                      (update
-                                       v :content
-                                       (partial
-                                        map
-                                        (fn [x]
-                                          (if (= (:tag x) :revision)
-                                            (update
-                                             x :content
-                                             (partial
-                                              map
-                                              (fn [y]
-                                                (if (= (:tag y) :text)
-                                                  (let [s (-> y :content (first) (str))]
-                                                    (assoc
-                                                     y :content (list (subs s 0 (min 500 (count s))))))
-                                                  y))))
-                                            x))))))))
+                            #_(mapv shorten-text)))
+  
+  ; uses ~2G of mem
+  ; data-sample-xml is a global var, holding head of the seq 
+  (count data-sample-xml)
+  
+  ; uses ~300mb
+  ; no refs are used
+  (->> (java.io.FileInputStream. (str wiki-sample-dir wiki-sample-file))
+       (xml/parse)
+       :content
+       (rest)
+       (filter #(->> (:content %) (map :tag) (into #{}) :redirect (not)))
+       (count))
 
   ; (def data-sample-edn (read-string (str data-sample-xml)))
 
@@ -97,9 +115,9 @@
                                (->> (:text x)
                                     (re-seq #"\[\[Category:(.+)\]\]")
                                     (mapv last)))))))
-  
+
   ; (map #(select-keys % [:title :categories]) data)
-  
+
   (->> data (mapcat :categories) (distinct) (count))
 
   (def text (-> data (first) :text))

@@ -14,11 +14,28 @@ export_bert(){
 
 wiki_sample(){
 
+  # https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/enwiki/20191101/
+
   DIR=./tmp/data/wiki-sample
   mkdir -p $DIR
   cd $DIR
 
   FILE=enwiki-20191101-pages-articles1.xml-p10p30302.bz2
+
+  wget https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/enwiki/20191101/$FILE
+  bzip2 -d $FILE
+
+}
+
+wiki(){
+
+   # https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/enwiki/20191101/
+
+  DIR=./tmp/data/wiki
+  mkdir -p $DIR
+  cd $DIR
+
+  FILE=enwiki-20191101-pages-articles.xml.bz2
 
   wget https://ftp.acc.umu.se/mirror/wikimedia.org/dumps/enwiki/20191101/$FILE
   bzip2 -d $FILE
