@@ -4,14 +4,13 @@
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
             [clojure.string :as str]
-            [clojure.data.csv :refer [read-csv]]
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
+            [pad.dataset.house-prices :refer [fetch-dataset
+                                              csv-file>>edn-file!
+                                              edn-file>>data!
+                                              data-dir standardize]]
             [pad.core :refer [str-float? str>>float resolve-var]]
-            [pad.math.core :refer [vec-standard-deviation-2
-                                   scalar-subtract elwise-divide
-                                   vec-mean scalar-divide
-                                   mk-one-hot-vec std]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -31,184 +30,27 @@
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
 
-(def data-dir "./tmp/data/house/")
-(def model-prefix "tmp/model/house/test")
+(def opts
+  {:dir/shell "/opt/app/"
+   :dir/target "/opt/app/tmp/data/house-prices/"})
 
-(defn load-data!
-  []
-  (when-not  (.exists (io/file (str data-dir "train.csv")))
-    (do
-      (:exit (sh "bash" "-c" "bash bin/data.sh house" :dir "/opt/app"))
-      (:exit (sh "bash" "-c" "sudo chmod -R 777 tmp/" :dir "/opt/app"))
-      (sh "bash" "-c" "mkdir -p tmp/data/house" :dir "/opt/app")
-      (sh "bash" "-c" "mkdir -p tmp/model/house" :dir "/opt/app")
-      )))
+#_(fetch-dataset opts)
 
-#_(load-data!)
+#_(csv-file>>edn-file! {:filename (str (data-dir opts) "train.csv")
+                        :filename-out (str (data-dir opts) "train.csv.txt")
+                        :nulls ["NA"]
+                        :row>>row-vals (fn [row]
+                                         (-> row (rest) (butlast)))
+                        :row>>score (fn [row]
+                                      [(str>>float (last row))])})
 
-(defn read-column-mdata
-  [{:keys [nulls] :or {nulls []}}]
-  (letfn [(val>>column-type [v]
-            (cond
-              (str-float? v) :float
-              :else :string))
-          (column-type [rows column-idx]
-            (->>
-             rows
-             (map #(nth % column-idx))
-             (take-while #(not (contained? % nulls)))
-             #_(take-last 1)
-             (last)
-             (val>>column-type)))
-          (column [a k v rows]
-            (let [dtype (column-type rows k)]
-              (assoc a k (merge
-                          {:idx k
-                           :val v
-                           :dtype dtype}
-                          (when (= dtype :string)
-                            {:distinct (distinct (mapv #(nth % k) rows))})))))]
-    (with-open [reader-train (io/reader (str data-dir "train.csv"))
-                reader-test (io/reader (str data-dir "test.csv"))]
-      (let [data-train (read-csv reader-train)
-            data-test (read-csv reader-test)
-            rows-train (map #(-> % (rest) (butlast)) data-train)
-            rows-test (map #(-> % (rest)) data-test)
-            attrs (-> (first data-train) (rest) (butlast))
-            rows (concat rows-train rows-test)]
-        (reduce-kv (fn [a k v]
-                     (column a k v rows))
-                   (sorted-map) (vec attrs))))
-    ))
-
-#_(read-column-mdata {:nulls ["NA"]})
-
-
-#_(std [1 2 -1 0 4])
-#_(std [10, 12, 23, 23, 16, 23, 21, 16]) ;4.898979485566356 4.8989794855664
-#_(standarddev [1 2 -1 0 4])
-
-(defn standardize
-  [v]
-  (->> (scalar-subtract  (vec-mean v) v)
-       (scalar-divide (std v))))
-
-#_(def a-row (with-open [reader (io/reader (str data-dir "train.csv"))]
-               (let [data (read-csv reader)
-                     rows (rest data)]
-                 (->> (nth rows 16)
-                      (rest)
-                      (butlast)
-                      (map str>>float)
-                      (filter number?)
-                      (vec))))) ; 11241
-
-#_(standardize [1 0 0 0])
-#_(vec-mean [1 0 0 0])
-#_(standardize [1 0 0 0 1/4])
-
-#_(vec-mean [1 2 3])
-#_(standardize [1 2 3 2])
-#_(standardize [1000000 2 0 1])
-
-
-#_(standardize a-row)
-#_(std a-row) ; 1920.3065877667573 1920.3065877668 
-#_(vec-mean a-row) ;702.4571428571429 702.45714285714
-#_(scalar-subtract  (vec-mean a-row) a-row)
-
-#_(standardize-2 a-row)
-
-#_(vec-standard-deviation-2 a-row)
-#_(standarddev a-row)
-#_(vec-mean a-row)
-#_(mean a-row)
-#_(scalar-subtract  (vec-mean a-row) a-row)
-
-
-(defn csv>>data
-  [{:keys [filename nulls row>>row-vals row>>score data>>rows]
-    :or {data>>rows (fn [data] (rest data) )}
-    }]
-  (letfn [(val-null-float? [v dtype]
-            (and  (= dtype :float) (contained? v nulls)))
-          (val-string? [v dtype]
-            (= dtype :string))
-          (val-float? [v dtype]
-            (= dtype :float))
-          (col-idx-float? [idx colsm]
-            (= (get-in colsm [idx :dtype]) :float))
-          (row>>row-nums [row colsm]
-            (map-indexed (fn [i x]
-                           (if  (col-idx-float? i colsm)
-                             (str>>float x)
-                             x)) row))
-          (string-field>>val [colm v]
-            (->> (:distinct colm)
-                 (keep-indexed (fn [i x]
-                                 (if (= x v)
-                                   (mk-one-hot-vec (count (:distinct colm)) i)
-                                   nil)))
-                 (first)))
-          (float-field>>val [colm v row row-mean])
-          (row>>mean [row]
-            (->> row
-                 (keep-indexed (fn [i v]
-                                 (if (number? v) v nil)))
-                 (vec-mean)))
-          (row>>float-features [row]
-            (->> row
-                 (filter number?)
-                 (standardize)))
-          (row>>float-null-features [row ]
-                                    (->> row
-                                         (filter string?)
-                                         (map (constantly 0.0))
-                                         ))
-          (row>>string-features [row]
-            (filter coll? row))
-          (attr>>val [idx v row rows colsm row-mean]
-            (let [colm (get colsm idx)
-                  dtype (:dtype colm)]
-              (cond
-                (val-string? v dtype) (string-field>>val colm v)
-                (val-null-float? v dtype) v
-                (val-float? v dtype) v
-                :else (throw (Exception. "uknown/missing column :dtype")))))]
-    (with-open [reader (io/reader filename)]
-      (let [data (read-csv reader)
-            rows (data>>rows data)
-            colsm (read-column-mdata {:nulls nulls})]
-        (mapv (fn [row]
-                (let [row-vals (row>>row-vals row)
-                      row-nums (row>>row-nums row-vals colsm)
-                      row-mean (row>>mean row-nums)
-                      row-hots (map-indexed
-                                (fn [idx v]
-                                  (attr>>val idx v row-vals rows colsm row-mean))
-                                row-nums)
-                      float-features
-                      #_(->> (range 0 36) (mapv (fn [_] (rand))))
-                      (row>>float-features row-hots)
-                      float-null-features (row>>float-null-features row-hots)
-
-                      string-features (row>>string-features row-hots)]
-                  {:id (first row)
-                   :features (-> (concat  float-features float-null-features string-features) (flatten) (vec))
-                   :score (row>>score row)})) rows)))))
-
-(defn csv-file>>edn-file!
-  [opts]
-  (->>
-   (csv>>data opts)
-   (str)
-   (spit (:filename-out opts))))
-
-(defn edn-file>>data!
-  [filename]
-  (-> filename
-      (slurp)
-      (read-string)))
+#_(csv-file>>edn-file! {:filename (str (data-dir opts) "test.csv")
+                        :filename-out (str (data-dir opts) "test.csv.txt")
+                        :nulls ["NA"]
+                        :row>>row-vals (fn [row]
+                                         (-> row (rest)))
+                        :row>>score (fn [row]
+                                      [100000])})
 
 (defn data>>XY
   [data]
@@ -225,7 +67,7 @@
 (defn train-XY
   []
   (->>
-   (str data-dir "train.csv.txt")
+   (str (data-dir opts) "train.csv.txt")
    (edn-file>>data!)
    (take 1200)
    (data>>XY)))
@@ -233,7 +75,7 @@
 (defn test-XY
   []
   (->>
-   (str data-dir "train.csv.txt")
+   (str (data-dir opts) "train.csv.txt")
    (edn-file>>data!)
    (drop 1200)
    (take 260)
@@ -243,32 +85,6 @@
 #_(def test-xy (test-XY))
 #_(def labels (->> test-xy (map :score) (flatten)))
 #_(standardize labels)
-
-#_(csv-file>>edn-file! {:filename (str data-dir "train.csv")
-                        :filename-out (str data-dir "train.csv.txt")
-                        :nulls ["NA"]
-                        :row>>row-vals (fn [row]
-                                         (-> row (rest) (butlast)))
-                        :row>>score (fn [row]
-                                      [(str>>float (last row))])})
-
-#_(csv-file>>edn-file! {:filename (str data-dir "test.csv")
-                        :filename-out (str data-dir "test.csv.txt")
-                        :nulls ["NA"]
-                        :row>>row-vals (fn [row]
-                                         (-> row (rest)))
-                        :row>>score (fn [row]
-                                      [100000])})
-
-
-#_(-> (slurp (str data-dir "test.csv.txt")) (read-string) (count) )
-#_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (count))
-#_(-> (slurp (str data-dir "train.csv.txt")) (read-string) (first) :features (count))
-#_(-> (slurp (str data-dir "test.csv.txt")) (read-string)  (first) :features (count))
-
-#_(read-nth-line (str data-dir "train.csv") 704)
-#_(read-nth-line (str data-dir "test.csv") 1)
-
 
 (def batch-size 200) ;; the batch size
 (def num-epoch 100) ;; the number of training epochs
@@ -318,13 +134,13 @@
                {; :kvstore kvstore
                 :initializer (initializer/xavier)
                 ; :batch-end-callback (callback/speedometer batch-size 100)
-                
+
                 ; use optimizer/adam instead
                 :optimizer (optimizer/sgd
                             {:learning-rate 0.01
                              :momentum 0.001
                              :lr-scheduler (lr-scheduler/factor-scheduler 3000 0.9)})
-                
+
                 ; need log-rmse metric instead
                 :eval-metric (eval-metric/rmse)})}))))
 

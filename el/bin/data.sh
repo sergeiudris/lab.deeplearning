@@ -42,5 +42,19 @@ wiki(){
 
 }
 
+cmu(){
+
+ # http://www.cs.cmu.edu/~ark/personas/
+ 
+  DIR=./tmp/data/cmu
+
+  mkdir -p $DIR
+  cd $DIR
+
+  wget http://www.cs.cmu.edu/~ark/personas/data/MovieSummaries.tar.gz
+  tar -xvzf MovieSummaries.tar.gz
+
+}
+
 
 "$@"

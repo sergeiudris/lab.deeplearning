@@ -14,8 +14,8 @@
             [pad.io.core :refer [read-nth-line count-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
             [pad.mxnet.bert :as bert]
-            [pad.mxnet.core :refer [read-glove! glove-path normalize normalize-row
-                                    build-vocab]]
+            [pad.mxnet.core :refer [build-vocab]]
+            [pad.dataset.glove :refer [read-glove! glove-filepath]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -38,18 +38,7 @@
             [org.apache.clojure-mxnet.visualization :as viz])
   (:gen-class))
 
-(def data-dir "./tmp/data/nlp/")
-(def glove-dir "./tmp/data/glove/")
-
-
-
-(defn load-data!
-  []
-  (:exit (sh "bash" "-c" "bash bin/data.sh glove" :dir "/opt/app"))
-  (:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
-  )
-
-#_(load-data!)
+#_(:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
 
 (defn word>>slice
   [word index mx]
@@ -62,7 +51,7 @@
   (def v (get glove-embeddings "matrix"))
 
   (do
-    (def glove (-> (glove-path glove-dir 50) (read-glove!)))
+    (def glove (-> (glove-filepath glove-dir 50) (read-glove!)))
     (def glove-vec (:vec glove))
     (def glove-to-embedding (:token-to-embedding glove))
     (def glove-to-token (:idx-to-token glove))
