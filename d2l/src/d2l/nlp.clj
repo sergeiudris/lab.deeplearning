@@ -13,8 +13,7 @@
             [pad.coll.core :refer [contained?]]
             [pad.io.core :refer [read-nth-line count-lines]]
             [pad.core :refer [str-float? str>>float resolve-var]]
-            [pad.mxnet.bert :as bert]
-            [pad.mxnet.core :refer [build-vocab]]
+            [pad.ml.nlp :refer [build-vocab]]
             [pad.dataset.glove :refer [read-glove! glove-filepath]]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
@@ -40,6 +39,10 @@
 
 #_(:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
 
+(def opts {:dir/shell "/opt/app/"
+           :dir/target "/opt/app/tmp/data/glove/"
+           :embedding-size 50})
+
 (defn word>>slice
   [word index mx]
   (-> (nd/slice mx (get index word))
@@ -51,7 +54,7 @@
   (def v (get glove-embeddings "matrix"))
 
   (do
-    (def glove (-> (glove-filepath glove-dir 50) (read-glove!)))
+    (def glove (-> (glove-filepath opts) (read-glove!)))
     (def glove-vec (:vec glove))
     (def glove-to-embedding (:token-to-embedding glove))
     (def glove-to-token (:idx-to-token glove))
