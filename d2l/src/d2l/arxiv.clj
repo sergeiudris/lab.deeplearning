@@ -22,7 +22,7 @@
                                        data>>tokened tokened>>limited data>>embedded
                                        data>>padded fetch-arxiv-sample]]
             [pad.ml.nlp :refer [build-vocab]]
-            [pad.dataset.bert :refer [read-vocab-json!]]
+            [pad.dataset.bert :refer [read-vocab-json! fetch-bert-example fetch-bert-python] :as bert]
             [org.apache.clojure-mxnet.io :as mx-io]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.module :as m]
@@ -61,13 +61,12 @@
    :glove.dir/target (str app-dir "/tmp/data/glove/")
    :glove/embedding-size embedding-size
 
-
    :bert.dir/shell "/opt/app/"
    :bert.dir/from-mxnet-example (str app-dir "/tmp/data/bert/")
    :bert.dir/python-scripts "/opt/root/python/bert/"
    :bert.dir/mxnet "/root/.mxnet/"
    :bert.python/task "classification"
-   :bert.python/seq-length 512
+   :bert.python/seq-length 128
    :bert.python/prefix "bert-cls-4"
    :bert.python/num-classes 4
    :bert.python/output-dir (str app-dir "/tmp/data/bert-export/")
@@ -77,6 +76,8 @@
    :arxiv/categories categories})
 
 #_(fetch-arxiv-sample opts)
+#_(fetch-bert-python opts)
+
 
 ; from clojure mxnet example
 
@@ -226,61 +227,6 @@
 ; code/logic taken (or modified) from https://github.com/apache/incubator-mxnet/tree/master/contrib/clojure-package/examples/bert
 ; all the credits go to the authors
 
-
-(defn break-out-punctuation [s str-match]
-  (->> (string/split (str s "<punc>") (re-pattern (str "\\" str-match)))
-       (map #(string/replace % "<punc>" str-match))))
-
-(defn break-out-punctuations [s]
-  (if-let [target-char (first (re-seq #"[.,?!]" s))]
-    (break-out-punctuation s target-char)
-    [s]))
-
-(defn text>>bert-tokens [s]
-  (->> (string/split s #"\s+")
-       (mapcat break-out-punctuations)
-       (into [])))
-
-(defn pad [tokens pad-item num]
-  (if (>= (count tokens) num)
-    tokens
-    (into tokens (repeat (- num (count tokens)) pad-item))))
-
-(defn tokens>>idxs
-  [vocab tokens]
-  (let [token-to-idx (get  vocab "token_to_idx")
-        idx-unk (get token-to-idx "[UNK]")]
-    (mapv #(get token-to-idx % idx-unk) tokens)))
-
-(defn idxs>>tokens
-  [vocab idxs]
-  (let [idx-to-token (get  vocab "idx_to_token")]
-    (mapv #(get idx-to-token %) idxs)))
-
-(defn data>>bert-tokened
-  [data]
-  (mapv #(assoc % :tokens (-> % :description (string/lower-case) (text>>bert-tokens))) data))
-
-(defn data>>bert-padded
-  [data vocab]
-  (let [max-tokens-length (->> data (mapv #(count (:tokens %))) (apply max))
-        seq-length 128 #_(inc max-tokens-length)]
-    (->> data
-         (mapv (fn [v]
-                 (let [tokens (->> v :tokens (take (- seq-length 2)))
-                       valid-length (count tokens)
-                       token-types (pad [] 0 seq-length)
-                       tokens (->> (concat ["[CLS]"] tokens ["[SEP]"] )  (vec))
-                       tokens (pad tokens "[PAD]" seq-length)
-                       idxs (tokens>>idxs vocab tokens)]
-                   (merge v {:batch {:idxs idxs
-                                     :token-types token-types
-                                     :valid-length [valid-length] }
-                             :tokens tokens
-                             })
-                   ))
-               ))))
-
 (defn get-symbol-bert
   [pre-model num-classes dropout]
   (as-> (m/symbol pre-model) data
@@ -338,16 +284,16 @@
                                                {:ctx dev})}
                          :data-batch-size batch-size})))
 
-(def fine-tuned-prefix (str (:dir/bert-example opts) "fine-tune-sentence-bert"))
-(def model-path-prefix (str (:dir/bert-example opts) "static_bert_base_net"))
+
 
 (defn train-bert!
   [{:keys [data dev num-epoch num-classes
            dropout batch-size
            train-count valid-count train-iter valid-iter]}]
-  (let [bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0})
-        model-sym (get-symbol-bert bert-base num-classes dropout)
-        ]
+  (let [bert-base (m/load-checkpoint {:prefix (str (:bert.python/output-dir opts)
+                                                   (:bert.python/prefix opts))
+                                      :epoch 0})
+        model-sym (get-symbol-bert bert-base num-classes dropout)]
     (prn "--starting train")
     (as-> nil mmod
       (m/module model-sym {:contexts [dev]
@@ -356,42 +302,43 @@
                    :eval-data valid-iter
                    :num-epoch num-epoch
                    :fit-params
-                   (m/fit-params {
-                                  :allow-missing true
+                   (m/fit-params {:allow-missing true
                                   :arg-params (m/arg-params bert-base)
                                   :aux-params (m/aux-params bert-base)
                                   :optimizer (optimizer/adam {:learning-rate 5e-6 :epsilon 1e-9})
-                                  :batch-end-callback (callback/speedometer batch-size 1)
-                                  })})
-      (m/save-checkpoint mmod {:prefix fine-tuned-prefix :epoch num-epoch})
+                                  :batch-end-callback (callback/speedometer batch-size 1)})})
+      #_(m/save-checkpoint mmod {:prefix (str (:bert.python/output-dir opts)
+                                              "bert-cls-4-tuned") :epoch num-epoch})
       mmod)))
-
-#_(do
-    (def bert-vocab (read-bert-vocab!))
-    (def data (categories>>data! categories))
-    (def data-labeled (data>>labeled data))
-    (def bert-tokened (data>>bert-tokened data-labeled))
-    (def bert-padded (data>>bert-padded bert-tokened bert-vocab))
-    (def bert-shuffled (shuffle bert-padded)))
-
-#_(count bert-shuffled)
-#_(-> data-labeled (first) )
-#_(-> bert-shuffled (first) :tokens (count))
-#_(-> bert-shuffled (first) :batch :token-types (count))
-#_(->> bert-shuffled (mapv #(count (:tokens %))) (apply max))
-#_(->> bert-shuffled (mapv #(-> % :batch :token-types (count))) (apply max))
-#_(def iter-data (data>>bert-iter-data bert-shuffled))
-#_(-> iter-data :data2 (count))
-#_(->> iter-data :labels (count) )
-
-#_(def bert-base (m/load-checkpoint {:prefix model-path-prefix :epoch 0}))
-#_(count (m/arg-params bert-base))
-
 
 (comment
 
-  (def train-count 1600)
-  (def valid-count 400)
+  (do
+    (def vocab (bert/read-vocab-json! (str (opts :bert.python/output-dir) "vocab.json")))
+    (def data (categories>>data! opts))
+    (def data-labeled (data>>labeled data))
+    (def bert-tokened (bert/data>>tokened data-labeled :description))
+    (def bert-padded (bert/data>>padded bert-tokened vocab {:seq-length 128} ))
+    (def bert-shuffled (shuffle bert-padded))
+    )
+
+  (count data)
+  (-> (get vocab "token_to_idx") (count))
+  (-> (get vocab "idx_to_token") (count))
+
+  (count bert-shuffled)
+  (-> data-labeled (first))
+  (-> bert-shuffled (first) :tokens (count))
+  (-> bert-shuffled (first) :batch :token-types (count))
+  (->> bert-shuffled (mapv #(count (:tokens %))) (apply max))
+  (->> bert-shuffled (mapv #(-> % :batch :token-types (count))) (apply max))
+  (def iter-data (data>>bert-iter-data bert-shuffled))
+  (-> iter-data :data2 (count))
+  (->> iter-data :labels (count))
+
+
+  (def train-count 3200)
+  (def valid-count 800)
   (def batch-size 32)
 
   (->> bert-shuffled (take train-count) (map :idxs) (flatten) (count)) ; 1600
@@ -416,11 +363,9 @@
                           :dropout 0.1
                           :batch-size batch-size
                           :num-epoch 3}))
+  ; mem 10G with seq-length 128   
 
-  (-> (context/gpu 0)  (linst))
 
   ;
   )
-
-
 
