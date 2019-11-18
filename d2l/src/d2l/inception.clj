@@ -7,23 +7,48 @@
             [org.apache.clojure-mxnet.symbol :as sym]
             [org.apache.clojure-mxnet.context :as context]
             [org.apache.clojure-mxnet.visualization :as viz]
-
             [opencv4.colors.rgb :as rgb]
             [opencv4.mxnet :as mx-cv]
             [opencv4.core :as cv]
             [opencv4.utils :as cvu]))
 
-(def data-dir "./tmp/data/inception/")
+(def opts
+  {:dir/shell "/opt/app/"
+   :dir/target "/opt/app/tmp/data/inception/"})
 
-(defn load-data!
-  []
-  (when-not  (.exists (io/file (str data-dir "Inception-BN-symbol.json")))
-    (do
-      (:exit (sh "bash" "-c" "bash bin/data.sh inception" :dir "/opt/app")))))
+(defn data-dir
+  [{:dir/keys [target]}]
+  target)
 
-#_(load-data!)
+(defn script-fetch-inception
+  [{:dir/keys [target]}]
+  (format "
+  DIR=%s
+  mkdir -p $DIR
+  cd $DIR
 
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
 
+  wget http://data.mxnet.io/models/imagenet/inception-bn/Inception-BN-symbol.json
+  wget http://data.mxnet.io/models/imagenet/inception-bn/Inception-BN-0126.params
+  mv Inception-BN-0126.params Inception-BN-0000.params
+
+  wget http://data.mxnet.io/models/imagenet/synset.txt
+
+  # images
+  wget https://arthurcaillau.com/assets/images/cat-egyptian.jpg
+  wget https://arthurcaillau.com/assets/images/dog-2.jpg
+  wget https://arthurcaillau.com/assets/images/guitarplayer.jpg
+  " target))
+
+(defn fetch-inception
+  [{:dir/keys [shell] :as opts}]
+  (sh "bash" "-c" (script-fetch-inception opts) :dir shell))
+
+#_(.exists (io/file (str (data-dir opts) "Inception-BN-symbol.json")))
+#_(:exit (sh "bash" "-c" (format "rm -rf %s" (data-dir opts)) :dir (opts :dir/shell)))
+#_(:exit (fetch-inception opts))
 
 (def h 224) ;; Image height
 (def w 224) ;; Image width
@@ -68,7 +93,7 @@
 (comment
 
   (defonce image-net-labels
-    (-> (str data-dir "/synset.txt")
+    (-> (str (data-dir opts) "/synset.txt")
         (slurp)
         (str/split #"\n")))
 
@@ -77,7 +102,7 @@
 
   ;; Loading VGG16
   (defonce vgg-16-mod
-    (-> {:prefix (str data-dir "vgg16") :epoch 0 :contexts [(context/gpu 0)]}
+    (-> {:prefix (str (data-dir opts) "vgg16") :epoch 0 :contexts [(context/gpu 0)]}
         (m/load-checkpoint)
       ;; Define the shape of input data and bind the name of the input layer
       ;; to "data"
@@ -86,14 +111,14 @@
 
   ;; Loading Inception v3
   (defonce inception-mod
-    (-> {:prefix (str data-dir "Inception-BN") :epoch 0 :contexts [(context/gpu 0)]}
+    (-> {:prefix (str (data-dir opts) "Inception-BN") :epoch 0 :contexts [(context/gpu 0)]}
         (m/load-checkpoint)
       ;; Define the shape of input data and bind the name of the input layer
       ;; to "data"
         (m/bind {:for-training false
                  :data-shapes [{:name "data" :shape [1 c h w]}]})))
 
-  (->> (str data-dir "cat-egyptian.jpg")
+  (->> (str (data-dir opts) "cat-egyptian.jpg")
        (cv/imread)
        (preprocess-img-mat)
        (predict inception-mod image-net-labels))
@@ -104,7 +129,7 @@
   ;  {:label "n02127052 lynx, catamount", :prob 0.005353977}
   ;  {:label "n02123597 Siamese cat, Siamese", :prob 4.658181E-5})
 
-  (->> (str data-dir "cat-egyptian.jpg")
+  (->> (str (data-dir opts) "cat-egyptian.jpg")
        (cv/imread)
        (preprocess-img-mat)
        (predict vgg-16-mod image-net-labels))
@@ -118,7 +143,7 @@
 
 
 
-  (->> (str data-dir "dog-2.jpg")
+  (->> (str (data-dir opts) "dog-2.jpg")
        (cv/imread)
        (preprocess-img-mat)
        (predict inception-mod image-net-labels))
@@ -130,7 +155,7 @@
   ;   :prob 0.0019004609}
   ;  {:label "n04409515 tennis ball", :prob 0.0013417462})
 
-  (->> (str data-dir "dog-2.jpg")
+  (->> (str (data-dir opts) "dog-2.jpg")
        (cv/imread)
        (preprocess-img-mat)
        (predict vgg-16-mod image-net-labels))
@@ -144,7 +169,7 @@
 
 
 
-  (->> (str data-dir "guitarplayer.jpg")
+  (->> (str (data-dir opts) "guitarplayer.jpg")
        (cv/imread)
        (preprocess-img-mat)
        (predict inception-mod image-net-labels))
@@ -155,7 +180,7 @@
   ;  {:label "n02787622 banjo", :prob 0.0024602269}
   ;  {:label "n03759954 microphone, mike", :prob 0.0018765893})
 
-  (->> (str data-dir "guitarplayer.jpg")
+  (->> (str (data-dir opts) "guitarplayer.jpg")
        (cv/imread)
        (preprocess-img-mat)
        (predict vgg-16-mod image-net-labels))
