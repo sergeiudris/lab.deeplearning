@@ -114,8 +114,6 @@ link_spaces_el(){
     ln -s ../../el/deps.edn spaces/$SPACE/deps.edn
     ln -s ../../el/src/el spaces/$SPACE/el
     ln -s ../../el/tmp spaces/$SPACE/tmp
-    ln -s ../../el/bin spaces/$SPACE/bin
-
 
     ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
     ln -s ../../spaces/mxnet spaces/$SPACE/mxnet
