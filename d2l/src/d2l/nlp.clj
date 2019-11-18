@@ -39,11 +39,13 @@
 
 #_(:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
 
-(def opts {:glove.dir/shell "/opt/app/"
-           :glove.dir/target "/opt/app/tmp/data/glove/"
+(def app-dir "/opt/root/d2l/")
+
+(def opts {:glove.dir/shell app-dir
+           :glove.dir/target (str app-dir "/tmp/data/glove/") 
            :glove/embedding-size 50
-           :text8.dir/shell "/opt/app/"
-           :text8.dir/target "/opt/app/tmp/data/text8/"
+           :text8.dir/shell app-dir
+           :text8.dir/target (str app-dir "/tmp/data/text8/")
            })
 
 (defn word>>slice
@@ -92,6 +94,12 @@
                               (nd/reshape [(count glove-vec)])))
   (def topk (-> (ndapi/topk {:data word-diff-dot-prod :axis 0 :k 1 :ret-typ "indices"})))
   (->> topk (nd/->vec) (mapv #(get glove-to-token (int %))))
+
+  ; next word
+
+  (def word1 (word>>slice "the" glove-to-idx mx))
+  (def word2 (word>>slice "cat" glove-to-idx mx))
+  (def word3 (word>>slice "sat" glove-to-idx mx))
 
   ;
   )

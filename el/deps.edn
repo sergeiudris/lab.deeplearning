@@ -20,6 +20,7 @@
   :local {:extra-deps
           {
            github.seeris/pad {:local/root "/opt/code/pad"}
+           d2l {:local/root "/opt/root/d2l"}
            }
           }
   :mem {:jvm-opts ["-Xms1024m" "-Xmx11998m"]}
