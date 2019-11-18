@@ -19,8 +19,8 @@
                                    mk-one-hot-vec std]]
             [pad.dataset.glove :refer [glove-filepath read-glove!]]
             [pad.dataset.arxiv :refer [categories>>data! data>>labeled
-                                       data>>tokened tokened>>limited
-                                       data>>padded]]
+                                       data>>tokened tokened>>limited data>>embedded
+                                       data>>padded fetch-arxiv-sample]]
             [pad.ml.nlp :refer [build-vocab]]
             [pad.dataset.bert :refer [read-vocab-json!]]
             [org.apache.clojure-mxnet.io :as mx-io]
@@ -54,24 +54,29 @@
 (def num-filter 200)
 (def dropout 0.5)
 
+(def app-dir "/opt/root/d2l/")
+
 (def opts
-  {:glove.dir/shell "/opt/app/"
-   :glove.dir/target "/opt/app/tmp/data/glove/"
+  {:glove.dir/shell app-dir
+   :glove.dir/target (str app-dir "/tmp/data/glove/")
    :glove/embedding-size embedding-size
 
-   :bert.dir/bert-export "/opt/app/tmp/data/bert-export/"
-   :bert.dir/bert-example "/opt/app/tmp/data/bert/"
-   :bert.dir/python-bert "/opt/root/python/bert/"
-   :bert.dir/mxnet "/root/.mxnet/"
 
-   :arxiv.dir/shell "/opt/app/"
-   :arxiv.dir/target "/opt/app/tmp/data/atxiv/"
+   :bert.dir/shell "/opt/app/"
+   :bert.dir/from-mxnet-example (str app-dir "/tmp/data/bert/")
+   :bert.dir/python-scripts "/opt/root/python/bert/"
+   :bert.dir/mxnet "/root/.mxnet/"
+   :bert.python/task "classification"
+   :bert.python/seq-length 512
+   :bert.python/prefix "bert-cls-4"
+   :bert.python/num-classes 4
+   :bert.python/output-dir (str app-dir "/tmp/data/bert-export/")
+   
+   :arxiv.dir/shell app-dir
+   :arxiv.dir/target "/opt/app/tmp/data/arxiv/"
    :arxiv/categories categories})
 
-
-#_(def glove (read-glove! (glove-filepath opts)))
-#_(count glove) ; 400000
-#_(get glove "information")
+#_(fetch-arxiv-sample opts)
 
 ; from clojure mxnet example
 
@@ -162,33 +167,39 @@
                 :num-epoch num-epoch
                 :fit-params (m/fit-params {:optimizer (optimizer/adam)})}))))
 
-#_(do
+(comment
+
+  (do
+    (def glove (read-glove! (glove-filepath opts)))
+    (def glove-vec (:vec glove))
+    (def glove-to-embedding (:token-to-embedding glove))
+    (def glove-to-token (:idx-to-token glove))
+    (def glove-to-idx (:token-to-idx glove))
+
     (def data (categories>>data! opts))
-    (def glove (read-glove! (glove-path opts)))
     (def data-labeled (data>>labeled data))
     (def data-tokened (data>>tokened data-labeled))
-    (def data-limited (tokened>>limited data-tokened :tokens-limit 128))
+    (def data-limited (tokened>>limited data-tokened))
     (def data-padded (data>>padded data-tokened))
     (def vocab (build-vocab (map :tokens data-padded)))
-    (def vocab-embeddings (build-vocab-embeddings vocab glove embedding-size))
+    (def vocab-embeddings (build-vocab-embeddings (:indexes vocab) glove embedding-size))
     (def data-embedded (data>>embedded data-padded vocab-embeddings))
     (def data-shuffled (shuffle data-embedded))
     )
+  
 
-#_(count data-shuffled)
-#_(->> data-shuffled (take 30) (map :setSpec))
-#_(->> data-shuffled (map :setSpec) (distinct))
-#_(->> data-shuffled (first) :embedded (count))
-#_(->> data-tokened (first) :tokens (count))
-#_(->> data-limited (first) :tokens (count))
-#_(->> data-shuffled (first) :tokens (count))
-
-(comment
+  (count data)
+  (->> data-shuffled (take 30) (map :setSpec))
+  (->> data-shuffled (map :setSpec) (distinct))
+  (->> data-shuffled (first) :embedded (count))
+  (->> data-tokened (first) :tokens (count))
+  (->> data-limited (first) :tokens (count))
+  (->> data-shuffled (first) :tokens (count))
 
   (def batch-size 200)
-  
+
   (def dev (context/gpu 0))
-  
+
   (def iters (data>>iters {:data data-shuffled
                            :embedding-size embedding-size
                            :train-count 3200
@@ -206,7 +217,7 @@
                     :num-categories (count categories)
                     :iters iters
                     :contexts [dev]}))
-  
+
   ;
   )
 
