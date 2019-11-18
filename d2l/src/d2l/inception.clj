@@ -13,15 +13,15 @@
             [opencv4.utils :as cvu]))
 
 (def opts
-  {:dir/shell "/opt/app/"
-   :dir/target "/opt/app/tmp/data/inception/"})
+  {:inception.dir/shell "/opt/app/"
+   :inception.dir/target "/opt/app/tmp/data/inception/"})
 
 (defn data-dir
-  [{:dir/keys [target]}]
+  [{:inception.dir/keys [target]}]
   target)
 
 (defn script-fetch-inception
-  [{:dir/keys [target]}]
+  [{:inception.dir/keys [target]}]
   (format "
   DIR=%s
   mkdir -p $DIR
@@ -43,11 +43,11 @@
   " target))
 
 (defn fetch-inception
-  [{:dir/keys [shell] :as opts}]
+  [{:inception.dir/keys [shell] :as opts}]
   (sh "bash" "-c" (script-fetch-inception opts) :dir shell))
 
 #_(.exists (io/file (str (data-dir opts) "Inception-BN-symbol.json")))
-#_(:exit (sh "bash" "-c" (format "rm -rf %s" (data-dir opts)) :dir (opts :dir/shell)))
+#_(:exit (sh "bash" "-c" (format "rm -rf %s" (data-dir opts)) :dir (opts :inception.dir/shell)))
 #_(:exit (fetch-inception opts))
 
 (def h 224) ;; Image height

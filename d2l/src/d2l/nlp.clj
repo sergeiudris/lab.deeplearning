@@ -39,9 +39,12 @@
 
 #_(:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
 
-(def opts {:dir/shell "/opt/app/"
-           :dir/target "/opt/app/tmp/data/glove/"
-           :embedding-size 50})
+(def opts {:glove.dir/shell "/opt/app/"
+           :glove.dir/target "/opt/app/tmp/data/glove/"
+           :glove/embedding-size 50
+           :text8.dir/shell "/opt/app/"
+           :text8.dir/target "/opt/app/tmp/data/text8/"
+           })
 
 (defn word>>slice
   [word index mx]
@@ -93,12 +96,29 @@
   ;
   )
 
-(def text8-dir "./tmp/data/text8/")
+(defn script-fetch-text8
+  [{:text8.dir/keys [target]}]
+  (format "
+  DIR=%s
+  mkdir -p $DIR
+  cd $DIR
+        
+  wget https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/gluon/dataset/large_text_compression_benchmark/text8-6c70299b.zip
+  unzip *.zip
+  " target))
+
+(defn fetch-text8
+  [{:text8.dir/keys [shell] :as opts}]
+  (sh "bash" "-c" (script-fetch-text8 opts) :dir shell))
+
+(defn text8-dir
+  [{:text8.dir/keys [target]}]
+  target)
 
 
 (comment
 
-  (def text8-raw (slurp (str text8-dir "text8")))
+  (def text8-raw (slurp (str (text8-dir opts) "text8")))
   (def text8 (-> text8-raw (string/split  #"\s") (rest)))
   (def sens (partition 10000 10000 [] text8))
   (count sens)

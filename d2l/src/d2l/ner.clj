@@ -33,9 +33,17 @@
             [org.apache.clojure-mxnet.shape :as shape])
   (:gen-class))
 
+(def opts
+  {:ner.dir/shell "/opt/app/"
+   :ner.dir/target "/opt/app/tmp/data/ner/"
+   :ner/prefix "/opt/app/tmp/data/ner/test"
+   })
 
-(def data-dir "./tmp/data/ner/")
-(def model-prefix "tmp/model/ner/test")
+(defn data-dir
+  [{:ner.dir/keys [target]}]
+  target)
+
+; https://www.kaggle.com/abhinavwalia95/entity-annotated-corpus/downloads/ner_dataset.csv
 
 (defn readv-file!
   [filename]
@@ -43,9 +51,9 @@
     (let [data (read-csv reader :separator \t )]
       (vec data))))
 
-#_(def dset (readv-file! (str data-dir "ner_dataset.csv")))
+#_(def dset (readv-file! (str (data-dir opts) "ner_dataset.csv")))
 #_(take 100 dset)
-#_(read-nth-line (str data-dir "ner_dataset.csv") 5 )
-#_(read-n-lines (str data-dir "ner_dataset.csv"))
-#_(count-lines (str data-dir "ner_dataset.csv"))
-#_(pprn-n-lines (str data-dir "ner_dataset.csv") 1048300 200)
+#_(read-nth-line (str (data-dir opts) "ner_dataset.csv") 5 )
+#_(read-n-lines (str (data-dir opts) "ner_dataset.csv"))
+#_(count-lines (str (data-dir opts) "ner_dataset.csv"))
+#_(pprn-n-lines (str (data-dir opts) "ner_dataset.csv") 1048300 200)

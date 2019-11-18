@@ -31,8 +31,8 @@
   (:gen-class))
 
 (def opts
-  {:dir/shell "/opt/app/"
-   :dir/target "/opt/app/tmp/data/house-prices/"})
+  {:house-prices.dir/shell "/opt/app/"
+   :house-prices.dir/target "/opt/app/tmp/data/house-prices/"})
 
 #_(fetch-dataset opts)
 

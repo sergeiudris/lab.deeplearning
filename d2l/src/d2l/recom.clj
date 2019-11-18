@@ -46,23 +46,21 @@
 (def bert-base-vocab-filename "vocab.json")
 (def bert-exported-dir "/opt/app/tmp/data/bert-export/")
 
-(def opts-cmu
-  {:dir/shell "/opt/app/"
-   :dir/target "/opt/app/tmp/data/cmu/"})
+(def opts
+  {:cmu.dir/shell "/opt/app/"
+   :cmu.dir/target "/opt/app/tmp/data/cmu/"
 
-(def opts-bert
-  {:dir/bert-export bert-exported-dir
-   :dir/bert-example bert-dir
-   :dir/python-bert "/opt/root/python/bert/"
-   :dir/mxnet "/root/.mxnet/"})
-
+   :bert.python/output-dir bert-exported-dir
+   :bert.dir/from-mxnet-example bert-dir
+   :bert.dir/python-scripts "/opt/root/python/bert/"
+   :bert.dir/mxnet "/root/.mxnet/"})
 
 (defn predict-equivalent
   [{:keys [predictor vocab seq-length sentence-a sentence-b]}]
   (let [pair  (pair>>padded [sentence-a
-                                  sentence-b]
-                                 vocab
-                                 {:seq-length seq-length})]
+                             sentence-b]
+                            vocab
+                            {:seq-length seq-length})]
     (->>
      (infer/predict-with-ndarray
       predictor

@@ -54,23 +54,22 @@
 (def num-filter 200)
 (def dropout 0.5)
 
-(def opts-glove
-  {:dir/shell "/opt/app/"
-   :dir/target "/opt/app/tmp/data/glove/"
-   :embedding-size embedding-size})
+(def opts
+  {:glove.dir/shell "/opt/app/"
+   :glove.dir/target "/opt/app/tmp/data/glove/"
+   :glove/embedding-size embedding-size
 
-(def opts-bert
-  {:dir/bert-export "/opt/app/tmp/data/bert-export/"
-   :dir/bert-example "/opt/app/tmp/data/bert/"
-   :dir/python-bert "/opt/root/python/bert/"
-   :dir/mxnet "/root/.mxnet/"})
+   :bert.dir/bert-export "/opt/app/tmp/data/bert-export/"
+   :bert.dir/bert-example "/opt/app/tmp/data/bert/"
+   :bert.dir/python-bert "/opt/root/python/bert/"
+   :bert.dir/mxnet "/root/.mxnet/"
 
-(def opts-arxiv
-  {:dir/shell "/opt/app/"
-   :dir/target "/opt/app/tmp/data/atxiv/"
-   :categories categories})
+   :arxiv.dir/shell "/opt/app/"
+   :arxiv.dir/target "/opt/app/tmp/data/atxiv/"
+   :arxiv/categories categories})
 
-#_(def glove (read-glove! (glove-filepath opts-glove)))
+
+#_(def glove (read-glove! (glove-filepath opts)))
 #_(count glove) ; 400000
 #_(get glove "information")
 
@@ -164,8 +163,8 @@
                 :fit-params (m/fit-params {:optimizer (optimizer/adam)})}))))
 
 #_(do
-    (def data (categories>>data! opts-arxiv))
-    (def glove (read-glove! (glove-path opts-glove)))
+    (def data (categories>>data! opts))
+    (def glove (read-glove! (glove-path opts)))
     (def data-labeled (data>>labeled data))
     (def data-tokened (data>>tokened data-labeled))
     (def data-limited (tokened>>limited data-tokened :tokens-limit 128))
@@ -328,8 +327,8 @@
                                                {:ctx dev})}
                          :data-batch-size batch-size})))
 
-(def fine-tuned-prefix (str (:dir/bert-example opts-bert) "fine-tune-sentence-bert"))
-(def model-path-prefix (str (:dir/bert-example opts-bert) "static_bert_base_net"))
+(def fine-tuned-prefix (str (:dir/bert-example opts) "fine-tune-sentence-bert"))
+(def model-path-prefix (str (:dir/bert-example opts) "static_bert_base_net"))
 
 (defn train-bert!
   [{:keys [data dev num-epoch num-classes

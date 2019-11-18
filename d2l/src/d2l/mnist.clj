@@ -15,26 +15,63 @@
             [org.apache.clojure-mxnet.ndarray :as nd]
             [org.apache.clojure-mxnet.random :as random]
             [org.apache.clojure-mxnet.shape :as shape])
-  (:gen-class)
-  )
+  (:gen-class))
 
-(def data-dir
-  "./tmp/data/fashion-mnist/"
-  #_"./tmp/data/mnist/")
+(def opts
+  {:mnist.dir/shell "/opt/app/"
+   :mnist.dir/mnist "/opt/app/tmp/data/mnist/"
+   :mnist.dir/fashion-mnist "/opt/app/tmp/data/fashion-mnist/"
+   :mnist.prefix/mnist "./tmp/data/mnist/test"
+   :mnist.prefix/fashion-mnist "tmp/data/fashion-mnist/test"
+   })
 
-(def model-prefix
-  "tmp/model/fashion-mnist/test"
-  #_"tmp/model/mnist/test")
+(defn data-dir
+  [{:mnist.dir/keys [mnist fashion-mnist]}]
+  mnist
+  #_fashion-mnist)
 
-#_(when-not (.exists (io/file (str data-dir "t10k-labels-idx1-ubyte")))
-    (do (:exit (sh "bash" "-c" "bash bin/data.sh fashion_mnist" :dir "/opt/app"))))
+(defn model-prefix
+  [{:mnist.prefix/keys [mnist fashion-mnist]}]
+  mnist
+  #_fashion-mnist)
 
-#_(when-not  (file-exists? (str data-dir "t10k-labels-idx1-ubyte"))
-    (do (:exit (sh "bash" "-c" "bash bin/data.sh mnist" :dir "/opt/app"))))
+(defn script-fetch-mnist
+  [{:mnist.dir/keys [mnist]}]
+  (format "
+  DIR=%s
+  mkdir -p $DIR
+  cd $DIR
 
-#_(sh "bash" "-c" "mkdir -p tmp/model/fashion-mnist" :dir "/opt/app")
-#_(sh "bash" "-c" "mkdir -p tmp/model/mnist" :dir "/opt/app")
+  wget http://data.mxnet.io/mxnet/data/mnist.zip 
+  unzip -u mnist.zip
+  " mnist))
 
+(defn script-fetch-fashion-mnist
+  [{:mnist.dir/keys [fashion-mnist]}]
+  (format "
+  DIR=%s
+  mkdir -p $DIR
+  cd $DIR
+
+  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz
+  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
+  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
+  wget http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
+
+  gunzip *.gz
+  " fashion-mnist))
+
+(defn fetch-mnist
+  [{:mnist.dir/keys [shell] :as opts}]
+  (sh "bash" "-c" (script-fetch-mnist opts) :dir shell))
+
+(defn fetch-fashion-mnist
+  [{:mnist.dir/keys [shell] :as opts}]
+  (sh "bash" "-c" (script-fetch-fashion-mnist opts) :dir shell))
+
+#_(.exists (io/file (str (data-dir opts) "t10k-labels-idx1-ubyte")))
+#_(fetch-mnist opts)
+#_(fetch-fashion-mnist opts)
 
 (def batch-size 10) ;; the batch size
 (def optimizer (optimizer/sgd {:learning-rate 0.01 :momentum 0.0}))
@@ -47,9 +84,6 @@
 (def scheduler-port 0) ;; scheduler port
 (def num-workers 1) ;; # of workers
 (def num-servers 1) ;; # of servers
-
-
-
 
 (def envs (cond-> {"DMLC_ROLE" role}
             scheduler-host (merge {"DMLC_PS_ROOT_URI" scheduler-host
@@ -75,8 +109,8 @@
 
 
 (defn train-data []
-  (mx-io/mnist-iter {:image (str data-dir "train-images-idx3-ubyte")
-                     :label (str data-dir "train-labels-idx1-ubyte")
+  (mx-io/mnist-iter {:image (str (data-dir opts) "train-images-idx3-ubyte")
+                     :label (str (data-dir opts) "train-labels-idx1-ubyte")
                      :label-name "softmax_label"
                      :input-shape [784]
                      :batch-size batch-size
@@ -88,8 +122,8 @@
                      :part-index 0}))
 
 (defn eval-data []
-  (mx-io/mnist-iter {:image (str data-dir "t10k-images-idx3-ubyte")
-                     :label (str data-dir "t10k-labels-idx1-ubyte")
+  (mx-io/mnist-iter {:image (str (data-dir opts) "t10k-images-idx3-ubyte")
+                     :label (str (data-dir opts) "t10k-labels-idx1-ubyte")
                      :input-shape [784]
                      :batch-size batch-size
                      :flat true
@@ -119,7 +153,7 @@
                      :fit-params (m/fit-params {:kvstore kvstore
                                                 :optimizer optimizer
                                                 :eval-metric eval-metric})})
-             (m/save-checkpoint {:prefix model-prefix :epoch _num-epoch}))
+             (m/save-checkpoint {:prefix (model-prefix opts) :epoch _num-epoch}))
          (println "Finish fit"))))))
 
 

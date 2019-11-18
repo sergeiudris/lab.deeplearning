@@ -6,47 +6,59 @@
             [org.apache.clojure-mxnet.symbol :as sym]
             [org.apache.clojure-mxnet.visualization :as viz]))
 
-(def data-dir "./tmp/data/viz/")
+(def opts
+  {:viz.dir/shell "/opt/app/"
+   :viz.dir/target "/opt/app/tmp/data/viz/"})
 
-(defn load-data!
-  []
-  (when-not  (.exists (io/file (str data-dir "vgg16-symbol.json")))
-    (do
-      (:exit (sh "bash" "-c" "bash bin/data.sh viz" :dir "/opt/app")))))
+(defn data-dir
+  [{:viz.dir/keys [target]}]
+  target)
 
-#_(load-data!)
+(defn script-fetch-viz
+  [{:viz.dir/keys [target]}]
+  (format "
+  DIR=%s
+  mkdir -p $DIR
+  cd $DIR
 
-(defn render-model!
-  "Render the `model-sym` and saves it as a pdf file in `path/model-name.pdf`"
-  [{:keys [model-name model-sym input-data-shape path]}]
-  (let [dot (viz/plot-network
-             model-sym
-             {"data" input-data-shape}
-             {:title model-name
-              :node-attrs {:shape "oval" :fixedsize "false"}})]
-    (viz/render dot model-name path)))
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-symbol.json
+  wget http://data.mxnet.io/models/imagenet/vgg/vgg16-0000.params
+
+  wget http://data.mxnet.io/models/imagenet/resnet/18-layers/resnet-18-symbol.json
+  wget http://data.mxnet.io/models/imagenet/resnet/18-layers/resnet-18-0000.params
+  " target))
+
+(defn fetch-viz
+  [{:viz.dir/keys [shell] :as opts}]
+  (sh "bash" "-c" (script-fetch-viz opts) :dir shell))
+
+#_(.exists (io/file (str data-dir "vgg16-symbol.json")))
+#_(:exit (fetch-viz opts))
 
 (comment
 
   (def vgg16-mod
     "VGG16 Module"
-    (m/load-checkpoint {:prefix (str data-dir "/vgg16") :epoch 0}))
+    (m/load-checkpoint {:prefix (str (data-dir opts) "/vgg16") :epoch 0}))
 
   (def resnet18-mod
     "Resnet18 Module"
-    (m/load-checkpoint {:prefix (str data-dir "/resnet-18") :epoch 0}))
+    (m/load-checkpoint {:prefix (str (data-dir opts) "/resnet-18") :epoch 0}))
 
 
-  (render-model! {:model-name "vgg16"
-                  :model-sym (m/symbol vgg16-mod)
-                  :input-data-shape [1 3 244 244]
-                  :path data-dir})
+  (-> (viz/plot-network
+       (m/symbol vgg16-mod)
+       {"data" [1 3 244 244]}
+       {:title "vgg16"
+        :node-attrs {:shape "oval" :fixedsize "false"}})
+      (viz/render "vgg16" (data-dir opts)))
 
-  (render-model! {:model-name "resnet18"
-                  :model-sym (m/symbol resnet18-mod)
-                  :input-data-shape [1 3 244 244]
-                  :path data-dir})
-  
+  (-> (viz/plot-network
+       (m/symbol resnet18-mod)
+       {"data" [1 3 244 244]}
+       {:title "resnet18"
+        :node-attrs {:shape "oval" :fixedsize "false"}})
+      (viz/render "resnet18" (data-dir opts)))
 
   ;
   )
@@ -85,12 +97,14 @@
 
 
 (comment
-  
-  (render-model! {:model-name "lenet"
-                  :model-sym (get-symbol)
-                  :input-data-shape [1 3 28 28]
-                  :path data-dir})
-  
-  
+
+  (-> (viz/plot-network
+       (get-symbol)
+       {"data" [1 3 28 28]}
+       {:title "lenet"
+        :node-attrs {:shape "oval" :fixedsize "false"}})
+      (viz/render "lenet" (data-dir opts)))
+
+
   ;
   )
