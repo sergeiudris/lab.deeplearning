@@ -14,7 +14,7 @@
   [{:viz.dir/keys [target]}]
   target)
 
-(defn script-fetch-viz
+(defn bash-script-fetch-viz
   [{:viz.dir/keys [target]}]
   (format "
   DIR=%s
@@ -30,7 +30,7 @@
 
 (defn fetch-viz
   [{:viz.dir/keys [shell] :as opts}]
-  (sh "bash" "-c" (script-fetch-viz opts) :dir shell))
+  (sh "bash" "-c" (bash-script-fetch-viz opts) :dir shell))
 
 #_(.exists (io/file (str data-dir "vgg16-symbol.json")))
 #_(:exit (fetch-viz opts))

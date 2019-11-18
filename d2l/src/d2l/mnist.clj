@@ -35,7 +35,7 @@
   mnist
   #_fashion-mnist)
 
-(defn script-fetch-mnist
+(defn bash-script-fetch-mnist
   [{:mnist.dir/keys [mnist]}]
   (format "
   DIR=%s
@@ -46,7 +46,7 @@
   unzip -u mnist.zip
   " mnist))
 
-(defn script-fetch-fashion-mnist
+(defn bash-script-fetch-fashion-mnist
   [{:mnist.dir/keys [fashion-mnist]}]
   (format "
   DIR=%s
@@ -63,11 +63,11 @@
 
 (defn fetch-mnist
   [{:mnist.dir/keys [shell] :as opts}]
-  (sh "bash" "-c" (script-fetch-mnist opts) :dir shell))
+  (sh "bash" "-c" (bash-script-fetch-mnist opts) :dir shell))
 
 (defn fetch-fashion-mnist
   [{:mnist.dir/keys [shell] :as opts}]
-  (sh "bash" "-c" (script-fetch-fashion-mnist opts) :dir shell))
+  (sh "bash" "-c" (bash-script-fetch-fashion-mnist opts) :dir shell))
 
 #_(.exists (io/file (str (data-dir opts) "t10k-labels-idx1-ubyte")))
 #_(fetch-mnist opts)

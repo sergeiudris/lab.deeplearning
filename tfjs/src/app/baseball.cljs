@@ -4,18 +4,39 @@
             ["fs" :as fs]
             ["path" :as path]
             ["child_process" :as cp]
-            ["readline" :as readline]))
+            ["readline" :as readline]
+            [goog.string :as gstring]
+            [goog.string.format]))
 
 #_(path/resolve ".")
+#_(cp/execSync "bash -c \"ls\"" #js {:cwd "/opt/app/"})
+#_(cp/execSync "bash -c \"rm -rf tmp/data/\" " #js {:cwd "/opt/app/"})
 
-(def data-dir (str (path/resolve "./tmp/data/baseball/") "/") )
+(def opts
+  {:baseball.dir/shell "/opt/app/"
+   :baseball.dir/target "/opt/app/tmp/data/baseball/"})
 
-(defn load-data!
-  []
-  #_(-> (cp/execSync "ls") (str))
-  (-> (cp/execSync "bash data.sh baseball") (str)))
+(defn data-dir
+  [{:baseball.dir/keys [target]}]
+  target)
 
-#_(load-data!)
+(defn bash-script-fetch-dataset
+  [{:baseball.dir/keys [target]}]
+  (gstring/format "
+  DIR=%s
+  mkdir -p $DIR
+  cd $DIR
+  
+  wget https://storage.googleapis.com/mlb-pitch-data/pitch_type_training_data.csv
+  wget https://storage.googleapis.com/mlb-pitch-data/pitch_type_test_data.csv
+  " target))
+
+(defn fetch-dataset
+  [{:baseball.dir/keys [target]}]
+  (cp/execSync (gstring/format "bash -c %s" (bash-script-fetch-dataset opts))
+               #js {:cwd "/opt/app/"}))
+
+#_(str (fetch-dataset opts))
 
 (defn slurp-csv
   [filename]
@@ -26,7 +47,7 @@
     (mapv #(string/split % #",") x)))
 
 #_(do
-    (def file (-> (str data-dir "pitch_type_training_data.csv") (fs/readFileSync) (.toString)))
+    (def file (-> (str (data-dir opts) "pitch_type_training_data.csv") (fs/readFileSync) (.toString)))
     (def lines (string/split file #"\n"))
     (def header (first lines))
     (def rows (rest lines))
@@ -40,8 +61,8 @@
 #_(->> data (first))
 
 #_(do
-    (def csv-training (slurp-csv (str data-dir "pitch_type_training_data.csv")))
-    (def csv-test (slurp-csv (str data-dir "pitch_type_test_data.csv"))))
+    (def csv-training (slurp-csv (str (data-dir opts) "pitch_type_training_data.csv")))
+    (def csv-test (slurp-csv (str (data-dir opts) "pitch_type_test_data.csv"))))
 
 #_(second csv-training)
 #_(first csv-test)
@@ -52,8 +73,8 @@
     v
     (/ (- v vmin) (- vmax vmin))))
 
-(def TRAIN_DATA_PATH (str "file://" data-dir "pitch_type_training_data.csv"))
-(def TEST_DATA_PATH (str "file://" data-dir "pitch_type_test_data.csv"))
+(def TRAIN_DATA_PATH (str "file://" (data-dir opts) "pitch_type_training_data.csv"))
+(def TEST_DATA_PATH (str "file://" (data-dir opts) "pitch_type_test_data.csv"))
 
 (def VX0_MIN -18.885)
 (def VX0_MAX 18.065)

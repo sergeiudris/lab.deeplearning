@@ -20,7 +20,7 @@
   [{:inception.dir/keys [target]}]
   target)
 
-(defn script-fetch-inception
+(defn bash-script-fetch-inception
   [{:inception.dir/keys [target]}]
   (format "
   DIR=%s
@@ -44,7 +44,7 @@
 
 (defn fetch-inception
   [{:inception.dir/keys [shell] :as opts}]
-  (sh "bash" "-c" (script-fetch-inception opts) :dir shell))
+  (sh "bash" "-c" (bash-script-fetch-inception opts) :dir shell))
 
 #_(.exists (io/file (str (data-dir opts) "Inception-BN-symbol.json")))
 #_(:exit (sh "bash" "-c" (format "rm -rf %s" (data-dir opts)) :dir (opts :inception.dir/shell)))

@@ -96,7 +96,7 @@
   ;
   )
 
-(defn script-fetch-text8
+(defn bash-script-fetch-text8
   [{:text8.dir/keys [target]}]
   (format "
   DIR=%s
@@ -109,7 +109,7 @@
 
 (defn fetch-text8
   [{:text8.dir/keys [shell] :as opts}]
-  (sh "bash" "-c" (script-fetch-text8 opts) :dir shell))
+  (sh "bash" "-c" (bash-script-fetch-text8 opts) :dir shell))
 
 (defn text8-dir
   [{:text8.dir/keys [target]}]
