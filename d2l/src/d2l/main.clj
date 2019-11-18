@@ -12,7 +12,6 @@
             [bert.bert-sentence-classification]
             [cnn-text-classification.classifier]
             [captcha.train-ocr]
-
    ;
             ))
 
