@@ -160,7 +160,7 @@ d2l() {
                 --rm \
                 --name d2l \
                 -it \
-                -p 7888:7888 \
+                -p 7788:7888 \
                 -v "$(pwd)"/d2l:/opt/app \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
@@ -177,7 +177,7 @@ tf() {
                 --rm \
                 --name tf \
                 -it \
-                -p 7878:7888 \
+                -p 7788:7888 \
                 -v "$(pwd)"/tf:/opt/app \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
@@ -194,7 +194,7 @@ tfjs() {
                 --rm \
                 --name tfjs \
                 -it \
-                -p 7878:7888 \
+                -p 7788:7888 \
                 -v "$(pwd)"/tfjs:/opt/app \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
@@ -217,7 +217,7 @@ el() {
                 --memory 12g \
                 --cpus 4.000 \
                 -it \
-                -p 7878:7888 \
+                -p 7788:7888 \
                 -v "$(pwd)"/el:/opt/app \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \

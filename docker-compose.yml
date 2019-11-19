@@ -12,7 +12,7 @@ services:
   #     context: ./samples/app
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7888:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   stdin_open: true
@@ -33,7 +33,7 @@ services:
   #     context: ./samples/tln
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7888:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   stdin_open: true
@@ -55,7 +55,7 @@ services:
   #     # dockerfile: ./gpu.Dockerfile
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7888:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   environment:
@@ -88,7 +88,7 @@ services:
   #     context: ./d2l
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7888:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   environment:
@@ -111,7 +111,7 @@ services:
   #     context: ./el
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7878:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   environment:
@@ -134,7 +134,7 @@ services:
   #     context: ./tf
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7878:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   environment:
@@ -157,7 +157,7 @@ services:
   #     context: ./tfjs
   #     dockerfile: ./Dockerfile
   #   ports:
-  #     - 7878:7888
+  #     - 7788:7888
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   environment:
