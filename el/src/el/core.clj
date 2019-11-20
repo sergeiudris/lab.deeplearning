@@ -37,27 +37,9 @@
             [pad.dataset.wiki])
   (:gen-class))
 
-(def opts
-  {:cmu.dir/shell "/opt/app/"
-   :cmu.dir/target "/opt/app/tmp/data/cmu/"})
-
-#_(fetch-cmu opts)
-#_(sh "bash" "-c" "rm -rf tmp/data/cmu" :dir (opts :cmu.dir/shell))
-
 (comment
 
-
-  (do
-    (def mdata (read-metadata! opts))
-    (def summs (read-summaries! opts))
-    (def data (data>>joined mdata summs))
-    (def data-sorted (->> data (sort-by :box-office >)))
-    (def data-sorted-map (->> data-sorted (reduce #(assoc %1 (:id-wiki %2) %2) {}))))
-
-  (count data-sorted)
-  (->> data-sorted (map :box-office) (take 10))
-  (->> data-sorted (take 20) (map #(select-keys % [:id-wiki :name :box-office])))
-  (-> data-sorted-map (get "174251") (select-keys [:id-wiki :name :box-office]))
+  
 
   ;
   )
