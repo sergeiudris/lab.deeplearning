@@ -33,7 +33,6 @@
             [org.apache.clojure-mxnet.infer :as infer]
             [org.apache.clojure-mxnet.visualization :as viz]
 
-            [pad.dataset.cmu :refer [read-summaries!]]
             [pad.dataset.wiki])
   (:gen-class))
 
