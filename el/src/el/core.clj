@@ -36,6 +36,13 @@
             [pad.dataset.wiki])
   (:gen-class))
 
+(defn ping
+  []
+  (->
+   (nd/+ (nd/array [1 1 1] [3]) (nd/array [1 1 1] [3]))
+   (nd/->vec)
+   (prn)))
+
 (comment
 
   

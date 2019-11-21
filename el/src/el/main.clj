@@ -7,4 +7,5 @@
             ))
 
 (defn -main  [& args]
-  (start-nrepl-server))
+  (start-nrepl-server)
+  (el.core/ping))
