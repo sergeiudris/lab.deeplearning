@@ -122,6 +122,22 @@ link_spaces_el(){
 
 }
 
+link_spaces_gvm(){
+    SPACE=gvm
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+    ln -s ../../gvm/deps.edn spaces/$SPACE/deps.edn
+    ln -s ../../gvm/src/gvm spaces/$SPACE/gvm
+    ln -s ../../gvm/tmp spaces/$SPACE/tmp
+
+    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
+    ln -s ../../spaces/mxnet spaces/$SPACE/mxnet
+    ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
+    
+
+}
+
 link_spaces_tf(){
     SPACE=tf
     mkdir -p spaces/$SPACE
@@ -222,6 +238,28 @@ el() {
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.el \
+                 bash
+}
+
+gvm() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
+                # -u $(id -u):$(id -g) \
+    # cd gvm && \
+    # docker build -t sample.ml.gvm . && \
+    # cd ..
+    docker run --gpus all \
+                --rm \
+                --name gvm \
+                --memory 12g \
+                --cpus 4.000 \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)"/gvm:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.gvm \
                  bash
 }
 

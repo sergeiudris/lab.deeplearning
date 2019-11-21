@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+dev(){
+
+  clojure -A:core:local -O:mem -m gvm.main 
+
+}
+
+
+"$@"
