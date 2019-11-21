@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+main(){
+
+  clojure -m script -h
+
+}
+
+compile_native(){
+  clojure -A:native-image
+}
+
+"$@"
