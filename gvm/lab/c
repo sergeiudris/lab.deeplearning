@@ -3,8 +3,12 @@
 
 dev(){
 
-  clojure -A:core:local -O:mem -m gvm.main 
+  clojure -A:core:local -O:mem -m lab.main 
 
+}
+
+compile_native(){
+  clojure -A:core:local:native-image
 }
 
 

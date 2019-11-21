@@ -1,4 +1,4 @@
-(ns gvm.core
+(ns lab.core
   (:require [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
@@ -35,6 +35,13 @@
 
             [pad.dataset.wiki])
   (:gen-class))
+
+(defn ping
+  []
+  (->
+   (nd/+ (nd/array [1 1 1] [3]) (nd/array [1 1 1] [3]))
+   (nd/->vec)
+   (prn)))
 
 (comment
 

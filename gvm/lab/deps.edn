@@ -20,13 +20,15 @@
           {github.seeris/pad {:local/root "/opt/code/pad"}
            d2l {:local/root "/opt/root/d2l"}}}
   :mem {:jvm-opts ["-Xms1024m" "-Xmx11998m"]}
-  :native-image {:main-opts ["-m clj.native-image core"
+  :native-image {:main-opts ["-m clj.native-image lab.main"
                              "--initialize-at-build-time"
+                        ;      "--no-fallback"
+                        ;      "--report-unsupported-elements-at-runtime"
                         ;; optional native image name override
-                             "-H:Name=core"]
+                             "-H:Name=lab.native"]
                  :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
                  :extra-deps
                  {clj.native-image
                   {:git/url "https://github.com/taylorwood/clj.native-image.git"
-                   :sha "7708e7fd4572459c81f6a6b8e44c96f41cdd92d4"}}}}
+                   :sha "b3823a48be75122b9671c86ce5353a85589ef15f"}}}}
 }

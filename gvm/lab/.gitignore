@@ -44,5 +44,7 @@ build/
 
 __pycache__
 
+lab.native
+
 # data
 tmp
