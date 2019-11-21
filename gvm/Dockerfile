@@ -35,12 +35,10 @@ RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-
     rm -f /usr/local/graalvm-ce-${SUFFIX_DIR}/src.zip && \
     ln -s /usr/local/graalvm-ce-${SUFFIX_DIR} /usr/local/graalvm && \
     rm -fr /var/lib/apt
+ENV PATH $PATH:/usr/local/graalvm/bin
 RUN gu install native-image
 RUN apt-get update && \
     apt-get install zlib1g-dev
-
-# ENV PATH /usr/local/graalvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV PATH $PATH:/usr/local/graalvm/bin
 
 # ENV GRAAL_ARCHIVE=graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
 

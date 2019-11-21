@@ -101,37 +101,14 @@ services:
   #         cpus: '4'
   #         memory: 8192M
 
-  # el:
-  #   image: sample.ml.el
-  #   volumes:
-  #     - ./el:/opt/app
-  #     - ./:/opt/root
-  #     - ../pad:/opt/code/pad
-  #   build:
-  #     context: ./el
-  #     dockerfile: ./Dockerfile
-  #   ports:
-  #     - 7788:7888
-  #   # command: bash c dev
-  #   command: tail -f /dev/null
-  #   environment:
-  #     - DISPLAY=10.0.75.1:0.0
-  #   stdin_open: true
-  #   tty: true
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '4'
-  #         memory: 8192M
-
-  gvm:
-    image: sample.ml.gvm
+  el:
+    image: sample.ml.el
     volumes:
-      - ./gvm:/opt/app
+      - ./el:/opt/app
       - ./:/opt/root
       - ../pad:/opt/code/pad
     build:
-      context: ./gvm
+      context: ./el
       dockerfile: ./Dockerfile
     ports:
       - 7788:7888
@@ -146,6 +123,29 @@ services:
         limits:
           cpus: '4'
           memory: 8192M
+
+  # gvm:
+  #   image: sample.ml.gvm
+  #   volumes:
+  #     - ./gvm:/opt/app
+  #     - ./:/opt/root
+  #     - ../pad:/opt/code/pad
+  #   build:
+  #     context: ./gvm
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7788:7888
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   environment:
+  #     - DISPLAY=10.0.75.1:0.0
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 8192M
 
   # tf:
   #   image: sample.ml.tf

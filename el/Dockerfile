@@ -15,8 +15,30 @@ RUN apt-get update && \
             unzip wget curl net-tools lsof \
             graphviz
 
+# RUN apt-get update && \
+#     apt-get install -y openjdk-8-jdk
+
+WORKDIR /tmp
+# https://github.com/arjones/docker-graalvm/blob/master/Dockerfile
+
+#  graalvm-ce-java8-19.3.0
+ENV GRAALVM_VERSION=19.3.0
+ENV SUFFIX_URL=java8-linux-amd64-${GRAALVM_VERSION}
+ENV SUFFIX_DIR=java8-${GRAALVM_VERSION}
+
+# RUN curl -Ls "https://github.com/oracle/graal/releases/download/vm-${GRAALVM_VERSION}/graalvm-ce-${GRAALVM_VERSION}-linux-amd64.tar.gz" | \
+RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.0/graalvm-ce-${SUFFIX_URL}.tar.gz" | \
+    tar zx -C /usr/local/ && \
+    ls -l /usr/local/ && \
+    rm -f /usr/local/graalvm-ce-${SUFFIX_DIR}/src.zip && \
+    ln -s /usr/local/graalvm-ce-${SUFFIX_DIR} /usr/local/graalvm && \
+    rm -fr /var/lib/apt
+
+ENV PATH $PATH:/usr/local/graalvm/bin
+RUN gu install native-image
 RUN apt-get update && \
-    apt-get install -y openjdk-8-jdk
+    apt-get install zlib1g-dev
+
 
 ENV CLOJURE_SCRIPT_VERSION=linux-install-1.10.1.466.sh
 
