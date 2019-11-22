@@ -4,6 +4,7 @@
            {:main-opts ["-m clj.native-image script"
                         "--initialize-at-build-time"
                         "--no-fallback"
+                        ;; optional native image name override
                         "-H:Name=script.native"
                         "--report-unsupported-elements-at-runtime"
                         "-Dclojure.compiler.direct-linking=true"

@@ -11,7 +11,7 @@
           org.clojure/data.xml {:mvn/version "0.0.8"}
 
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
-
+        ;   org.apache.mxnet/mxnet-full_2.11-linux-x86_64-gpu {:mvn/version "1.5.1"}
         ;   github.seeris/pad {:git/url "https://github.com/seeris/pad"
         ;                      :sha "HEAD"
         ;                      :deps/root "."}
@@ -23,9 +23,10 @@
   :native-image {:main-opts ["-m clj.native-image lab.main"
                              "--initialize-at-build-time"
                              "--no-fallback"
-                             "--report-unsupported-elements-at-runtime"
-                        ;; optional native image name override
-                             "-H:Name=lab.native"]
+                        ;      "--report-unsupported-elements-at-runtime"
+                             "-H:Name=lab.native"
+                        ;      "--dry-run"
+                             ]
                  :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
                  :extra-deps
                  {clj.native-image
