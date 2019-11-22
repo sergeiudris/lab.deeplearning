@@ -284,6 +284,19 @@ gvm_samples() {
                  bash
 }
 
+u18(){
+    docker run  --rm \
+                --name ubuntu18 \
+                --memory 16g \
+                --cpus 4.000 \
+                -it \
+                -p 8888:7888 \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)":/opt/code/ \
+                 ubuntu:18.04 \
+                 bash -c "cd /opt/root/;bash"
+}
+
 mmdnn(){
     docker run \
             --rm \
