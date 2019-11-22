@@ -1,4 +1,4 @@
-(ns lab.core
+(ns gvm.core
   (:require [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]

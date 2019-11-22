@@ -7,10 +7,8 @@
  :aliases
  {:core {:extra-deps
          {org.clojure/clojure {:mvn/version "1.10.1"}
-          ; nrepl {:mvn/version "0.6.0"}
-          ; cider/cider-nrepl {:mvn/version "0.21.1"}
-          nrepl {:mvn/version "0.5.3"}
-          cider/cider-nrepl {:mvn/version "0.18.0"}
+          nrepl {:mvn/version "0.6.0"}
+          cider/cider-nrepl {:mvn/version "0.21.1"}
           github.seeris/pad {:git/url "https://github.com/seeris/pad"
                              :sha "0fb45fd1d5a9b069a4be61a1439daacec26b35dc"
                              :deps/root "."}}}

@@ -1,6 +1,6 @@
-(ns lab.main
+(ns gvm.main
   (:require #_[pad.nrepl.core :refer [start-nrepl-server]]
-            [lab.core]
+            [gvm.core]
             [d2l.nlp]
             [d2l.arxiv]
    ;
@@ -9,4 +9,4 @@
 
 (defn -main  [& args]
   #_(start-nrepl-server)
-  (lab.core/ping))
+  (gvm.core/ping))

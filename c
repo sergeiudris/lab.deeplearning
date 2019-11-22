@@ -263,6 +263,27 @@ gvm() {
                  bash
 }
 
+gvm_samples() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
+                # -u $(id -u):$(id -g) \
+    # cd gvm && \
+    # docker build -t sample.ml.gvm . && \
+    # cd ..
+    docker run  --rm \
+                --name gvm-samples \
+                --memory 16g \
+                --cpus 4.000 \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)"/gvm-samples:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.gvm-samples \
+                 bash
+}
+
 mmdnn(){
     docker run \
             --rm \
