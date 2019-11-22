@@ -7,7 +7,7 @@ dev(){
 
 }
 
-compile_native(){
+native(){
 
   clojure -A:core:local:native-image
 
