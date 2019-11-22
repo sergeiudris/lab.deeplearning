@@ -13,7 +13,8 @@ RUN apt-get update && \
             rlwrap  \
             software-properties-common  \
             unzip wget curl net-tools lsof \
-            graphviz
+            graphviz \
+            zlib1g-dev gcc libc6-dev
 
 # RUN apt-get update && \
 #     apt-get install -y openjdk-8-jdk
@@ -37,8 +38,6 @@ RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-
     rm -fr /var/lib/apt
 ENV PATH $PATH:/usr/local/graalvm/bin
 RUN gu install native-image
-RUN apt-get update && \
-    apt-get install zlib1g-dev
 
 # ENV GRAAL_ARCHIVE=graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
 

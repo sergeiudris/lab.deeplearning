@@ -252,7 +252,7 @@ gvm() {
     docker run --gpus all \
                 --rm \
                 --name gvm \
-                --memory 12g \
+                --memory 16g \
                 --cpus 4.000 \
                 -it \
                 -p 7788:7888 \

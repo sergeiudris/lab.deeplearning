@@ -145,7 +145,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: 8192M
+          memory: 16384M
 
   # tf:
   #   image: sample.ml.tf
