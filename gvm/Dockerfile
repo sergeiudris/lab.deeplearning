@@ -90,7 +90,7 @@ RUN apt-get update && \
 
 WORKDIR /opt/app
 
-COPY deps.edn .
+COPY lab/deps.edn .
 RUN clojure -A:core -Stree
 
 EXPOSE 8080

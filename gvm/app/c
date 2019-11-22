@@ -3,7 +3,7 @@
 
 dev(){
 
-  clojure -A:core:local -O:mem -m lab.main 
+  clojure -A:core:local -O:mem -m app.main
 
 }
 

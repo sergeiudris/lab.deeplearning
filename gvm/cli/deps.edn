@@ -3,9 +3,12 @@
  :aliases {:native-image
            {:main-opts ["-m clj.native-image script"
                         "--initialize-at-build-time"
-                        ;"-H:Name=put_custom_binary_name_here"
+                        "--no-fallback"
+                        "-H:Name=script.native"
                         "--report-unsupported-elements-at-runtime"
-                        "-Dclojure.compiler.direct-linking=true"]
+                        "-Dclojure.compiler.direct-linking=true"
+                        ; "--dry-run"
+                        ]
             :extra-deps
             {clj.native-image
              {:git/url "https://github.com/taylorwood/clj.native-image.git"
