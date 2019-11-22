@@ -17,8 +17,9 @@
   :mem {:jvm-opts ["-Xms1024m" "-Xmx11998m"]}
   :native-image {:main-opts ["-m clj.native-image app.main"
                              "--initialize-at-build-time"
-                        ;      "--enable-url-protocols=http"
-                             "--enable-http"
+                         ;     "--enable-url-protocols=http"
+                         ;     "--enable-http"
+                         ;     "--allow-incomplete-classpath"
                         ;      "--allow-incomplete-classpath"
                         ;      "-da"
                              "--no-fallback"
