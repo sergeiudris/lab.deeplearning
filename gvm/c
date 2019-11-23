@@ -1,6 +1,10 @@
 #!/bin/bash
 
 
+clean(){
+  rm -rf classes .cpcache
+}
+
 dev(){
 
   clojure -A:core:local -O:mem -m gvm.main 

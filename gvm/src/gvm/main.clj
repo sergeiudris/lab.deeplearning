@@ -1,10 +1,11 @@
 (ns gvm.main
-  (:require #_[pad.nrepl.core :refer [start-nrepl-server]]
+  (:require [pad.nrepl.core :refer [start-nrepl-server]]
             [gvm.core]
+            [gvm.polyglot]
    ;
             )
   (:gen-class))
 
 (defn -main  [& args]
-  #_(start-nrepl-server)
+  (start-nrepl-server)
   (gvm.core/ping))
