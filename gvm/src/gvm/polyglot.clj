@@ -6,7 +6,7 @@
 
 (comment
 
-  (def ctx (-> (Context/newBuilder (into-array String ["js"]))
+  (def ctx (-> (Context/newBuilder (into-array String [ "js"]))
                (.allowAllAccess true)
                (.build)))
 
@@ -83,6 +83,20 @@
   (== (long 2000000002) rlt )
 
   (.close ctx)
+
+  ;
+  )
+
+
+(comment
+
+  (def ctx (-> (Context/newBuilder (into-array String ["python"]))
+               (.allowAllAccess true)
+               (.build)))
+
+  (-> ctx (.getEngine) (.getLanguages) (.keySet) (set))
+  
+  (.eval ctx "python" "print('Hello world!')")
 
   ;
   )

@@ -37,7 +37,7 @@ RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-
     ln -s /usr/local/graalvm-ce-${SUFFIX_DIR} /usr/local/graalvm && \
     rm -fr /var/lib/apt
 ENV PATH $PATH:/usr/local/graalvm/bin
-RUN gu install native-image
+RUN gu install native-image && gu install python
 
 # ENV GRAAL_ARCHIVE=graalvm-ce-java8-linux-amd64-19.3.0.tar.gz
 
