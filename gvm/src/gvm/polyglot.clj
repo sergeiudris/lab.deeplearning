@@ -37,6 +37,21 @@
   (.getArraySize ar)
   (-> ar (.getArrayElement 1) (.asInt))
 
+  (def m {:id 1
+          :text "42"
+          :arr [1 2 3]})
+  (-> (object-array [m]) (first) (type))
+  (def jm (java.util.HashMap. {"id" 1
+                               "text" "42"
+                               "arr" (java.util.ArrayList. [3 4 5])}))
+  (type jm)
+  (-> ctx (.getBindings "js") (.putMember "javaObj" jm))
+  (def vl (.eval ctx "js" "javaObj"))
+  (.hasMembers vl)
+  (.getMemberKeys vl)
+  (-> ctx (.eval  "js" "javaObj.get('id')") (.asInt))
+  (-> ctx (.eval "js" "javaObj.get('arr')[1] == 4") (.asBoolean))
+
   (.close ctx)
 
   ;
