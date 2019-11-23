@@ -124,42 +124,21 @@ services:
   #         cpus: '4'
   #         memory: 8192M
 
-  # gvm:
-  #   image: sample.ml.gvm
-  #   volumes:
-  #     - ./gvm:/opt/app
-  #     - ./:/opt/root
-  #     - ../pad:/opt/code/pad
-  #   build:
-  #     context: ./gvm
-  #     dockerfile: ./Dockerfile
-  #   ports:
-  #     - 7788:7888
-  #   # command: bash c dev
-  #   command: tail -f /dev/null
-  #   environment:
-  #     - DISPLAY=10.0.75.1:0.0
-  #   stdin_open: true
-  #   tty: true
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '4'
-  #         memory: 16384M
-
-  gvm-samples:
-    image: sample.ml.gvm-samples
+  gvm:
+    image: sample.ml.gvm
     volumes:
-      - ./gvm-samples:/opt/app
+      - ./gvm:/opt/app
       - ./:/opt/root
       - ../pad:/opt/code/pad
     build:
-      context: ./gvm-samples
+      context: ./gvm
       dockerfile: ./Dockerfile
     ports:
       - 7788:7888
     # command: bash c dev
     command: tail -f /dev/null
+    environment:
+      - DISPLAY=10.0.75.1:0.0
     stdin_open: true
     tty: true
     deploy:
@@ -167,6 +146,27 @@ services:
         limits:
           cpus: '4'
           memory: 16384M
+
+  # gvm-samples:
+  #   image: sample.ml.gvm-samples
+  #   volumes:
+  #     - ./gvm-samples:/opt/app
+  #     - ./:/opt/root
+  #     - ../pad:/opt/code/pad
+  #   build:
+  #     context: ./gvm-samples
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7788:7888
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 16384M
 
 
   # tf:
