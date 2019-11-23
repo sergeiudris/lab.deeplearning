@@ -17,5 +17,9 @@ native(){
 
 }
 
+gpip(){
+   graalpython -m ginstall
+}
+
 
 "$@"

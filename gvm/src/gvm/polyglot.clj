@@ -87,7 +87,7 @@
   ;
   )
 
-
+; https://www.graalvm.org/docs/reference-manual/languages/python/
 (comment
 
   (def ctx (-> (Context/newBuilder (into-array String ["python"]))
@@ -96,7 +96,7 @@
 
   (-> ctx (.getEngine) (.getLanguages) (.keySet) (set))
   
-  (.eval ctx "python" "print('Hello world!')")
+  (-> ctx (.eval "python" "2 * 2") (.asInt))
 
   ;
   )

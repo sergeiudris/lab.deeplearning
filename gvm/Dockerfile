@@ -33,7 +33,12 @@ RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-
     rm -f /usr/local/graalvm-ce-${SUFFIX_DIR}/src.zip && \
     ln -s /usr/local/graalvm-ce-${SUFFIX_DIR} /usr/local/graalvm && \
     rm -fr /var/lib/apt
-RUN gu install native-image && gu install python
+RUN gu install native-image
+RUN apt-get update && \
+        apt-get install -y python3-setuptools \
+                        libblas-dev liblapack-dev libatlas-base-dev gfortran && \
+        gu install python
+        # graalpython -m ginstall install numpy
 
 ## clojure
 ENV CLOJURE_SCRIPT_VERSION=linux-install-1.10.1.466.sh
@@ -65,6 +70,9 @@ RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
         libopenblas-base \
         libatlas3-base \
         libcurl3 
+
+RUN apt-get update && \
+        apt-get install -y curl
 
 ## python mxnet
 RUN apt-get update && \
