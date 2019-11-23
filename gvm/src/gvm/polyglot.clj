@@ -52,6 +52,16 @@
   (-> ctx (.eval  "js" "javaObj.get('id')") (.asInt))
   (-> ctx (.eval "js" "javaObj.get('arr')[1] == 4") (.asBoolean))
 
+  (def bd (-> ctx
+              (.eval  "js" "
+                 var BigDecimal = Java.type('java.math.BigDecimal');
+                 BigDecimal.valueOf(10).pow(20)
+                 ")
+              (.asHostObject)))
+  (type bd)
+  (.toString bd)
+  (= (.toString bd) "100000000000000000000")
+
   (.close ctx)
 
   ;
