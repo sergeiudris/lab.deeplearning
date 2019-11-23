@@ -1,7 +1,8 @@
 (ns gvm.polyglot
   (:require [clojure.string :as string])
   (:import
-   (org.graalvm.polyglot Context)))
+   (org.graalvm.polyglot Context)
+   (org.graalvm.polyglot.proxy ProxyArray)))
 
 (comment
 
@@ -61,6 +62,25 @@
   (type bd)
   (.toString bd)
   (= (.toString bd) "100000000000000000000")
+
+
+  (def ar (proxy [ProxyArray] []
+            (get [idx] (* idx 2))
+            (set [idx vl]
+              (throw (UnsupportedOperationException.)))
+            (getSize []
+              java.lang.Long/MAX_VALUE)))
+  (.get ar 3)
+  (.getSize ar)
+  (.set ar 1 nil)
+  (-> ctx (.getBindings "js") (.putMember "arr" ar))
+  (def rlt (-> ctx
+               (.eval "js" "
+                      arr[1] + arr[1000000000]
+                      ")
+               (.asLong)))
+  (type rlt)
+  (== (long 2000000002) rlt )
 
   (.close ctx)
 
