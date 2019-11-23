@@ -95,8 +95,19 @@
                (.build)))
 
   (-> ctx (.getEngine) (.getLanguages) (.keySet) (set))
-  
+
   (-> ctx (.eval "python" "2 * 2") (.asInt))
+
+  (-> ctx (.eval "python" (str
+                           "import time;"
+                           "time.time();")))
+
+  (def pytime (-> ctx (.eval "python" (str
+                                       "import time;"
+                                       "time.time;"))))
+  (.canExecute pytime)
+  (.execute pytime (object-array []))
+
 
   ;
   )

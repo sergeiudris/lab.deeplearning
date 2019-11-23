@@ -33,18 +33,17 @@ RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-
     rm -f /usr/local/graalvm-ce-${SUFFIX_DIR}/src.zip && \
     ln -s /usr/local/graalvm-ce-${SUFFIX_DIR} /usr/local/graalvm && \
     rm -fr /var/lib/apt
-RUN gu install native-image
-RUN apt-get update && \
-        apt-get install -y python3-setuptools \
-                        libblas-dev liblapack-dev libatlas-base-dev gfortran && \
-        gu install python
-        # graalpython -m ginstall install numpy
+RUN gu install native-image python
+# RUN graalpython -m venv /opt/venv/
+# RUN /bin/bash -c "source /opt/venv/bin/activate && graalpython -m ginstall install pandas "
+# RUN /bin/bash -c "source /opt/venv/bin/activate && graalpython -m ginstall install numpy "
+# RUN graalpython -m ginstall list
 
 ## clojure
-ENV CLOJURE_SCRIPT_VERSION=linux-install-1.10.1.466.sh
-RUN curl -O https://download.clojure.org/install/$CLOJURE_SCRIPT_VERSION && \
-    chmod +x $CLOJURE_SCRIPT_VERSION && \
-    sudo ./$CLOJURE_SCRIPT_VERSION && \
+ENV CLOJURE_TOOLS=linux-install-1.10.1.466.sh
+RUN curl -O https://download.clojure.org/install/$CLOJURE_TOOLS && \
+    chmod +x $CLOJURE_TOOLS && \
+    sudo ./$CLOJURE_TOOLS && \
     clojure -Stree
 
 ## leiningen
