@@ -122,6 +122,27 @@ services:
   #         cpus: '4'
   #         memory: 8192M
 
+  # dl4j:
+  #   image: sample.ml.dl4j
+  #   volumes:
+  #     - ./dl4j:/opt/app
+  #     - ./:/opt/root
+  #     - ../pad:/opt/code/pad
+  #   build:
+  #     context: ./dl4j
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7788:7788
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 11998M
+
   # gvm:
   #   image: sample.ml.gvm
   #   volumes:

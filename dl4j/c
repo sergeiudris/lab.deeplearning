@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+dev(){
+
+  lein dev
+
+}
+
+clean(){
+
+  rm -rf .cpcache classes target
+
+}
+
+"$@"

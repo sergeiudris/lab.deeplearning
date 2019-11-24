@@ -284,6 +284,24 @@ gvm_samples() {
                  bash
 }
 
+
+dl4j() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+  
+    docker run  --rm \
+                --name dl4j \
+                --memory 12g \
+                --cpus 4.000 \
+                -it \
+                -p 7788:7788 \
+                -v "$(pwd)"/dl4j:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.dl4j \
+                 bash
+}
+
 u18(){
     docker run  --rm \
                 --name ubuntu18 \
