@@ -60,7 +60,8 @@ class PlotUtil {
 
         JFrame f = new JFrame();
         f.add(panel);
-        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        // f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         f.pack();
         f.setTitle("Training Data");
 
@@ -85,7 +86,8 @@ class PlotUtil {
 
         JFrame f = new JFrame();
         f.add(panel);
-        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        // f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         f.pack();
         f.setTitle("Test Data");
 
