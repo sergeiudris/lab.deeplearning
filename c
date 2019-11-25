@@ -146,6 +146,7 @@ link_spaces_dl4j(){
     ln -s ../../dl4j/project.clj spaces/$SPACE/project.clj
     ln -s ../../dl4j/src/dl4j spaces/$SPACE/dl4j
     ln -s ../../dl4j/src/pad spaces/$SPACE/pad
+    ln -s ../../dl4j/src/org spaces/$SPACE/org
 
     ln -s ../../dl4j/tmp spaces/$SPACE/tmp
 }
@@ -262,6 +263,7 @@ gvm() {
     # cd gvm && \
     # docker build -t sample.ml.gvm . && \
     # cd ..
+    sudo 
     docker run --gpus all \
                 --rm \
                 --name gvm \
@@ -301,8 +303,20 @@ gvm_samples() {
 dl4j() {
     # use docker directly while docker-compose does not support --gpus flag
     # https://github.com/docker/compose/issues/6691
-  
-    docker run  --rm \
+
+    # X11 DISPLAY
+    # https://stackoverflow.com/questions/54574372/java-gui-maven-project-in-docker-with-x11-error
+    # https://github.com/jessfraz/dockerfiles/issues/329#issuecomment-357397001
+    
+    # --env DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
+    # --env DISPLAY=10.0.75.1:0.0
+    # --env DISPLAY=:0.0
+    sudo xhost +
+    # sudo xhost +"local:docker@"
+    docker run  --gpus all \
+                --env DISPLAY=${DISPLAY} \
+                -v /tmp/.X11-unix:/tmp/.X11-unix \
+                --rm \
                 --name dl4j \
                 --memory 12g \
                 --cpus 4.000 \

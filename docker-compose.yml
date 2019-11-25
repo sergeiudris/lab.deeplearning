@@ -135,6 +135,10 @@ services:
   #     - 7788:7788
   #   # command: bash c dev
   #   command: tail -f /dev/null
+  #   environment:
+  #     # - DISPLAY=10.0.75.1:0.0
+  #     # - DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
+  #     - DISPLAY=:0.0
   #   stdin_open: true
   #   tty: true
   #   deploy:

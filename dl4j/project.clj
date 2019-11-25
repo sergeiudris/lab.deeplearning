@@ -3,6 +3,7 @@
   :repositories [["central" {:url "https://repo1.maven.org/maven2/"}]
                  ["clojars" {:url "https://clojars.org/repo/"}]
                  ["conjars" {:url "https://conjars.org/repo"}]
+                 ["maven-restlet" {:url "https://maven.restlet.com/"}]
                  #_["oracle" {:url "https://download.oracle.com/maven"}]
                  #_["staging" {:url       "https://repository.apache.org/content/repositories/staging"
                                :snapshots true
@@ -17,8 +18,14 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [nrepl "0.6.0"]
                  [cider/cider-nrepl "0.22.0"]
-                 [org.nd4j/nd4j-cuda-9.2 "1.0.0-beta4"]
-                 #_[org.nd4j/nd4j-native "1.0.0-beta4"]]
+                 #_[org.nd4j/nd4j-cuda-9.2 "1.0.0-beta4"]
+                 [org.nd4j/nd4j-native "1.0.0-beta4"]
+                 [org.deeplearning4j/deeplearning4j-core "1.0.0-beta4"]
+                 [org.datavec/datavec-api "1.0.0-beta4"]
+                 [commons-io/commons-io "2.5"]
+                 [jfree/jfreechart "1.0.13"]
+                 [org.jfree/jcommon "1.0.23"]]
+
 
   :repl-options {:init-ns          dl4j.main
                  :main             dl4j.main

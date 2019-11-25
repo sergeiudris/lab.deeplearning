@@ -8,12 +8,18 @@
   (:import
    (dl4j.java Example)
    (org.nd4j.list NDArrayList)
-   #_(org.deeplearning4j.nn.multilayer MultiLayerNetwork))
+   (org.nd4j.linalg.factory Nd4j)
+   (org.deeplearning4j.nn.multilayer MultiLayerNetwork)
+   (org.deeplearning4j.examples.feedforward.classification MLPClassifierLinear)
+   )
   (:gen-class))
+
 
 (comment
 
   (Example/hello)
+  (type (into-array [""]))
+  (MLPClassifierLinear/main (into-array [""]))
 
   ;
   )

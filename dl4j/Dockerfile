@@ -57,22 +57,24 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
     sudo apt-get update && sudo apt-get -y install yarn
 
-## opencv
-RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
-    apt-get update && \
-    apt-get install -y  \
-        libopencv-imgcodecs3.4 \
-        libopenblas-base \
-        libatlas3-base \
-        libcurl3 
+# ## opencv
+# RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
+#     apt-get update && \
+#     apt-get install -y  \
+#         libopencv-imgcodecs3.4 \
+#         libopenblas-base \
+#         libatlas3-base \
+#         libcurl3 
 
 RUN apt-get update && \
         apt-get install -y curl
 
+# /usr/local/graalvm-ce-java8-19.3.0/jre/lib/amd64/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file or directory
+# /usr/local/graalvm-ce-java8-19.3.0/jre/lib/amd64/libawt_xawt.so: libXi.so.6: cannot open shared object file: No such file or directory
+RUN apt-get install -y libxtst6 libxi6
+
 ## app
 WORKDIR /opt/app
-# COPY deps.edn .
-# RUN clojure -A:core -Stree
 COPY project.clj .
 RUN lein deps
 
