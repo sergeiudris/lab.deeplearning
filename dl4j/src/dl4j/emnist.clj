@@ -43,11 +43,10 @@
    )
   (:gen-class))
 
-(def batch-size 16)
 
 (comment
 
-
+  (def batch-size 16)
 
   (def emnist-set EmnistDataSetIterator$Set/BALANCED)
   (def emnist-train (EmnistDataSetIterator. emnist-set batch-size true))
@@ -82,7 +81,7 @@
                             (.weightInit WeightInit/XAVIER)
                             (.build)))
                 (.build)))
-  #_(.setBackpropType conf BackpropType/Standard) ; default
+  (.setBackpropType conf BackpropType/Standard) ; default
   (type conf)
   (linst conf)
 
@@ -96,9 +95,12 @@
   (.fit network emnist-train num-epochs)
   (.getEpochCount network)
   (linst-methods network)
-  (.score network) ; accuracy
-  (.fit network emnist-train 5)
+  (.score network)
 
-
-  ;
+  (def evaluation (.evaluate network emnist-test))
+  (.accuracy evaluation)
+  (.precision evaluation)
+  (.recall evaluation)
+  #_(.confusionString evaluation)
+  
   )

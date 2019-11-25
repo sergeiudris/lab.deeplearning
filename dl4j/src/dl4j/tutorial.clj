@@ -45,7 +45,8 @@
     Evaluation)
    (org.nd4j.linalg.learning.config
     Nesterovs
-    Adam)
+    Adam
+    Sgd)
    (org.nd4j.linalg.activations
     Activation)
    (org.nd4j.linalg.lossfunctions
@@ -236,6 +237,33 @@
              (.setOutputs (into-array ["out1" "out2"]))
              (.build)))
   (json/read-str (.toJson x))
+
+
+  ;
+  )
+
+
+(comment
+
+  ;; Logistic Regression
+
+  (def conf (-> (NeuralNetConfiguration$Builder.)
+                (.seed 123)
+                (.updater (Sgd. 0.1))
+                #_(.iterations 1)
+                (.optimizationAlgo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT)
+                (.list)
+                (.layer 0 (-> (OutputLayer$Builder.)
+                              (.nIn 784)
+                              (.nOut 10)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/SOFTMAX)
+                              (.build)))
+                #_(.pretrain false)
+                #_(.backprop true)
+                (.build)))
+  (json/read-str (.toJson conf))
+
 
 
   ;
