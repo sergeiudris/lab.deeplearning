@@ -5,6 +5,9 @@
 
 
 - dl4j
-    - network issue, host blob.deeplearning4j.org cannot be not resolved
-    - http://blob.deeplearning4j.org/datasets/iris.dat doesn't resolve even in Opera with vpn
-    - probably a geographical issue
+    - issue
+        - network issue, host blob.deeplearning4j.org cannot be not resolved
+        - http://blob.deeplearning4j.org/datasets/iris.dat doesn't resolve even in Opera with vpn
+        - probably a geographical issue
+    - resolved
+        - https://github.com/eclipse/deeplearning4j-examples/issues/924
