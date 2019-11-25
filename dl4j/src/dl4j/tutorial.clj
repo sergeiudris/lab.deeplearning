@@ -19,6 +19,7 @@
     ComputationGraph)
 
    (org.deeplearning4j.nn.conf
+    Updater
     NeuralNetConfiguration
     MultiLayerConfiguration
     ComputationGraphConfiguration
@@ -46,7 +47,8 @@
    (org.nd4j.linalg.learning.config
     Nesterovs
     Adam
-    Sgd)
+    Sgd
+    AdaGrad)
    (org.nd4j.linalg.activations
     Activation)
    (org.nd4j.linalg.lossfunctions
@@ -264,7 +266,73 @@
                 (.build)))
   (json/read-str (.toJson conf))
 
+  ;
+  )
 
+(comment
+
+  ;; Feedforward
+
+
+  (def conf (-> (NeuralNetConfiguration$Builder.)
+                (.seed 12345)
+                (.weightInit WeightInit/XAVIER)
+                (.updater (AdaGrad. 0.05) #_Updater/ADAGRAD)
+                (.activation Activation/RELU)
+                (.optimizationAlgo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT)
+                (.l2 0.0001)
+                (.list)
+                (.layer 0 (-> (DenseLayer$Builder.)
+                              (.nIn 784)
+                              (.nOut 250)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/RELU)
+                              (.build)))
+                (.layer 1 (-> (OutputLayer$Builder.)
+                              (.nIn 250)
+                              (.nOut 10)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/SOFTMAX)
+                              (.lossFunction LossFunctions$LossFunction/NEGATIVELOGLIKELIHOOD)
+                              (.build)))
+                (.build)))
+  (json/read-str (.toJson conf))
+
+  (def conf (-> (NeuralNetConfiguration$Builder.)
+                (.seed 12345)
+                (.weightInit WeightInit/XAVIER)
+                (.updater (AdaGrad. 0.05) #_Updater/ADAGRAD)
+                (.activation Activation/RELU)
+                (.optimizationAlgo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT)
+                (.l2 0.0001)
+                (.list)
+                (.layer 0 (-> (DenseLayer$Builder.)
+                              (.nIn 784)
+                              (.nOut 250)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/RELU)
+                              (.build)))
+                (.layer 1 (-> (DenseLayer$Builder.)
+                              (.nIn 250)
+                              (.nOut 100)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/RELU)
+                              (.build)))
+                (.layer 2 (-> (DenseLayer$Builder.)
+                              (.nIn 100)
+                              (.nOut 50)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/RELU)
+                              (.build)))
+                (.layer 3 (-> (OutputLayer$Builder.)
+                              (.nIn 50)
+                              (.nOut 10)
+                              (.weightInit WeightInit/XAVIER)
+                              (.activation Activation/SOFTMAX)
+                              (.lossFunction LossFunctions$LossFunction/NEGATIVELOGLIKELIHOOD)
+                              (.build)))
+                (.build)))
+  (json/read-str (.toJson conf))
 
   ;
   )

@@ -3,6 +3,7 @@
             [dl4j.core]
             [dl4j.emnist]
             [dl4j.tutorial]
+            [dl4j.mnist-anomaly]
    ;
             ))
 
