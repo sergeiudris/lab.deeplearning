@@ -18,6 +18,8 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [nrepl "0.6.0"]
                  [cider/cider-nrepl "0.22.0"]
+                 [org.clojure/data.json "0.2.7"]
+                 
                  [org.nd4j/nd4j-cuda-9.2 "1.0.0-beta5"]
                  #_[org.nd4j/nd4j-native "1.0.0-beta4"]
                  [org.deeplearning4j/deeplearning4j-core "1.0.0-beta5"]
