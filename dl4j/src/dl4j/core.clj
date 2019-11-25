@@ -10,8 +10,7 @@
    (org.nd4j.list NDArrayList)
    (org.nd4j.linalg.factory Nd4j)
    (org.deeplearning4j.nn.multilayer MultiLayerNetwork)
-   (org.deeplearning4j.examples.feedforward.classification MLPClassifierLinear)
-   )
+   (org.deeplearning4j.examples.feedforward.classification MLPClassifierLinear))
   (:gen-class))
 
 
