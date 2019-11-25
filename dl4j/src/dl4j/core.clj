@@ -2,7 +2,8 @@
   (:require [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [pad.core])
 
   (:import
    (dl4j.java Example)

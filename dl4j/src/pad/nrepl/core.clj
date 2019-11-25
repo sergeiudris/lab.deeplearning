@@ -1,6 +1,5 @@
-(ns dl4j.nrepl
+(ns pad.nrepl.core
   (:require [nrepl.server :refer [start-server stop-server]]
-            [clojure.repl :refer :all]
             [cider.nrepl :refer [cider-nrepl-handler]]
    ;
             ))

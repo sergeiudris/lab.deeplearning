@@ -138,6 +138,19 @@ link_spaces_gvm(){
 
 }
 
+link_spaces_dl4j(){
+    SPACE=dl4j
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+    ln -s ../../dl4j/project.clj spaces/$SPACE/project.clj
+    ln -s ../../dl4j/src/dl4j spaces/$SPACE/dl4j
+    ln -s ../../dl4j/src/pad spaces/$SPACE/pad
+
+    ln -s ../../dl4j/tmp spaces/$SPACE/tmp
+}
+
+
 link_spaces_tf(){
     SPACE=tf
     mkdir -p spaces/$SPACE

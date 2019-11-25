@@ -71,8 +71,10 @@ RUN apt-get update && \
 
 ## app
 WORKDIR /opt/app
-COPY deps.edn .
-RUN clojure -A:core -Stree
+# COPY deps.edn .
+# RUN clojure -A:core -Stree
+COPY project.clj .
+RUN lein deps
 
 EXPOSE 7788 8080
 CMD ["bash","c", "dev"]
