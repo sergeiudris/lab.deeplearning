@@ -26,6 +26,8 @@
 (def batch-size 16)
 
 (comment
+  
+
 
   (def emnist-set EmnistDataSetIterator$Set/BALANCED)
   (def emnist-train (EmnistDataSetIterator. emnist-set batch-size true))
