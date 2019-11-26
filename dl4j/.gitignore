@@ -47,3 +47,4 @@ __pycache__
 # data
 tmp
 report.xml
+.deeplearning4j

@@ -128,6 +128,7 @@ services:
       - ./dl4j:/opt/app
       - ./:/opt/root
       - ../pad:/opt/code/pad
+      - ./.deeplearning4j:/root/.deeplearning4j
     build:
       context: ./dl4j
       dockerfile: ./Dockerfile

@@ -323,6 +323,7 @@ dl4j() {
                 -it \
                 -p 7788:7788 \
                 -v "$(pwd)"/dl4j:/opt/app \
+                -v "$(pwd)"/dl4j/.deeplearning4j:/root/.deeplearning4j \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.dl4j \
