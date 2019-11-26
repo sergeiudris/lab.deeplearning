@@ -34,6 +34,23 @@
        (map #(select-keys % [:name :return-type :parameter-types]))
        pp/print-table))
 
+(comment
+
+  (def dctors (.getDeclaredConstructors String))
+  (doseq [c dctors]
+    (prn (.toGenericString c)))
+  (def ctros (.getConstructors String))
+  (doseq [c ctros]
+    (prn c))
+
+  ;
+  )
+
+(defn list-ctors
+  [cls]
+  (doseq [x (.getDeclaredConstructors cls)]
+    (prn (.toGenericString x))))
+
 (defn linst
   [v]
   (linst-fields v)
