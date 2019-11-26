@@ -6,55 +6,36 @@
             [clojure.data.json :as json]
             [pad.prn.core :refer [linst linst-methods]])
   (:import
-   (org.deeplearning4j.datasets.iterator
-    MultipleEpochsIterator
-    AbstractDataSetIterator)
-   (org.deeplearning4j.datasets.iterator.impl
-    EmnistDataSetIterator EmnistDataSetIterator$Set)
-   (org.deeplearning4j.nn.api
-    Classifier OptimizationAlgorithm)
-   (org.deeplearning4j.nn.multilayer
-    MultiLayerNetwork)
-   (org.deeplearning4j.nn.graph
-    ComputationGraph)
-
-   (org.deeplearning4j.nn.conf
-    Updater
-    NeuralNetConfiguration
-    MultiLayerConfiguration
-    ComputationGraphConfiguration
-    NeuralNetConfiguration
-    NeuralNetConfiguration$Builder
-    NeuralNetConfiguration$ListBuilder
-    BackpropType)
-   (org.deeplearning4j.nn.conf.inputs
-    InputType)
-   (org.deeplearning4j.nn.conf.graph
-    MergeVertex)
-   (org.deeplearning4j.nn.conf.layers
-    RnnOutputLayer RnnOutputLayer$Builder
-    GravesLSTM GravesLSTM$Builder
-    DenseLayer DenseLayer$Builder
-    OutputLayer OutputLayer$Builder)
-   (org.deeplearning4j.nn.weights
-    WeightInit)
-   (org.deeplearning4j.optimize.listeners
-    ScoreIterationListener)
-   (org.deeplearning4j.datasets.datavec
-    RecordReaderMultiDataSetIterator)
-   (org.deeplearning4j.eval
-    Evaluation)
-   (org.nd4j.linalg.learning.config
-    Nesterovs
-    Adam
-    Sgd
-    AdaGrad)
-   (org.nd4j.linalg.activations
-    Activation)
-   (org.nd4j.linalg.lossfunctions
-    LossFunctions LossFunctions$LossFunction)
-   (org.nd4j.linalg.learning.regularization 
-    Regularization L1Regularization L2Regularization))
+   org.deeplearning4j.nn.api.Classifier
+   org.deeplearning4j.nn.api.OptimizationAlgorithm
+   org.deeplearning4j.nn.multilayer.MultiLayerNetwork
+   org.deeplearning4j.nn.graph.ComputationGraph
+   org.deeplearning4j.nn.conf.Updater
+   org.deeplearning4j.nn.conf.ComputationGraphConfiguration
+   org.deeplearning4j.nn.conf.NeuralNetConfiguration$Builder
+   org.deeplearning4j.nn.conf.NeuralNetConfiguration$ListBuilder
+   org.deeplearning4j.nn.conf.BackpropType
+   org.deeplearning4j.nn.conf.inputs.InputType
+   org.deeplearning4j.nn.conf.layers.RnnOutputLayer$Builder
+   org.deeplearning4j.nn.conf.layers.GravesLSTM$Builder
+   org.deeplearning4j.nn.conf.layers.DenseLayer$Builder
+   org.deeplearning4j.nn.conf.layers.OutputLayer$Builder
+   org.deeplearning4j.nn.weights.WeightInit
+   org.deeplearning4j.nn.conf.graph.MergeVertex
+   org.deeplearning4j.nn.conf.graph.L2NormalizeVertex
+   org.deeplearning4j.nn.transferlearning.TransferLearning
+   org.deeplearning4j.optimize.listeners.ScoreIterationListener
+   org.deeplearning4j.datasets.datavec.RecordReaderMultiDataSetIterator
+   org.deeplearning4j.eval.Evaluation
+   org.nd4j.linalg.learning.config.Nesterovs
+   org.nd4j.linalg.learning.config.Adam
+   org.nd4j.linalg.learning.config.Sgd
+   org.nd4j.linalg.learning.config.AdaGrad
+   org.nd4j.linalg.activations.Activation
+   org.nd4j.linalg.lossfunctions.LossFunctions$LossFunction
+   org.nd4j.linalg.learning.regularization.Regularization
+   org.nd4j.linalg.learning.regularization.L1Regularization
+   org.nd4j.linalg.learning.regularization.L2Regularization)
   (:gen-class))
 
 

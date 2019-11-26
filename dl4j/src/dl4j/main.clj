@@ -4,6 +4,7 @@
             [dl4j.emnist]
             [dl4j.tutorial]
             [dl4j.mnist-anomaly]
+            [dl4j.facenet]
    ;
             ))
 

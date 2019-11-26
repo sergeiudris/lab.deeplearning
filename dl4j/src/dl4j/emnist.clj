@@ -5,42 +5,22 @@
             [clojure.string :as string]
             [pad.prn.core :refer [linst linst-methods]])
   (:import
-   (org.deeplearning4j.datasets.iterator
-    MultipleEpochsIterator
-    AbstractDataSetIterator)
-   (org.deeplearning4j.datasets.iterator.impl
-    EmnistDataSetIterator EmnistDataSetIterator$Set)
-   (org.deeplearning4j.nn.api
-    Classifier OptimizationAlgorithm)
-   (org.deeplearning4j.nn.multilayer
-    MultiLayerNetwork)
-   (org.deeplearning4j.nn.graph
-    ComputationGraph)
-   (org.deeplearning4j.nn.conf
-    NeuralNetConfiguration
-    NeuralNetConfiguration$Builder
-    NeuralNetConfiguration$ListBuilder
-    BackpropType)
-   (org.deeplearning4j.nn.conf.inputs
-    InputType)
-   (org.deeplearning4j.nn.conf.layers
-    DenseLayer DenseLayer$Builder
-    OutputLayer OutputLayer$Builder)
-   (org.deeplearning4j.nn.weights
-    WeightInit)
-   (org.deeplearning4j.optimize.listeners
-    ScoreIterationListener)
-   (org.deeplearning4j.datasets.datavec
-    RecordReaderMultiDataSetIterator)
-   (org.deeplearning4j.eval 
-    Evaluation)
-   (org.nd4j.linalg.learning.config 
-    Adam) ; for different updaters like Adam, Nesterovs, etc
-   (org.nd4j.linalg.activations 
-    Activation) ;  defines different activation functions like RELU, SOFTMAX, etc.
-   (org.nd4j.linalg.lossfunctions
-    LossFunctions LossFunctions$LossFunction); mean squared error, multiclass cross entropy, etc.
-   )
+   org.deeplearning4j.datasets.iterator.MultipleEpochsIterator
+   org.deeplearning4j.datasets.iterator.AbstractDataSetIterator
+   org.deeplearning4j.datasets.iterator.impl.EmnistDataSetIterator
+   org.deeplearning4j.datasets.iterator.impl.EmnistDataSetIterator$Set
+   org.deeplearning4j.nn.api.OptimizationAlgorithm
+   org.deeplearning4j.nn.multilayer.MultiLayerNetwork
+   org.deeplearning4j.nn.conf.NeuralNetConfiguration$Builder
+   org.deeplearning4j.nn.conf.NeuralNetConfiguration$ListBuilder
+   org.deeplearning4j.nn.conf.BackpropType
+   org.deeplearning4j.nn.conf.layers.DenseLayer$Builder
+   org.deeplearning4j.nn.conf.layers.OutputLayer$Builder
+   org.deeplearning4j.nn.weights.WeightInit
+   org.deeplearning4j.optimize.listeners.ScoreIterationListener
+   org.nd4j.linalg.learning.config.Adam
+   org.nd4j.linalg.activations.Activation
+   org.nd4j.linalg.lossfunctions.LossFunctions$LossFunction)
   (:gen-class))
 
 
@@ -60,7 +40,8 @@
   ; as of 2019-11-25 docs at http://deeplearning4j.org/ are v1.0.0-beta4
   ; but data can be loaded only with v1.0.0-beta5, which has different api
   ; lookup api manually
-  ; https://github.com/eclipse/deeplearning4j/tree/deeplearning4j-1.0.0-beta5/deeplearning4j/deeplearning4j-nn/src/main/java/org/deeplearning4j/nn/conf  
+  ; git clone https://github.com/eclipse/deeplearning4j
+  ; get checkout deeplearning4j-1.0.0-beta5
 
   (def conf (-> (NeuralNetConfiguration$Builder.)
                 (.seed rng-seed)
