@@ -72,6 +72,8 @@
 
 (comment
 
+  ; configure
+
   (def conf (-> (NeuralNetConfiguration$Builder.)
                 (.seed 12345)
                 #_(.iterations 1)
@@ -80,7 +82,9 @@
                 (.activation Activation/RELU)
                 (.optimizationAlgo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT)
                 (.l2 0.0001)
+
                 (.list)
+                (.setInputType (InputType/feedForward 784))
                 (.layer 0 (-> (DenseLayer$Builder.)
                               (.nIn 784)
                               (.nOut 250)
@@ -117,7 +121,7 @@
     (while (.hasNext iter)
       (let [next (.next iter)
             split (.splitTestAndTrain next 80 rnd)
-            _ (.add features-train (.. split getTrain getFeatures))
+            _ (.add features-train (.. split (getTrain) (getFeatures)))
             ds-test (.getTest split)
             _ (.add features-test (.getFeatures ds-test))
             indexes (Nd4j/argMax (.getLabels ds-test) (int-array [1]))
@@ -135,14 +139,51 @@
   (.-numExamples iter) ; fail, protected
   (FieldUtils/readField iter "numExamples" true)
 
-  (def n-epochs 30)
+  ; train
+
+  (def n-epochs 1)
 
   (doseq [epoch (range 0 n-epochs)]
     (doseq [data (iterator-seq (.iterator features-train))]
       (.fit net data data))
     (prn (str "epoch " epoch " complete")))
-  
 
+
+  ; evaluate
+
+  (def lists-by-digit (java.util.HashMap.))
+
+  (doseq [i (range 0 10)]
+    (.put lists-by-digit i (java.util.ArrayList.)))
+  (count lists-by-digit)
+
+  (.rows (.get features-test 1))
+  (.getRow (.get features-test 1) 0)
+
+  (def d (.. (.get labels-test 1) (getDouble  1) (intValue)))
+  (linst d)
+
+  (def pik (atom nil))
+  (linst @pik)
+  (do @pik)
+  (.length @pik)
+  (linst @pik)
+
+  (doseq [i (range 0 (.size features-test))]
+    (let [test-data (.get features-test i)
+          labels (.get labels-test i)]
+      (doseq [j (range 0 (.rows test-data))]
+        (let [example (.getRow test-data j)
+              digit (.. labels (getDouble  j) (intValue))
+              dset (DataSet. example example)
+              _ (.reshape dset 28 28)
+              ; _ (reset! pik dset)
+              score (.score net dset) ; Exception: Input that is not a matrix; expected matrix (rank 2), got rank 1 array with shape [784]
+              digit-all-pairs (.get lists-by-digit digit)]
+          (.add digit-all-pairs (ImmutablePair. score example))))))
+
+
+  ; to be continued once docs are in sync with the latest version
 
   ;
   )

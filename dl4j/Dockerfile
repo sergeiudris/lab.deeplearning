@@ -72,7 +72,8 @@ RUN apt-get update && \
 # /usr/local/graalvm-ce-java8-19.3.0/jre/lib/amd64/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file or directory
 # /usr/local/graalvm-ce-java8-19.3.0/jre/lib/amd64/libawt_xawt.so: libXi.so.6: cannot open shared object file: No such file or directory
 RUN apt-get install -y libxtst6 libxi6 \
-                        iputils-ping
+                        iputils-ping \
+                        tcpflow
 
 ## app
 WORKDIR /opt/app
