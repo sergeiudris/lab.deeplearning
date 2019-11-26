@@ -6,6 +6,7 @@
             [dl4j.mnist-anomaly]
             [dl4j.facenet]
             [dl4j.paragraph-vec]
+            [dl4j.sea-temp]
    ;
             ))
 
