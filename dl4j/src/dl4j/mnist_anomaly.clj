@@ -55,7 +55,7 @@
                               (.build)))
                 (.build)))
 
-  (json/read-str (.toJson conf))
+  (json/read-str (.toJson conf) :key-fn keyword)
 
   (def net (MultiLayerNetwork. conf))
   (do (.addListeners net (into-array [(ScoreIterationListener. 1)])))

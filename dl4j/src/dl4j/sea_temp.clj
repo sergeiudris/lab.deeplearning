@@ -62,7 +62,7 @@
   " target))
 
 (defn fetch-data
-  [{:arxiv.dir/keys [shell] :as opts}]
+  [{:sea.dir/keys [shell] :as opts}]
   (sh "bash" "-c" (bash-script-fetch-data opts)  :dir shell))
 
 #_(:exit (fetch-data opts))
@@ -167,7 +167,7 @@
                 (.inputPreProcessor (int 0) (RnnToCnnPreProcessor. v-height v-width num-channels))
                 (.inputPreProcessor (int 1) (CnnToRnnPreProcessor. 6 2 7))
                 (.build)))
-  (json/read-str (.toJson conf))
+  (json/read-str (.toJson conf) :key-fn keyword)
 
   (def net (MultiLayerNetwork. conf))
   (.init net)
@@ -231,7 +231,7 @@
                 (.inputPreProcessor (int 2) (CnnToRnnPreProcessor. 3 1 7))
                 (.build)))
 
-  (json/read-str (.toJson conf))
+  (json/read-str (.toJson conf) :key-fn keyword)
 
   (def net (MultiLayerNetwork. conf))
   (.init net)

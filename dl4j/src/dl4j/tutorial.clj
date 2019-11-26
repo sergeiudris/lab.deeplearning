@@ -245,7 +245,7 @@
                 #_(.pretrain false)
                 #_(.backprop true)
                 (.build)))
-  (json/read-str (.toJson conf))
+  (json/read-str (.toJson conf) :key-fn keyword)
 
   ;
   )
@@ -277,7 +277,7 @@
                               (.lossFunction LossFunctions$LossFunction/NEGATIVELOGLIKELIHOOD)
                               (.build)))
                 (.build)))
-  (json/read-str (.toJson conf))
+  (json/read-str (.toJson conf) :key-fn keyword)
 
   (def conf (-> (NeuralNetConfiguration$Builder.)
                 (.seed 12345)
@@ -313,7 +313,7 @@
                               (.lossFunction LossFunctions$LossFunction/NEGATIVELOGLIKELIHOOD)
                               (.build)))
                 (.build)))
-  (json/read-str (.toJson conf))
+  (json/read-str (.toJson conf) :key-fn keyword)
 
   ;
   )
