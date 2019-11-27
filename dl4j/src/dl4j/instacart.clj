@@ -270,7 +270,7 @@
   (def net (MultiLayerNetwork. conf))
   (do (.init net))
 
-  (doseq [epoch (range 0 5)]
+  (doseq [epoch (range 0 4)]
     (time
      (do
        (.fit net train-iter)
@@ -290,7 +290,7 @@
   (println (.calculateAUC roc)) 
   ; 0.97
   ; seems too high..
-
+  ; 0.96 with LossFunctions$LossFunction/MCXENT
 
   ;
   )

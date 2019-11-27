@@ -209,7 +209,7 @@
   (def model (ComputationGraph. conf))
   (.init model)
 
-  (doseq [epoch (range 0 1)]
+  (doseq [epoch (range 0 5)]
     (time
      (do
        (.fit model train-iter)
