@@ -21,7 +21,11 @@
                  [org.clojure/data.json "0.2.7"]
                  [commons-io/commons-io "2.5"]
 
-                 [org.apache.lucene/lucene-core "8.3.0"]]
+                 [org.apache.lucene/lucene-core "8.3.0"]
+                 [org.apache.lucene/lucene-facet "8.3.0"]
+                 [org.apache.lucene/lucene-analyzers-common "8.3.0"]
+                 [org.apache.lucene/lucene-queryparser "8.3.0"]
+                 ]
 
 
   :repl-options {:init-ns          lucene.main

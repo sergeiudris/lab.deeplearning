@@ -151,6 +151,18 @@ link_spaces_dl4j(){
     ln -s ../../dl4j/tmp spaces/$SPACE/tmp
 }
 
+link_spaces_lucene(){
+    SPACE=lucene
+    mkdir -p spaces/$SPACE
+
+    ln -s ../../.vscode spaces/$SPACE/.vscode
+    ln -s ../../lucene/project.clj spaces/$SPACE/project.clj
+    ln -s ../../lucene/src/lucene spaces/$SPACE/lucene
+    ln -s ../../lucene/src/pad spaces/$SPACE/pad
+    ln -s ../../lucene/src/org spaces/$SPACE/org
+
+    ln -s ../../lucene/tmp spaces/$SPACE/tmp
+}
 
 link_spaces_tf(){
     SPACE=tf
