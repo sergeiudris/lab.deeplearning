@@ -1,6 +1,6 @@
 (ns dl4j.main
   (:require [pad.nrepl.core :refer [start-nrepl-server]]
-            [dl4j.core]
+            [dl4j.linear]
             [dl4j.emnist]
             [dl4j.tutorial]
             [dl4j.mnist-anomaly]

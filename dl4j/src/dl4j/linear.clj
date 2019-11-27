@@ -1,4 +1,4 @@
-(ns dl4j.core
+(ns dl4j.linear
   (:require [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]

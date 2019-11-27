@@ -78,6 +78,8 @@
 (def auxil-base-dir (FilenameUtils/concat path "dairy"))
 
 (comment
+  
+  ;; multitask
 
   (do
 
@@ -199,6 +201,92 @@
 
 
 
+
+
+  ;
+  )
+
+
+(comment
+
+  ;; single task
+
+  (do
+    (def train-features (CSVSequenceRecordReader. 1 ","))
+    (.initialize train-features
+                 (NumberedFileInputSplit. (str features-base-dir "/%d.csv") 1 4000))
+    (def train-labels (CSVSequenceRecordReader. 1 ","))
+    (.initialize train-labels
+                 (NumberedFileInputSplit. (str features-base-dir "/%d.csv") 1 4000))
+
+    (def test-features (CSVSequenceRecordReader. 1 ","))
+    (.initialize test-features
+                 (NumberedFileInputSplit. (str features-base-dir "/%d.csv") 4001 5000))
+    (def test-labels (CSVSequenceRecordReader. 1 ","))
+    (.initialize test-labels
+                 (NumberedFileInputSplit. (str features-base-dir "/%d.csv") 4001 5000))
+
+    (def train-iter (SequenceRecordReaderDataSetIterator.
+                     train-features
+                     train-labels
+                     32
+                     2
+                     false
+                     SequenceRecordReaderDataSetIterator$AlignmentMode/ALIGN_END))
+
+    (def test-iter (SequenceRecordReaderDataSetIterator.
+                    test-features
+                    test-labels
+                    32
+                    2
+                    false
+                    SequenceRecordReaderDataSetIterator$AlignmentMode/ALIGN_END)))
+
+  (def conf (-> (NeuralNetConfiguration$Builder.)
+                (.optimizationAlgo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT)
+                (.seed 12345)
+                (.dropOut 0.25)
+                (.weightInit WeightInit/XAVIER)
+                (.updater Updater/ADAM)
+                (.list)
+                (.layer 0 (-> (LSTM$Builder.)
+                              (.activation Activation/TANH)
+                              (.gradientNormalization GradientNormalization/ClipElementWiseAbsoluteValue)
+                              (.gradientNormalizationThreshold 10)
+                              (.nIn 134)
+                              (.nOut 150)
+                              (.build)))
+                (.layer 1 (-> (RnnOutputLayer$Builder. LossFunctions$LossFunction/XENT)
+                              (.activation Activation/SOFTMAX)
+                              (.nIn 150)
+                              (.nOut 2)
+                              (.build)))
+                (.validateOutputLayerConfig false) ; not recommended
+                (.build)))
+
+  (def net (MultiLayerNetwork. conf))
+  (do (.init net))
+
+  (doseq [epoch (range 0 5)]
+    (time
+     (do
+       (.fit net train-iter)
+       (.reset train-iter)
+       (prn (str "epoch " epoch " complete")))))
+
+  (def roc (ROC. 100))
+
+  (do
+    (.reset test-iter)
+    (while (.hasNext test-iter)
+      (let [next (.next test-iter)
+            features (.getFeatures next)
+            output (.output net features)]
+        (.evalTimeSeries roc (.getLabels next) output))))
+
+  (println (.calculateAUC roc)) 
+  ; 0.97
+  ; seems too high..
 
 
   ;
