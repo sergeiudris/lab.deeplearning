@@ -122,15 +122,38 @@ services:
   #         cpus: '4'
   #         memory: 8192M
 
-  dl4j:
-    image: sample.ml.dl4j
+  # dl4j:
+  #   image: sample.ml.dl4j
+  #   volumes:
+  #     - ./dl4j:/opt/app
+  #     - ./:/opt/root
+  #     - ./.deeplearning4j:/root/.deeplearning4j
+  #   build:
+  #     context: ./dl4j
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7788:7788
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   environment:
+  #     # - DISPLAY=10.0.75.1:0.0
+  #     # - DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
+  #     - DISPLAY=$DISPLAY # EDIT me into actually getting host's $DISPLAY
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 11998M
+
+  lucene:
+    image: sample.ml.lucene
     volumes:
-      - ./dl4j:/opt/app
+      - ./lucene:/opt/app
       - ./:/opt/root
-      - ../pad:/opt/code/pad
-      - ./.deeplearning4j:/root/.deeplearning4j
     build:
-      context: ./dl4j
+      context: ./lucene
       dockerfile: ./Dockerfile
     ports:
       - 7788:7788

@@ -330,6 +330,34 @@ dl4j() {
                  bash
 }
 
+lucene() {
+    # use docker directly while docker-compose does not support --gpus flag
+    # https://github.com/docker/compose/issues/6691
+
+    # X11 DISPLAY
+    # https://stackoverflow.com/questions/54574372/java-gui-maven-project-in-docker-with-x11-error
+    # https://github.com/jessfraz/dockerfiles/issues/329#issuecomment-357397001
+    
+    # --env DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
+    # --env DISPLAY=10.0.75.1:0.0
+    # --env DISPLAY=:0.0
+    sudo xhost +
+    # sudo xhost +"local:docker@"
+    docker run  --gpus all \
+                --env DISPLAY=${DISPLAY} \
+                -v /tmp/.X11-unix:/tmp/.X11-unix \
+                --rm \
+                --name lucene \
+                --memory 12g \
+                --cpus 4.000 \
+                -it \
+                -p 7788:7788 \
+                -v "$(pwd)"/lucene:/opt/app \
+                -v "$(pwd)":/opt/root \
+                 sample.ml.lucene \
+                 bash
+}
+
 u18(){
     docker run  --rm \
                 --name ubuntu18 \

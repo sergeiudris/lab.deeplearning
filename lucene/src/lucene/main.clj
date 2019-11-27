@@ -1,5 +1,6 @@
 (ns lucene.main
   (:require [pad.nrepl.core :refer [start-nrepl-server]]
+            [lucene.demo]
    ;
             ))
 
