@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+dev(){
+
+  lein run dev
+
+}
+
+clean(){
+
+  rm -rf .cpcache classes target
+
+}
+
+link_checkouts(){
+  CHECKOUTS=checkouts
+  mkdir -p $CHECKOUTS
+
+  ln -s /opt/code/pad $CHECKOUTS/pad
+}
+
+"$@"

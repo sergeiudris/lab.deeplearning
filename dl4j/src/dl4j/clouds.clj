@@ -209,13 +209,13 @@
   (def model (ComputationGraph. conf))
   (.init model)
 
-  (doseq [epoch (range 0 5)]
+  (doseq [epoch (range 0 1)]
     (time
      (do
        (.fit model train-iter)
-       (prn (str "epoch " epoch " complete")))))
+       (prn (str "epoch " epoch " complete"))))); ~250s
   
-  (def roc (.evaluateROC model test-iter 100))
+  (def roc (time (.evaluateROC model test-iter 100))) 
   
   (println "FINAL TEST AUC: " (.calculateAUC roc))
 

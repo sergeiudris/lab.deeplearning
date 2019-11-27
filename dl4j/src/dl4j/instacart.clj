@@ -256,12 +256,15 @@
                               (.nIn 134)
                               (.nOut 150)
                               (.build)))
-                (.layer 1 (-> (RnnOutputLayer$Builder. LossFunctions$LossFunction/XENT)
+                (.layer 1 (-> (RnnOutputLayer$Builder. 
+                               #_LossFunctions$LossFunction/XENT
+                               LossFunctions$LossFunction/MCXENT
+                               )
                               (.activation Activation/SOFTMAX)
                               (.nIn 150)
                               (.nOut 2)
                               (.build)))
-                (.validateOutputLayerConfig false) ; not recommended
+                #_(.validateOutputLayerConfig false) ; not recommended
                 (.build)))
 
   (def net (MultiLayerNetwork. conf))
