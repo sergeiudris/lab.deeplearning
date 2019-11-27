@@ -48,3 +48,5 @@ __pycache__
 tmp
 report.xml
 .deeplearning4j
+dl4j-examples-data
+
