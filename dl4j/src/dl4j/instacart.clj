@@ -78,7 +78,7 @@
 (def auxil-base-dir (FilenameUtils/concat path "dairy"))
 
 (comment
-  
+
   ;; multitask
 
   (do
@@ -188,19 +188,27 @@
 
   (def pik (atom nil))
   (aget @pik 0)
-  
+
   (while (.hasNext test-iter)
     (let [next (.next test-iter)
           features (.getFeatures next)
           _ (reset! pik features)
-          output (.output  net (into-array [(aget features 0)]) )
+          output (.output  net (into-array [(aget features 0)]))
           labels (.getLabels next)]
       (.evalTimeSeries roc (aget labels 0) (aget output 0))))
-  
+
   (println (.calculateAUC roc)) ; 0.86
 
 
-
+  ; saving
+  
+  (def dest (io/file "/opt/app/tmp/instacart1.zip"))
+  
+  (.save net dest)
+  
+  ; loading
+  
+  (def net (ComputationGraph/load dest true))
 
 
   ;
