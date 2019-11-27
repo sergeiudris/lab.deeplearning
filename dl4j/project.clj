@@ -10,7 +10,10 @@
                                :update    :always}]
                  #_["snapshots" {:url       "https://repository.apache.org/content/repositories/snapshots"
                                  :snapshots true
-                                 :update    :always}]]
+                                 :update    :always}]
+                 ["snapshots-repo" {:url "https://oss.sonatype.org/content/repositories/snapshots"
+                                    :snapshots true
+                                    :update    :always}]]
 
   :min-lein-version "2.8.0"
 
