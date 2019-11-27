@@ -14,7 +14,10 @@
             [dl4j.doc2vec-text]
 
    ;
-            ))
+            )
+  (:import org.nd4j.linalg.api.ndarray.INDArray)
+  (:gen-class))
 
 (defn -main  [& args]
+  (prn INDArray)
   (start-nrepl-server :port 7788))

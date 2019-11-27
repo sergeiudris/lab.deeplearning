@@ -79,6 +79,10 @@
   ;           line 9853: We now have one .
   ; Note that docs are indexed from 0
 
+  (def path-to-save "/opt/app/tmp/doc2vec_text.zip")
+  (WordVectorSerializer/writeParagraphVectors par-vec path-to-save)
+  (def par-vec2 (WordVectorSerializer/readParagraphVectors path-to-save))
+
   ; 'This is my house .'/'This is my world .'
   (.similarity par-vec "DOC_9835" "DOC_12492")
   ; 0.7735093235969543
