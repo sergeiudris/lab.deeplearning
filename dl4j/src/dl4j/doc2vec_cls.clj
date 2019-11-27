@@ -1,4 +1,4 @@
-(ns dl4j.doc2vec
+(ns dl4j.doc2vec-cls
   (:require [clojure.string :as string]
             [pad.prn.core :refer [bash-ls]])
   (:import

@@ -9,7 +9,10 @@
             [dl4j.instacart]
             [dl4j.clouds]
             [dl4j.word2vec]
-            [dl4j.doc2vec]
+            [dl4j.doc2vec-cls]
+            [dl4j.doc2vec-infer]
+            [dl4j.doc2vec-text]
+
    ;
             ))
 
