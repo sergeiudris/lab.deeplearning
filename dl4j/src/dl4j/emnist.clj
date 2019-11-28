@@ -73,7 +73,14 @@
   (def num-epochs 1)
   ; https://github.com/eclipse/deeplearning4j/blob/deeplearning4j-1.0.0-beta5/deeplearning4j/deeplearning4j-data/deeplearning4j-utility-iterators/src/main/java/org/deeplearning4j/datasets/iterator/MultipleEpochsIterator.java
   (linst network)
-  (.fit network emnist-train num-epochs)
+
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (.fit network emnist-train num-epochs)
+                         (prn "--finished training"))))
+
+  (future-cancel fu)
+
   (.getEpochCount network)
   (linst-methods network)
   (.score network)
@@ -82,6 +89,4 @@
   (.accuracy evaluation)
   (.precision evaluation)
   (.recall evaluation)
-  #_(.confusionString evaluation)
-  
-  )
+  #_(.confusionString evaluation))

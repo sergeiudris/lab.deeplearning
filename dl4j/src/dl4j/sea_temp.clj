@@ -173,11 +173,19 @@
   (.init net)
 
   (.reset train-iter)
-  (doseq [epoch (range 0 25)]
-    (time
-     (do
-       (.fit net train-iter)
-       (prn "epoch " epoch " complete")))) ; ~19s
+
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 25)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (time
+                            (do
+                              (.fit net train-iter)
+                              (prn "epoch " epoch " complete")))) ; ~19s
+                         (prn "--finished training"))))
+
+  (future-cancel fu)
+
 
   (.score net)
 
@@ -237,11 +245,18 @@
   (.init net)
 
   (.reset train-iter)
-  (doseq [epoch (range 0 15)]
-    (time
-     (do
-       (.fit net train-iter)
-       (prn "epoch " epoch " complete"))))
+
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 15)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (time
+                            (do
+                              (.fit net train-iter)
+                              (prn "epoch " epoch " complete")))) ; ~19s
+                         (prn "--finished training"))))
+
+  (future-cancel fu)
 
   (def evaluation (RegressionEvaluation.))
 
@@ -272,10 +287,10 @@
                                                 (NDArrayIndex/interval i (inc i))])))
             (reset! pred (.rnnTimeStep net @pred)))))
       (.rnnClearPreviousState net)))
-  
+
   (println (.stats evaluation))
-  
-  
+
+
 
 
 

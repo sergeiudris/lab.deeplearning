@@ -17,6 +17,9 @@
    org.deeplearning4j.nn.weights.WeightInit
    org.deeplearning4j.optimize.listeners.ScoreIterationListener
    org.nd4j.linalg.activations.Activation
+   org.nd4j.linalg.learning.config.AdaGrad
+   org.nd4j.linalg.factory.Nd4j
+   org.deeplearning4j.nn.conf.inputs.InputType
    org.nd4j.linalg.lossfunctions.LossFunctions$LossFunction)
   (:gen-class))
 
@@ -92,12 +95,27 @@
 
   ; train
 
-  (def n-epochs 1)
+  (def n-epochs 10)
+  
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 n-epochs)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (doseq [data (iterator-seq (.iterator features-train))]
+                             (.fit net data data))
+                           (prn (str "epoch " epoch " complete")))
+                         (prn "--finished training"))))
+  
+  (future-cancel fu)
+  (future-done? fu)
+  
+  (future-cancelled? fu)
 
-  (doseq [epoch (range 0 n-epochs)]
-    (doseq [data (iterator-seq (.iterator features-train))]
-      (.fit net data data))
-    (prn (str "epoch " epoch " complete")))
+  (Thread/interrupted)
+  (Thread/currentThread)
+  (linst (Thread/currentThread))
+  (.getId (Thread/currentThread))
+  (.isInterrupted (Thread/currentThread))
 
 
   ; evaluate

@@ -41,14 +41,14 @@
   #_(.stop ui-server)
 
   (def stats-storage (FileStatsStorage.
-                      (File. (System/getProperty "java.io.tmpdir") "ui-stats.dl4j")))
+                      (File. (System/getProperty "java.io.tmpdir") "ui-stats.dl4j1")))
 
   (def listener-frequency 1)
 
   (.setListeners net (into-array [(StatsListener. stats-storage listener-frequency)]))
 
   (.attach ui-server stats-storage)
-  
+
 
 
   (def fu (future-call (fn []

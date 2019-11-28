@@ -20,3 +20,9 @@
     - https://github.com/eclipse/deeplearning4j/issues/3112
     - resolved
         -
+
+- lein-virgil
+    - :reloading
+      :error-when-loading
+    - resolved
+        - rm -rf target

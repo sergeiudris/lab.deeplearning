@@ -209,14 +209,20 @@
   (def model (ComputationGraph. conf))
   (.init model)
 
-  (doseq [epoch (range 0 5)]
-    (time
-     (do
-       (.fit model train-iter)
-       (prn (str "epoch " epoch " complete"))))); ~250s
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 5)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (time
+                            (do
+                              (.fit model train-iter)
+                              (prn (str "epoch " epoch " complete"))))) ; ~250s
+                         (prn "--finished training"))))
   
-  (def roc (time (.evaluateROC model test-iter 100))) 
-  
+  (future-cancel fu)
+
+  (def roc (time (.evaluateROC model test-iter 100)))
+
   (println "FINAL TEST AUC: " (.calculateAUC roc))
 
   ;

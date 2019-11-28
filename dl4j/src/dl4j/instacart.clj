@@ -171,12 +171,18 @@
   (def net (ComputationGraph. conf))
   (do (.init net))
 
-  (doseq [epoch (range 0 5)]
-    (time
-     (do
-       (.fit net train-iter)
-       (.reset train-iter)
-       (prn (str "epoch " epoch " complete"))))) ; ~28s
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 5)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (time
+                            (do
+                              (.fit net train-iter)
+                              (.reset train-iter)
+                              (prn (str "epoch " epoch " complete"))))) ; ~28s
+                         (prn "--finished training"))))
+
+  (future-cancel fu)
 
 
   (def roc (ROC.))
@@ -197,17 +203,19 @@
           labels (.getLabels next)]
       (.evalTimeSeries roc (aget labels 0) (aget output 0))))
 
-  (println (.calculateAUC roc)) ; 0.86
+  (println (.calculateAUC roc))
+  ; 0.86
+  ; 0.81 with future-cancel after 2 epochs
 
 
   ; saving
-  
+
   (def dest (io/file "/opt/app/tmp/instacart1.zip"))
-  
+
   (.save net dest)
-  
+
   ; loading
-  
+
   (def net (ComputationGraph/load dest true))
 
 
@@ -264,10 +272,9 @@
                               (.nIn 134)
                               (.nOut 150)
                               (.build)))
-                (.layer 1 (-> (RnnOutputLayer$Builder. 
+                (.layer 1 (-> (RnnOutputLayer$Builder.
                                #_LossFunctions$LossFunction/XENT
-                               LossFunctions$LossFunction/MCXENT
-                               )
+                               LossFunctions$LossFunction/MCXENT)
                               (.activation Activation/SOFTMAX)
                               (.nIn 150)
                               (.nOut 2)
@@ -277,13 +284,19 @@
 
   (def net (MultiLayerNetwork. conf))
   (do (.init net))
+  
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 4)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (time
+                            (do
+                              (.fit net train-iter)
+                              (.reset train-iter)
+                              (prn (str "epoch " epoch " complete"))))) 
+                         (prn "--finished training"))))
 
-  (doseq [epoch (range 0 4)]
-    (time
-     (do
-       (.fit net train-iter)
-       (.reset train-iter)
-       (prn (str "epoch " epoch " complete")))))
+  (future-cancel fu)
 
   (def roc (ROC. 100))
 
@@ -295,7 +308,7 @@
             output (.output net features)]
         (.evalTimeSeries roc (.getLabels next) output))))
 
-  (println (.calculateAUC roc)) 
+  (println (.calculateAUC roc))
   ; 0.97
   ; seems too high..
   ; 0.96 with LossFunctions$LossFunction/MCXENT

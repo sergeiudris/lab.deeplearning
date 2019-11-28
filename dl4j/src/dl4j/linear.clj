@@ -18,7 +18,14 @@
 
   (Example/hello)
   (type (into-array [""]))
-  (MLPClassifierLinear/main (into-array [""]))
+
+
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (MLPClassifierLinear/main (into-array [""]))
+                         (prn "--finished training"))))
+
+  (future-cancel fu)
 
   ;
   )

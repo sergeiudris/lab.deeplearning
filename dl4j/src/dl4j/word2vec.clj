@@ -47,8 +47,9 @@
                     (.tokenizerFactory t)
                     (.build)))
 
+  
   (.fit word2vec)
-
+  
    ; save/load
 
   (def path-to-save "/opt/app/tmp/word2vec.txt")

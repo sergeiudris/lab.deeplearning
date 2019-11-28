@@ -90,11 +90,17 @@
              (java.util.Random. random-seed)))
 
   (def num-epochs 1)
-
-  (doseq [epoch (range 0 num-epochs)]
-    (.fit  net iter)
-    (prn (str "epoch " epoch " complete")))
   
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (doseq [epoch (range 0 num-epochs)
+                                 :while (not (.isInterrupted (Thread/currentThread)))]
+                           (.fit  net iter)
+                           (prn (str "epoch " epoch " complete"))) 
+                         (prn "--finished training"))))
+
+  (future-cancel fu)
+
   (.score net)
 
   (def shipped (-> (TransferLearning$GraphBuilder. net)
@@ -102,8 +108,8 @@
                    (.removeVertexAndConnections "lossLayer")
                    (.setOutputs (into-array ["embeddings"]))
                    (.build)))
-  
-  (json/read-str (.. shipped conf toJson ))
+
+  (json/read-str (.. shipped conf toJson))
 
   (def ds (.next iter))
 

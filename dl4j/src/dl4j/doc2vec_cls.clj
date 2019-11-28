@@ -22,9 +22,9 @@
    org.slf4j.Logger
    org.slf4j.LoggerFactory
 
-   java.io.File;
-   java.io.IOException;
-   java.util.List;
+   java.io.File
+   java.io.IOException
+   java.util.List
    ))
 
  #_(.Download DownloaderUtility/NLPDATA)
@@ -51,6 +51,7 @@
                              (.tokenizerFactory tokenizer-factory)
                              (.build)))
 
+  
   (.fit paragraph-vectors)
 
   (def path-to-save "/opt/app/tmp/doc2vec.zip")
