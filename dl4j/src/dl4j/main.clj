@@ -13,6 +13,7 @@
             [dl4j.doc2vec-infer]
             [dl4j.doc2vec-text]
             [dl4j.ui]
+            [dl4j.glove]
    ;
             )
   (:import org.nd4j.linalg.api.ndarray.INDArray)
