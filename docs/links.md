@@ -18,3 +18,7 @@
         - https://medium.com/apache-mxnet/gluonnlp-deep-learning-toolkit-for-natural-language-processing-98e684131c8a
     
     
+- git search
+    - https://git-scm.com/book/en/v2/Git-Tools-Searching
+    - https://stackoverflow.com/questions/4468361/search-all-of-git-history-for-a-string
+    - https://github.com/sourcegraph/sourcegraph
