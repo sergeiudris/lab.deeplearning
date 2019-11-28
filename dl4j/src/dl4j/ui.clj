@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
             [clojure.string :as string]
-            [pad.prn.core :refer [linst linst-methods]])
+            [pad.core :refer [safe-deref-future]])
   (:import
    org.deeplearning4j.datasets.iterator.MultipleEpochsIterator
    org.deeplearning4j.datasets.iterator.AbstractDataSetIterator
@@ -38,6 +38,7 @@
   (def train-iter (UIExampleUtils/getMnistData))
 
   (def ui-server (UIServer/getInstance))
+  #_(.stop ui-server)
 
   (def stats-storage (FileStatsStorage.
                       (File. (System/getProperty "java.io.tmpdir") "ui-stats.dl4j")))
@@ -45,11 +46,26 @@
   (def listener-frequency 1)
 
   (.setListeners net (into-array [(StatsListener. stats-storage listener-frequency)]))
-  
+
   (.attach ui-server stats-storage)
   
-  
-  (.fit net train-iter)
+
+
+  (def fu (future-call (fn []
+                         (prn "--started training")
+                         (.fit net train-iter)
+                         (prn "--finished training"))))
+
+  (prn 3)
+  (safe-deref-future fu)
+  (future-cancel fu)
+
+  (.score net)
+
+
+
+
+
 
   ;
   )

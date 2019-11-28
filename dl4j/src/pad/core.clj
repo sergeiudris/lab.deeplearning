@@ -46,3 +46,10 @@
 (defn str-float?
   [s]
   (number? (str>>float s)))
+
+
+(defn safe-deref-future
+  [fu]
+  (when (and (future-done? fu)
+             (not (future-cancelled? fu)))
+    (deref fu)))
