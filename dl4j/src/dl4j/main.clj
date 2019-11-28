@@ -12,7 +12,7 @@
             [dl4j.doc2vec-cls]
             [dl4j.doc2vec-infer]
             [dl4j.doc2vec-text]
-
+            [dl4j.ui]
    ;
             )
   (:import org.nd4j.linalg.api.ndarray.INDArray)

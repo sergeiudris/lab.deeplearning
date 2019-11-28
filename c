@@ -334,6 +334,7 @@ dl4j() {
                 --cpus 4.000 \
                 -it \
                 -p 7788:7788 \
+                -p 9000:9000 \
                 -v "$(pwd)"/dl4j:/opt/app \
                 -v "$(pwd)"/dl4j/.deeplearning4j:/root/.deeplearning4j \
                 -v "$(pwd)"/dl4j/dl4j-examples-data:/root/dl4j-examples-data \

@@ -30,6 +30,7 @@
                  [org.deeplearning4j/deeplearning4j-core "1.0.0-beta5"]
                  [org.deeplearning4j/deeplearning4j-zoo "1.0.0-beta5"]
                  [org.deeplearning4j/deeplearning4j-nlp "1.0.0-beta5"]
+                 [org.deeplearning4j/deeplearning4j-ui_2.12 "1.0.0-beta5"]
                  [org.datavec/datavec-api "1.0.0-beta5"]
                  [commons-io/commons-io "2.5"]
                  [jfree/jfreechart "1.0.13"]

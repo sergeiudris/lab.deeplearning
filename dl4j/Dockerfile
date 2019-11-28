@@ -80,5 +80,5 @@ WORKDIR /opt/app
 COPY project.clj .
 RUN lein deps
 
-EXPOSE 7788 8080
+EXPOSE 7788 8080 9000
 CMD ["bash","c", "dev"]

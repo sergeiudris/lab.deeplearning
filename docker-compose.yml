@@ -133,6 +133,7 @@ services:
   #     dockerfile: ./Dockerfile
   #   ports:
   #     - 7788:7788
+  #     - 9000:9000
   #   # command: bash c dev
   #   command: tail -f /dev/null
   #   environment:
@@ -147,29 +148,29 @@ services:
   #         cpus: '4'
   #         memory: 11998M
 
-  lucene:
-    image: sample.ml.lucene
-    volumes:
-      - ./lucene:/opt/app
-      - ./:/opt/root
-    build:
-      context: ./lucene
-      dockerfile: ./Dockerfile
-    ports:
-      - 7788:7788
-    # command: bash c dev
-    command: tail -f /dev/null
-    environment:
-      # - DISPLAY=10.0.75.1:0.0
-      # - DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
-      - DISPLAY=$DISPLAY # EDIT me into actually getting host's $DISPLAY
-    stdin_open: true
-    tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 11998M
+  # lucene:
+  #   image: sample.ml.lucene
+  #   volumes:
+  #     - ./lucene:/opt/app
+  #     - ./:/opt/root
+  #   build:
+  #     context: ./lucene
+  #     dockerfile: ./Dockerfile
+  #   ports:
+  #     - 7788:7788
+  #   # command: bash c dev
+  #   command: tail -f /dev/null
+  #   environment:
+  #     # - DISPLAY=10.0.75.1:0.0
+  #     # - DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
+  #     - DISPLAY=$DISPLAY # EDIT me into actually getting host's $DISPLAY
+  #   stdin_open: true
+  #   tty: true
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '4'
+  #         memory: 11998M
 
   # gvm:
   #   image: sample.ml.gvm
