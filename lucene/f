@@ -1,0 +1,41 @@
+#!/bin/bash
+
+
+dev(){
+
+  lein run dev
+
+}
+
+clean(){
+
+  rm -rf .cpcache classes target
+
+}
+
+link_checkouts(){
+  CHECKOUTS=checkouts
+  mkdir -p $CHECKOUTS
+
+  ln -s /opt/code/pad $CHECKOUTS/pad
+}
+
+dock() {
+    sudo xhost +
+    docker build -t sample.ml.lucene .
+    docker run  --gpus all \
+                --env DISPLAY=${DISPLAY} \
+                -v /tmp/.X11-unix:/tmp/.X11-unix \
+                --rm \
+                --name lucene \
+                --memory 12g \
+                --cpus 4.000 \
+                -it \
+                -p 7788:7788 \
+                -v "$(pwd)":/opt/app \
+                -v "$(cd ../ && pwd)":/opt/root \
+                 sample.ml.lucene \
+                 bash
+}
+
+"$@"

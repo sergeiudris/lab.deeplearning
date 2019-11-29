@@ -1,0 +1,33 @@
+#!/bin/bash
+
+
+dev(){
+
+  clojure -A:core:local -m d2l.main
+
+}
+
+permissions(){
+    sudo chmod -R 777 tmp/ 
+}
+
+
+dock() {
+    docker build -t sample.ml.d2l .
+    docker run --gpus all \
+                --rm \
+                --name d2l \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)":/opt/app \
+                -v "$(cd ../ && pwd)":/opt/root \
+                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.d2l \
+                 bash
+}
+
+
+
+
+
+"$@"

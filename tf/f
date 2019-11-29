@@ -1,0 +1,25 @@
+#!/bin/bash
+
+
+dev(){
+
+  clojure -A:core:local -m tf.main
+
+}
+
+dock() {
+    docker build -t sample.ml.tf .
+    docker run --gpus all \
+                --rm \
+                --name tf \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)":/opt/app \
+                -v "$(cd ../ && pwd)":/opt/root \
+                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.tf \
+                 bash
+}
+
+
+"$@"

@@ -3,3 +3,5 @@
 .data
 target
 tmp
+dl4j-examples-data
+.deeplearning4j

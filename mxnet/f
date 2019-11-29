@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+dock() {
+    docker build -t sample.ml.mxnet .
+    docker run --gpus all \
+                --rm \
+                --name mxnet \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)":/opt/app \
+                -v "$(cd ../ && pwd)":/opt/root \
+                -v "$(pwd)"/mxnet/.data:/opt/data \
+                 sample.ml.mxnet \
+                 bash
+}
+
+"$@"

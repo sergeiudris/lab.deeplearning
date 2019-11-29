@@ -1,0 +1,39 @@
+#!/bin/bash
+
+
+shadow(){
+    ./node_modules/.bin/shadow-cljs "$@"
+}
+
+dev(){
+    yarn
+    shadow -A:core watch app
+}
+
+entry(){
+    node target/main.js
+}
+
+release(){
+    yarn
+    shadow -A:core release app
+}
+
+
+
+dock() {
+    docker build -t sample.ml.tfjs .
+    docker run --gpus all \
+                --rm \
+                --name tfjs \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)":/opt/app \
+                -v "$(cd ../ && pwd)":/opt/root \
+                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
+                 sample.ml.tfjs \
+                 bash
+}
+
+
+"$@"
