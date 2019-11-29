@@ -3,7 +3,7 @@
 
 dev(){
 
-  clojure -A:core:local -m tf.main
+  clojure -A:core -m tf.main
 
 }
 
@@ -15,8 +15,6 @@ dock() {
                 -it \
                 -p 7788:7888 \
                 -v "$(pwd)":/opt/app \
-                -v "$(cd ../ && pwd)":/opt/root \
-                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.tf \
                  bash
 }

@@ -3,13 +3,13 @@
 
 dev(){
 
-  clojure -A:core:local -O:mem -m app.main
+  clojure -A:core -O:mem -m app.main
 
 }
 
 native(){
 
-  clojure -A:core:local:native-image
+  clojure -A:core:native-image
 
 }
 

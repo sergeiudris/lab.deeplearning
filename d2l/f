@@ -20,8 +20,6 @@ dock() {
                 -it \
                 -p 7788:7888 \
                 -v "$(pwd)":/opt/app \
-                -v "$(cd ../ && pwd)":/opt/root \
-                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.d2l \
                  bash
 }

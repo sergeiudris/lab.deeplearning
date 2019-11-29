@@ -12,8 +12,6 @@
           github.seeris/pad {:git/url "https://github.com/seeris/pad"
                              :sha "0fb45fd1d5a9b069a4be61a1439daacec26b35dc"
                              :deps/root "."}}}
-  :local {:extra-deps
-          {}}
   :mem {:jvm-opts ["-Xms1024m" "-Xmx11998m"]}
   :native-image {:main-opts ["-m clj.native-image app.main"
                              "--initialize-at-build-time"

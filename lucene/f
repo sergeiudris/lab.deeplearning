@@ -33,7 +33,6 @@ dock() {
                 -it \
                 -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                -v "$(cd ../ && pwd)":/opt/root \
                  sample.ml.lucene \
                  bash
 }

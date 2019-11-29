@@ -36,8 +36,6 @@ dock() {
                 -v "$(pwd)":/opt/app \
                 -v "$(pwd)"/.deeplearning4j:/root/.deeplearning4j \
                 -v "$(pwd)"/dl4j-examples-data:/root/dl4j-examples-data \
-                -v "$(cd ../ && pwd)":/opt/root \
-                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
                  sample.ml.dl4j \
                  bash
 }
