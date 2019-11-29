@@ -1,4 +1,0 @@
-{:paths ["src"]
- :deps {org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
-        cheshire {:mvn/version "5.8.1"}
-        clojure-csv/clojure-csv {:mvn/version "2.0.1"}}}

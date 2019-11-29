@@ -1,4 +1,0 @@
-{:paths ["src"]
- :deps {
-        org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
-        }}
