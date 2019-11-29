@@ -1,24 +1,5 @@
 #!/bin/bash
 
-dc(){
-
-    docker-compose --compatibility \
-        -f docker-compose.yml \
-        "$@"
-}
-
-up(){
-    dc up -d --build
-}
-
-down(){
-    dc down 
-}
-
-term(){
-   dc exec $1 bash -c "bash;"
-}
-
 link_spaces_samples() {
     SPACE=samples
     mkdir -p spaces/$SPACE
