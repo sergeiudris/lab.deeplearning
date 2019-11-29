@@ -1,6 +1,5 @@
 (ns app.main
-  (:require [app.mnist]
-            [app.baseball]))
+  (:require [app.baseball]))
 
 #_(enable-console-print!)
 
