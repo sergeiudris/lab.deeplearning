@@ -103,22 +103,6 @@ link_spaces_el(){
 
 }
 
-link_spaces_gvm(){
-    SPACE=gvm
-    mkdir -p spaces/$SPACE
-
-    ln -s ../../.vscode spaces/$SPACE/.vscode
-    ln -s ../../gvm/deps.edn spaces/$SPACE/deps.edn
-    ln -s ../../gvm/src/gvm spaces/$SPACE/gvm
-    ln -s ../../gvm/tmp spaces/$SPACE/tmp
-
-    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
-    ln -s ../../spaces/mxnet spaces/$SPACE/mxnet
-    ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
-    
-
-}
-
 link_spaces_dl4j(){
     SPACE=dl4j
     mkdir -p spaces/$SPACE

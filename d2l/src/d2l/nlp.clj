@@ -39,7 +39,7 @@
 
 #_(:exit (sh "bash" "-c" "bash bin/data.sh text8" :dir "/opt/app"))
 
-(def app-dir "/opt/root/d2l/")
+(def app-dir "/opt/app/")
 
 (def opts {:glove.dir/shell app-dir
            :glove.dir/target (str app-dir "/tmp/data/glove/") 

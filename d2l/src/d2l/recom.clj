@@ -52,7 +52,7 @@
 
    :bert.python/output-dir bert-exported-dir
    :bert.dir/from-mxnet-example bert-dir
-   :bert.dir/python-scripts "/opt/root/python/bert/"
+   :bert.dir/python-scripts "/opt/app/python/bert/"
    :bert.dir/mxnet "/root/.mxnet/"})
 
 (defn predict-equivalent

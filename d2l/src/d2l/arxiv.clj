@@ -54,7 +54,7 @@
 (def num-filter 200)
 (def dropout 0.5)
 
-(def app-dir "/opt/root/d2l/")
+(def app-dir "/opt/app/")
 
 (def opts
   {:glove.dir/shell app-dir
@@ -63,7 +63,7 @@
 
    :bert.dir/shell "/opt/app/"
    :bert.dir/from-mxnet-example (str app-dir "/tmp/data/bert/")
-   :bert.dir/python-scripts "/opt/root/python/bert/"
+   :bert.dir/python-scripts "/opt/app/python/bert/"
    :bert.dir/mxnet "/root/.mxnet/"
    :bert.python/task "classification"
    :bert.python/seq-length 128

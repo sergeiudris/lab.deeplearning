@@ -9,9 +9,6 @@
             [d2l.arxiv]
             [d2l.recom]
             [d2l.nlp]
-            [bert.bert-sentence-classification]
-            [cnn-text-classification.classifier]
-            [captcha.train-ocr]
    ;
             ))
 

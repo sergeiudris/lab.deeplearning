@@ -1,33 +1,42 @@
 #!/bin/bash
 
 
+clean(){
+  rm -rf classes .cpcache
+}
+
 dev(){
 
-  clojure -A:core -m d2l.main
+  clojure -A:core -O:mem -m gvm.main 
 
 }
 
-permissions(){
-    sudo chmod -R 777 tmp/ 
+native(){
+
+  clojure -A:core:native-image
+
+}
+
+gpip(){
+   graalpython -m ginstall
 }
 
 
 dock() {
-    docker build -t sample.ml.d2l .
+    docker build -t sample.ml.gvm .
     docker run --gpus all \
                 --rm \
-                --name d2l \
+                --name gvm \
+                --memory 16g \
+                --cpus 4.000 \
                 -it \
                 -p 7788:7888 \
                 -v "$(pwd)":/opt/app \
                 -v "$(cd ../ && pwd)":/opt/root \
                 -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
-                 sample.ml.d2l \
+                 sample.ml.gvm \
                  bash
 }
-
-
-
 
 
 "$@"

@@ -16,20 +16,9 @@
           ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           origami {:mvn/version "4.0.0-7"}
-          
-        ;   github.seeris/pad {:git/url "https://github.com/seeris/pad"
-        ;                      :sha "HEAD"
-        ;                      :deps/root "."}
-          }
-         }
-  :local {:extra-deps
-          {
-           github.seeris/pad {:local/root "/opt/code/pad"}
-           bert {:local/root "/opt/root/mxnet/examples/bert"}
-           cnn {:local/root "/opt/root/mxnet/examples/cnn-text-classification"}
-           captcha {:local/root "/opt/root/mxnet/examples/captcha"}
-          ;  org.apache.mxnet.contrib.clojure/clojure-mxnet {:mvn/version "1.6.0-SNAPSHOT"}
-           }
-          }
+
+          github.seeris/pad {:git/url "https://github.com/seeris/pad"
+                             :sha "884ac514b5c2fdf8bee3e5059f72b206b6991330"
+                             :deps/root "."}}}
   }
 }

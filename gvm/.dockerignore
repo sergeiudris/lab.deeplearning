@@ -1,5 +1,7 @@
-.cpcache
-.lein-repl-history
-.data
-target
-tmp
+**/.cpcache
+**/.lein-repl-history
+**/.data
+**/target
+**/tmp
+**/classes
+**/*.native

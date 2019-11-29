@@ -1,23 +1,18 @@
-FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
-# supported tags
-# https://gitlab.com/nvidia/container-images/cuda/blob/master/doc/supported-tags.md
+FROM ubuntu:18.04
 
 ## core
 RUN apt-get update && \
     apt-get install -y \
             sudo  \
+            wget  \
             git-core  \
+            gpg  \
             rlwrap  \
             software-properties-common  \
-            unzip wget curl net-tools lsof \
-            graphviz \
+            unzip curl net-tools lsof \
             zlib1g-dev gcc libc6-dev
-
+            
 WORKDIR /tmp
-
-## openjdk
-# RUN apt-get update && \
-#     apt-get install -y openjdk-8-jdk
 
 ## graalvm
 # https://github.com/arjones/docker-graalvm/blob/master/Dockerfile
@@ -33,17 +28,13 @@ RUN curl -Ls "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-
     rm -f /usr/local/graalvm-ce-${SUFFIX_DIR}/src.zip && \
     ln -s /usr/local/graalvm-ce-${SUFFIX_DIR} /usr/local/graalvm && \
     rm -fr /var/lib/apt
-RUN gu install native-image python
-# RUN graalpython -m venv /opt/venv/
-# RUN /bin/bash -c "source /opt/venv/bin/activate && graalpython -m ginstall install pandas "
-# RUN /bin/bash -c "source /opt/venv/bin/activate && graalpython -m ginstall install numpy "
-# RUN graalpython -m ginstall list
+RUN gu install native-image
 
 ## clojure
-ENV CLOJURE_TOOLS=linux-install-1.10.1.466.sh
-RUN curl -O https://download.clojure.org/install/$CLOJURE_TOOLS && \
-    chmod +x $CLOJURE_TOOLS && \
-    sudo ./$CLOJURE_TOOLS && \
+ENV CLOJURE_SCRIPT_VERSION=linux-install-1.10.1.466.sh
+RUN curl -O https://download.clojure.org/install/$CLOJURE_SCRIPT_VERSION && \
+    chmod +x $CLOJURE_SCRIPT_VERSION && \
+    sudo ./$CLOJURE_SCRIPT_VERSION && \
     clojure -Stree
 
 ## leiningen
@@ -61,27 +52,9 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
     sudo apt-get update && sudo apt-get -y install yarn
 
-## opencv
-RUN sudo add-apt-repository ppa:timsc/opencv-3.4 && \
-    apt-get update && \
-    apt-get install -y  \
-        libopencv-imgcodecs3.4 \
-        libopenblas-base \
-        libatlas3-base \
-        libcurl3 
-
-RUN apt-get update && \
-        apt-get install -y curl
-
-## python mxnet
-RUN apt-get update && \
-    apt-get install -y python3-pip  && \
-    pip3 install gluonnlp mxnet
-
 ## app
 WORKDIR /opt/app
-COPY deps.edn .
-RUN clojure -A:core -Stree
+# COPY deps.edn .
+# RUN clojure -A:shadow:dev -Stree
 
-EXPOSE 7888 8080
-CMD ["bash","c", "dev"]
+EXPOSE  7888
