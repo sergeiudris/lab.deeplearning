@@ -194,10 +194,23 @@ permissions(){
     sudo chmod -R 777 d2l/tmp/ 
 }
 
+
+mxnet() {
+    docker build -t sample.ml.mxnet mxnet/
+    docker run --gpus all \
+                --rm \
+                --name mxnet \
+                -it \
+                -p 7788:7888 \
+                -v "$(pwd)"/mxnet:/opt/app \
+                -v "$(pwd)":/opt/root \
+                -v "$(pwd)"/mxnet/.data:/opt/data \
+                 sample.ml.mxnet \
+                 bash
+}
+
 d2l() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-  
+    docker build -t sample.ml.d2l d2l/
     docker run --gpus all \
                 --rm \
                 --name d2l \
@@ -211,10 +224,7 @@ d2l() {
 }
 
 tf() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-  
-                # -u $(id -u):$(id -g) \
+    docker build -t sample.ml.tf tf/
     docker run --gpus all \
                 --rm \
                 --name tf \
@@ -228,10 +238,7 @@ tf() {
 }
 
 tfjs() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-  
-                # -u $(id -u):$(id -g) \
+    docker build -t sample.ml.tfjs tfjs/
     docker run --gpus all \
                 --rm \
                 --name tfjs \
@@ -244,38 +251,8 @@ tfjs() {
                  bash
 }
 
-term_tfjs(){
-    docker exec -it tfjs bash
-}
-
-el() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-  
-                # -u $(id -u):$(id -g) \
-    docker run --gpus all \
-                --rm \
-                --name el \
-                --memory 12g \
-                --cpus 4.000 \
-                -it \
-                -p 7788:7888 \
-                -v "$(pwd)"/el:/opt/app \
-                -v "$(pwd)":/opt/root \
-                -v "$(cd ../ && pwd)"/pad:/opt/code/pad \
-                 sample.ml.el \
-                 bash
-}
-
 gvm() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-  
-                # -u $(id -u):$(id -g) \
-    # cd gvm && \
-    # docker build -t sample.ml.gvm . && \
-    # cd ..
-    sudo 
+    docker build -t sample.ml.gvm gvm/
     docker run --gpus all \
                 --rm \
                 --name gvm \
@@ -291,13 +268,7 @@ gvm() {
 }
 
 gvm_samples() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-  
-                # -u $(id -u):$(id -g) \
-    # cd gvm && \
-    # docker build -t sample.ml.gvm . && \
-    # cd ..
+    docker build -t sample.ml.gvm-samples gvm-samples/
     docker run  --rm \
                 --name gvm-samples \
                 --memory 16g \
@@ -313,18 +284,8 @@ gvm_samples() {
 
 
 dl4j() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-
-    # X11 DISPLAY
-    # https://stackoverflow.com/questions/54574372/java-gui-maven-project-in-docker-with-x11-error
-    # https://github.com/jessfraz/dockerfiles/issues/329#issuecomment-357397001
-    
-    # --env DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
-    # --env DISPLAY=10.0.75.1:0.0
-    # --env DISPLAY=:0.0
     sudo xhost +
-    # sudo xhost +"local:docker@"
+    docker build -t sample.ml.dl4j dl4j/
     docker run  --gpus all \
                 --env DISPLAY=${DISPLAY} \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -345,18 +306,8 @@ dl4j() {
 }
 
 lucene() {
-    # use docker directly while docker-compose does not support --gpus flag
-    # https://github.com/docker/compose/issues/6691
-
-    # X11 DISPLAY
-    # https://stackoverflow.com/questions/54574372/java-gui-maven-project-in-docker-with-x11-error
-    # https://github.com/jessfraz/dockerfiles/issues/329#issuecomment-357397001
-    
-    # --env DISPLAY=/tmp/.X11-unix:/tmp/.X11-unix
-    # --env DISPLAY=10.0.75.1:0.0
-    # --env DISPLAY=:0.0
     sudo xhost +
-    # sudo xhost +"local:docker@"
+    docker build -t sample.ml.lucene lucene/
     docker run  --gpus all \
                 --env DISPLAY=${DISPLAY} \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \

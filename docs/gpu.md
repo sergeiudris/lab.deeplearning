@@ -23,7 +23,9 @@
         - the issue is likely caused by 4G GPU RAM being not enough
         - in general, it seems you need at least 8-10 GB
         - when training with BERT on CPU , RAM usage is ~10 GB with batch-size 32
-
+- docker-compose --gpus
+    - https://github.com/docker/compose/issues/6691
+    - use docker directly while docker-compose does not support --gpus flag
 
 #### tfjs on node
 

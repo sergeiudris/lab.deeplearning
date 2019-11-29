@@ -22,3 +22,12 @@
     - https://git-scm.com/book/en/v2/Git-Tools-Searching
     - https://stackoverflow.com/questions/4468361/search-all-of-git-history-for-a-string
     - https://github.com/sourcegraph/sourcegraph
+
+- protocols
+    - explained
+        - https://stackoverflow.com/questions/4509782/simple-explanation-of-clojure-protocols
+        - https://stackoverflow.com/questions/37058268/what-is-reify-in-clojure
+    - examples
+        - https://stackoverflow.com/questions/38573470/make-a-class-that-extends-a-class-with-overriding-in-clojure
+        - https://stackoverflow.com/questions/3057034/adding-fields-to-a-proxied-class-in-clojure
+    
