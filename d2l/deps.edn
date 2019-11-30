@@ -10,15 +10,20 @@
  :aliases
  {:core {:extra-deps
          {org.clojure/clojure {:mvn/version "1.10.1"}
-          nrepl {:mvn/version "0.6.0"}
-          cider/cider-nrepl {:mvn/version "0.21.1"}
-
           ; org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-cpu {:mvn/version "1.5.1"}
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           origami {:mvn/version "4.0.0-7"}
 
           github.seeris/pad {:git/url "https://github.com/seeris/pad"
                              :sha "884ac514b5c2fdf8bee3e5059f72b206b6991330"
-                             :deps/root "."}}}
+                             :deps/root "."}
+          }}
+  :nrepl {:extra-deps {nrepl {:mvn/version "0.6.0"}
+                       cider/cider-nrepl {:mvn/version "0.22.4"}}
+          :main-opts ["--main nrepl.cmdline 
+                      --middleware [cider.nrepl/cider-middleware]
+                      --bind 0.0.0.0
+                      --port 7788"
+                      ]}
   }
 }
