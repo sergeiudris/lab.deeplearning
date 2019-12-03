@@ -13,4 +13,4 @@
             ))
 
 (defn -main  [& args]
-  (start-nrepl-server))
+  (start-nrepl-server "0.0.0.0" 7788))

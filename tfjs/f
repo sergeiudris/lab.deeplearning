@@ -22,14 +22,14 @@ release(){
 
 
 dock() {
-    docker build -t sample.ml.tfjs .
+    docker build -t test.deeplearning.tfjs .
     docker run --gpus all \
                 --rm \
                 --name tfjs \
                 -it \
                 -p 7788:7888 \
                 -v "$(pwd)":/opt/app \
-                 sample.ml.tfjs \
+                 test.deeplearning.tfjs \
                  bash
 }
 

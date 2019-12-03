@@ -21,22 +21,4 @@ gpip(){
    graalpython -m ginstall
 }
 
-
-dock() {
-    docker build -t sample.ml.gvm .
-    docker run --gpus all \
-                --rm \
-                --name gvm \
-                --memory 16g \
-                --cpus 4.000 \
-                -it \
-                -p 7788:7888 \
-                -v "$(pwd)":/opt/app \
-                -v "$(cd ../ && pwd)":/opt/root \
-                -v "$(cd ../../ && pwd)"/pad:/opt/code/pad \
-                 sample.ml.gvm \
-                 bash
-}
-
-
 "$@"

@@ -12,8 +12,8 @@
 
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           org.apache.mxnet/mxnet-full_2.11-linux-x86_64-gpu {:mvn/version "1.5.1"}
-          github.seeris/pad {:git/url "https://github.com/seeris/pad"
-                             :sha "884ac514b5c2fdf8bee3e5059f72b206b6991330"
+          github.seeris/util.pad {:git/url "https://github.com/seeris/util.pad"
+                             :sha "2eb84840ee63ce204fccb93470700d5126616b5f"
                              :deps/root "."}}}
   :mem {:jvm-opts ["-Xms1024m" "-Xmx11998m"]}
   :native-image {:main-opts ["-m clj.native-image lab.main"

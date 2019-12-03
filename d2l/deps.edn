@@ -14,8 +14,8 @@
           org.apache.mxnet.contrib.clojure/clojure-mxnet-linux-gpu {:mvn/version "1.5.1"}
           origami {:mvn/version "4.0.0-7"}
 
-          github.seeris/pad {:git/url "https://github.com/seeris/pad"
-                             :sha "884ac514b5c2fdf8bee3e5059f72b206b6991330"
+          github.seeris/util.pad {:git/url "https://github.com/seeris/util.pad"
+                             :sha "2eb84840ee63ce204fccb93470700d5126616b5f"
                              :deps/root "."}
           }}
   :nrepl {:extra-deps {nrepl {:mvn/version "0.6.0"}

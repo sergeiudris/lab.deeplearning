@@ -13,16 +13,9 @@ clean(){
 
 }
 
-link_checkouts(){
-  CHECKOUTS=checkouts
-  mkdir -p $CHECKOUTS
-
-  ln -s /opt/code/pad $CHECKOUTS/pad
-}
-
 dock() {
     sudo xhost +
-    docker build -t sample.ml.dl4j .
+    docker build -t test.deeplearning.dl4j .
     docker run  --gpus all \
                 --env DISPLAY=${DISPLAY} \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -36,7 +29,7 @@ dock() {
                 -v "$(pwd)":/opt/app \
                 -v "$(pwd)"/.deeplearning4j:/root/.deeplearning4j \
                 -v "$(pwd)"/dl4j-examples-data:/root/dl4j-examples-data \
-                 sample.ml.dl4j \
+                 test.deeplearning.dl4j \
                  bash
 }
 

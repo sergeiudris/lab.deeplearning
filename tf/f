@@ -8,14 +8,14 @@ dev(){
 }
 
 dock() {
-    docker build -t sample.ml.tf .
+    docker build -t test.deeplearning.tf .
     docker run --gpus all \
                 --rm \
                 --name tf \
                 -it \
-                -p 7788:7888 \
+                -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                 sample.ml.tf \
+                 test.deeplearning.tf \
                  bash
 }
 

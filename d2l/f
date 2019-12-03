@@ -13,14 +13,14 @@ permissions(){
 
 
 dock() {
-    docker build -t sample.ml.d2l .
+    docker build -t test.deeplearning.d2l .
     docker run --gpus all \
                 --rm \
                 --name d2l \
                 -it \
-                -p 7788:7888 \
+                -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                 sample.ml.d2l \
+                 test.deeplearning.d2l \
                  bash
 }
 

@@ -82,8 +82,6 @@ link_spaces_d2l(){
     ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
     ln -s ../../spaces/mxnet spaces/$SPACE/mxnet
     ln -s ../../d2l/tmp spaces/$SPACE/tmp
-    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
-
 
 }
 
@@ -96,7 +94,6 @@ link_spaces_el(){
     ln -s ../../el/src/el spaces/$SPACE/el
     ln -s ../../el/tmp spaces/$SPACE/tmp
 
-    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
     ln -s ../../spaces/mxnet spaces/$SPACE/mxnet
     ln -s ../../d2l/src/d2l spaces/$SPACE/d2l
     
@@ -110,7 +107,6 @@ link_spaces_dl4j(){
     ln -s ../../.vscode spaces/$SPACE/.vscode
     ln -s ../../dl4j/project.clj spaces/$SPACE/project.clj
     ln -s ../../dl4j/src/dl4j spaces/$SPACE/dl4j
-    ln -s ../../dl4j/src/pad spaces/$SPACE/pad
     ln -s ../../dl4j/src/org spaces/$SPACE/org
 
     ln -s ../../dl4j/tmp spaces/$SPACE/tmp
@@ -123,7 +119,6 @@ link_spaces_lucene(){
     ln -s ../../.vscode spaces/$SPACE/.vscode
     ln -s ../../lucene/project.clj spaces/$SPACE/project.clj
     ln -s ../../lucene/src/lucene spaces/$SPACE/lucene
-    ln -s ../../lucene/src/pad spaces/$SPACE/pad
     ln -s ../../lucene/src/org spaces/$SPACE/org
 
     ln -s ../../lucene/tmp spaces/$SPACE/tmp
@@ -138,7 +133,6 @@ link_spaces_tf(){
     ln -s ../../tf/deps.edn spaces/$SPACE/deps.edn
     ln -s ../../tf/src/tf spaces/$SPACE/tf
     ln -s ../../tf/tmp spaces/$SPACE/tmp
-    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
 
 
 }
@@ -152,7 +146,6 @@ link_spaces_tfjs(){
     ln -s ../../tfjs/shadow-cljs.edn spaces/$SPACE/shadow-cljs.edn
     ln -s ../../tfjs/src/app spaces/$SPACE/app
     ln -s ../../tfjs/tmp spaces/$SPACE/tmp
-    ln -s ../../../pad/spaces/pad spaces/$SPACE/pad
 }
 
 dock_u18(){
@@ -161,7 +154,6 @@ dock_u18(){
                 --memory 16g \
                 --cpus 4.000 \
                 -it \
-                -p 8888:7888 \
                 -v "$(pwd)":/opt/root \
                 -v "$(cd ../ && pwd)":/opt/code/ \
                  ubuntu:18.04 \

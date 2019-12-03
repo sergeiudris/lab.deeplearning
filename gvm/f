@@ -2,15 +2,15 @@
 
 
 dock() {
-    docker build -t sample.ml.gvm-samples .
+    docker build -t test.deeplearning.gvm .
     docker run  --rm \
-                --name gvm-samples \
+                --name gvm \
                 --memory 16g \
                 --cpus 4.000 \
                 -it \
-                -p 7788:7888 \
+                -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                 sample.ml.gvm-samples \
+                 test.deeplearning.gvm \
                  bash
 }
 

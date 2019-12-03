@@ -13,16 +13,9 @@ clean(){
 
 }
 
-link_checkouts(){
-  CHECKOUTS=checkouts
-  mkdir -p $CHECKOUTS
-
-  ln -s /opt/code/pad $CHECKOUTS/pad
-}
-
 dock() {
     sudo xhost +
-    docker build -t sample.ml.lucene .
+    docker build -t test.deeplearning.lucene .
     docker run  --gpus all \
                 --env DISPLAY=${DISPLAY} \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -33,7 +26,7 @@ dock() {
                 -it \
                 -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                 sample.ml.lucene \
+                 test.deeplearning.lucene \
                  bash
 }
 
