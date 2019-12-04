@@ -5,7 +5,8 @@
         - https://github.com/oracle/graal/issues/1681
 
 
-- dl4j
+- gpu
+    - https://github.com/docker/compose/issues/6691
 
 - issue
     - network issue, host blob.deeplearning4j.org cannot be not resolved
