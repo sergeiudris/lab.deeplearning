@@ -1,8 +1,6 @@
 - d2l
   - book "Dive into Deep Learning"
     - https://d2l.ai/
-  - issues
-    - 
 
 - GPU
   - nvidia setup
