@@ -1,6 +1,76 @@
-- d2l
-  - book "Dive into Deep Learning"
-    - https://d2l.ai/
+- mxnet
+  - links
+    - https://github.com/apache/incubator-mxnet/tree/master/contrib/clojure-package
+    - http://jalammar.github.io/illustrated-bert/
+      - post about BERT nlp 
+    - https://medium.com/apache-mxnet/gluon-nlp-bert-6a489bdd3340
+      - GluonNLP 0.6: Closing the Gap in Reproducible Research with BERT
+    - https://github.com/apache/incubator-mxnet/tree/master/example/named_entity_recognition
+      - https://opringle.github.io/2018/02/06/CNNLSTM_entity_recognition.html
+        - https://github.com/explosion/spaCy
+        - https://www.kaggle.com/abhinavwalia95/entity-annotated-corpus
+        - https://github.com/opringle/named_entity_recognition
+    - https://github.com/keon/awesome-nlp
+    - https://www.google.com/search?q=named%20entity%20recognition%20bert
+      - https://www.depends-on-the-definition.com/named-entity-recognition-with-bert/
+      - https://github.com/kyzhouhzau/BERT-NER
+    - https://github.com/napsternxg/TwitterNER
+    - https://github.com/ThomasDelteil/TextClassificationCNNs_MXNet
+    - Gluon API for Scala/ Clojure/ Java packages
+      - https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=103089990
+    - https://github.com/Chouffe/mxnet-clj-tutorials
+    - https://github.com/Chouffe/mxnet-clojurenorth-example
+    - https://github.com/awslabs/mxnet-model-server
+    - mxnet made simple
+      - https://arthurcaillau.com/blog/
+      - https://arthurcaillau.com/mxnet-made-simple-image-manipulation/
+    - "Dive into Deep Learning"
+      - https://d2l.ai/
+  - people
+    - https://github.com/gigasquid
+      - http://gigasquidsoftware.com/blog/archives/
+    - https://github.com/Chouffe
+      - https://arthurcaillau.com/blog/
+    - https://github.com/kedarbellare
+    - https://github.com/hellonico
+    - https://github.com/daveliepmann
+      - https://www.daveliepmann.com/
+
+- tensorflow 
+  - links
+    - https://github.com/tensorflow/tensorflow/tree/master/tensorflow/java
+    - https://github.com/kieranbrowne/clojure-tensorflow
+    - install
+      - https://search.maven.org/search?q=org.tensorflow
+      - https://www.tensorflow.org/install/docker#download_a_tensorflow_docker_image
+    - examples
+      - https://github.com/tensorflow/models/tree/master/samples/languages/java
+    - javascript
+      - https://js.tensorflow.org/api/latest/
+      - https://github.com/tensorflow/tfjs-examples
+      - https://github.com/tensorflow/tfjs-models
+
+- tfjs
+  - https://www.tensorflow.org/js/guide/nodejs
+  - value
+    - as guide clarifies, single threaded nature of node makes tfjs-node unequal to tf itself or mxnet
+
+- deeplearning4j
+  - links
+    - https://github.com/eclipse/deeplearning4j
+      - https://github.com/eclipse/deeplearning4j/milestones
+    - https://github.com/eclipse/deeplearning4j-examples
+    - http://deeplearning4j.org/docs/latest/
+    - https://skymind.ai/wiki
+  - issues
+    - network issue, host blob.deeplearning4j.org cannot be not resolved
+      - http://blob.deeplearning4j.org/datasets/iris.dat doesn't resolve even in Opera with vpn
+      - probably a geographical issue
+      - resolved
+          - https://github.com/eclipse/deeplearning4j-examples/issues/924
+    - Execution error (DL4JInvalidInputException) at org.deeplearning4j.nn.layers.BaseLayer/preOutputWithPreNorm (BaseLayer.java:306).
+      Input that is not a matrix; expected matrix (rank 2), got rank 1 array with shape [784]. Missing preprocessor or wrong input type?
+        - https://github.com/eclipse/deeplearning4j/issues/3112
 
 - GPU
   - nvidia setup
@@ -32,27 +102,35 @@
       - https://github.com/docker/compose/issues/6691
       - use docker run --gpus directly while docker-compose does not support --gpus flag
     
-- tfjs
-  - https://www.tensorflow.org/js/guide/nodejs
-  - value
-    - as guide clarifies, single threaded nature of node makes tfjs-node unequal to tf itself or mxnet
-
-- gvm
+- graalvm
+  - links
+    - https://github.com/oracle/graal
+      - https://www.graalvm.org/docs/why-graal/
+      - https://github.com/oracle/graal/blob/master/truffle/docs/Languages.md
+      - https://medium.com/graalvm/graalvm-ten-things-12d9111f307d
+        - perfomrance 
+        - `native-image` (low-footprint, compile to machine code), fast startup, smaller Docker images
+        - polyglot
+        - run LLVM bytecode (C C++ Fortran .. C extensions like Python Ruby .. )
+        - tools across all langs (debugger, jvisualvm ..), --inspect 
+            - "The Truffle framework is a kind of nexus for languages and tools"
+        - embed langs and tools into JVM app (org.graalvm.polyglot)
+            - "The polyglot API allows you to take guest language objects and use them as Java interfaces and other sophisticated interoperability"
+        - extend a native app
+            - "use a single library in your native application to embed any GraalVM language"
+        - java code as a native lib (@CEntryPoint)
+        - run GraalVM languages inside the Oracle Database
+        - create a lang
+      - http://lafo.ssw.uni-linz.ac.at/papers/2013_Onward_OneVMToRuleThemAll.pdf
+      - build a shell for many langs
+        - https://www.graalvm.org/docs/reference-manual/embed/#build-a-shell-for-many-languages
+    - posts
+        - http://gigasquidsoftware.com/blog/2017/10/22/embedded-interop-between-clojure-r-and-python-with-graalvm/
     - issues
       - Call path from entry point to clojure.spec.gen.alpha$dynaload$fn__2628.invoke():
         - https://github.com/oracle/graal/issues/1266
         - https://github.com/oracle/graal/issues/1681
 
-- dl4j
-  - issues
-    - network issue, host blob.deeplearning4j.org cannot be not resolved
-      - http://blob.deeplearning4j.org/datasets/iris.dat doesn't resolve even in Opera with vpn
-      - probably a geographical issue
-      - resolved
-          - https://github.com/eclipse/deeplearning4j-examples/issues/924
-    - Execution error (DL4JInvalidInputException) at org.deeplearning4j.nn.layers.BaseLayer/preOutputWithPreNorm (BaseLayer.java:306).
-      Input that is not a matrix; expected matrix (rank 2), got rank 1 array with shape [784]. Missing preprocessor or wrong input type?
-        - https://github.com/eclipse/deeplearning4j/issues/3112
 
 - lein-virgil
   - issues
@@ -60,36 +138,120 @@
       - resolved
           - rm -rf target
 
-
 - text similairty
-    - BERT word and sentence embeddings
-        - https://github.com/google-research/bert/issues/261
-            - https://github.com/hanxiao/bert-as-service/#q-what-are-the-available-pooling-strategies
-            - https://github.com/imgarylai/bert-embedding
-        - Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks
-            - https://arxiv.org/abs/1908.10084
-        - https://stackoverflow.com/questions/58168936/bert-sentence-embeddings
-        - News Topic Similarity Measure using Pretrained BERT Model
-            - https://medium.com/the-artificial-impostor/news-topic-similarity-measure-using-pretrained-bert-model-1dbfe6a66f1d
-        - https://github.com/Separius/awesome-sentence-embedding
-        - https://datascience.stackexchange.com/questions/62658/how-to-get-sentence-embedding-using-bert
-    - Text Similarities : Estimate the degree of similarity between two texts
-        - https://medium.com/@adriensieg/text-similarities-da019229c894
-        - https://github.com/adsieg/text_similarity
-    - GluonNLP — Deep Learning Toolkit for Natural Language Processing
-        - https://medium.com/apache-mxnet/gluonnlp-deep-learning-toolkit-for-natural-language-processing-98e684131c8a
-    
+  - BERT word and sentence embeddings
+    - https://github.com/google-research/bert/issues/261
+      - https://github.com/hanxiao/bert-as-service/#q-what-are-the-available-pooling-strategies
+      - https://github.com/imgarylai/bert-embedding
+    - Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks
+      - https://arxiv.org/abs/1908.10084
+    - https://stackoverflow.com/questions/58168936/bert-sentence-embeddings
+    - News Topic Similarity Measure using Pretrained BERT Model
+      - https://medium.com/the-artificial-impostor/news-topic-similarity-measure-using-pretrained-bert-model-1dbfe6a66f1d
+    - https://github.com/Separius/awesome-sentence-embedding
+    - https://datascience.stackexchange.com/questions/62658/how-to-get-sentence-embedding-using-bert
+  - Text Similarities : Estimate the degree of similarity between two texts
+    - https://medium.com/@adriensieg/text-similarities-da019229c894
+    - https://github.com/adsieg/text_similarity
+  - GluonNLP — Deep Learning Toolkit for Natural Language Processing
+    - https://medium.com/apache-mxnet/gluonnlp-deep-learning-toolkit-for-natural-language-processing-98e684131c8a
     
 - git search
-    - https://git-scm.com/book/en/v2/Git-Tools-Searching
-    - https://stackoverflow.com/questions/4468361/search-all-of-git-history-for-a-string
-    - https://github.com/sourcegraph/sourcegraph
+  - https://git-scm.com/book/en/v2/Git-Tools-Searching
+  - https://stackoverflow.com/questions/4468361/search-all-of-git-history-for-a-string
+  - https://github.com/sourcegraph/sourcegraph
 
 - clj protocols
-    - explained
-        - https://stackoverflow.com/questions/4509782/simple-explanation-of-clojure-protocols
-        - https://stackoverflow.com/questions/37058268/what-is-reify-in-clojure
-    - examples
-        - https://stackoverflow.com/questions/38573470/make-a-class-that-extends-a-class-with-overriding-in-clojure
-        - https://stackoverflow.com/questions/3057034/adding-fields-to-a-proxied-class-in-clojure
+  - explained
+    - https://stackoverflow.com/questions/4509782/simple-explanation-of-clojure-protocols
+    - https://stackoverflow.com/questions/37058268/what-is-reify-in-clojure
+  - examples
+    - https://stackoverflow.com/questions/38573470/make-a-class-that-extends-a-class-with-overriding-in-clojure
+    - https://stackoverflow.com/questions/3057034/adding-fields-to-a-proxied-class-in-clojure
     
+
+- talks
+  - Geoffrey Hinton and Yann LeCun, 2018 ACM A.M. Turing Award Lecture "The Deep Learning Revolution"
+    - https://youtu.be/VsnQf7exv5I
+  - Deepmind AlphaZero - Mastering Games Without Human Knowledge
+    - https://youtu.be/Wujy7OzvdJk
+  - How to Build a Semantic Search System - Trey Grainger, Lucidworks
+    - https://youtu.be/4fMZnunTRF8
+    - notes
+      - hyperstructured data
+      - semantic knowledge graph
+      - arguable "the goal of search is to also understand user intent"
+        - one could quote Paul Graham's comparing user-specific search to scientology "what's true is what's true for you"
+          - link to quote https://youtu.be/R9ITLdmfdLI?t=282
+        - the goal of search is to give most relevant results for the query
+        - if the user wants more context, they should expand query
+        - or there should be an "opt in/out" policy
+  - Sentence embeddings for automated factchecking - Lev Konstantinovskiy
+    - https://youtu.be/ddf0lgPCoSo
+      - https://fullfact.org/
+      - https://prodi.gy/
+      - https://en.wikipedia.org/wiki/Transfer_learning
+      - https://github.com/facebookresearch/InferSent
+  - Zack Witten: Extracting Structured Data from Legal Documents | PyData LA 2018
+    - https://youtu.be/KrXJmaSHBJU
+      - https://github.com/atriumlts
+      - https://aws.amazon.com/blogs/machine-learning/automatically-extract-text-and-structured-data-from-documents-with-amazon-textract/
+  - Detecting Signed and Unsigned Documents with Deep Learning - Beyond Transfer... - Jordan Bramble PyData LA 2018 
+    - https://youtu.be/ygIDEaPlAJ8
+  - PyData Tel Aviv Meetup: Deep Learning for Named Entity Recognition - Kfir Bar
+    - https://www.youtube.com/watch?v=TUXbXwu17KE
+      - https://kfirbar.com/
+          - https://youtu.be/zJD-LudMyN4
+  - Domain-Specific Entity Extraction from Unstructured Text - Zoran Dzunic and Mohamed AdelHady
+    - https://youtu.be/wM6CWzv4VkQ
+  - Invoice 2 Vec: Creating AI to Read Documents - Mark Landry - H2O AI World London 2018
+    - https://youtu.be/18Pxvs50G-0
+  - Unsupervised Deep Learning - Google DeepMind & Facebook Artificial Intelligence NeurIPS 2018
+    - https://youtu.be/rjZCjosEFpI
+  - Building a Lean AI Startup - Lessons Learned | Data Council SF '19
+    - https://youtu.be/Dum5GT7kV_g
+  - Building a 1500-Class Listing Categorizer from Implicit User Feedback | Letgo
+    - https://youtu.be/FsTaq-cVOBM
+  - Improving Search with Natural Language Processing and Deep Learning | Scout24
+    - https://youtu.be/fK7-mDFIkcg
+  - Industrial Applications of AI, High Performance Computing, & DataViz | BSC-CNS
+    - https://youtu.be/IJSto9CskGw
+  - Building Data Products with Machine Learning at Zendesk | Zendesk
+    - https://youtu.be/KenLN390JmM
+  - Reinforcement Learning: a gentle Introduction and industrial Application | Dr. Christian Hidber
+    - https://youtu.be/3RjSanoNIlk
+  - data.bythebay.io: Samiur Rahman, Building semantic search using Deep Learning
+    - https://youtu.be/J4O42EWfHoo
+      - https://arxiv.org/abs/1506.06726v1
+    - notes
+      - mine and structure information on businesses
+      - tried elastic, LDA,  word2vec + TF-IDF, pragraph2vec, LSTM, CNN
+      - chose paragraph2vec
+  - Building and driving adoption for a robust semantic search system - Hrishikesh Ganu
+    - https://youtu.be/niKXwqcTpao
+  - Robert Meyer - Analysing user comments with Doc2Vec and Machine Learning classification
+    - https://youtu.be/zFScws0mb7M
+  - Applying the four step "Embed, Encode, Attend, Predict" framework to predict document similarity
+    - https://youtu.be/HfnjQIhQzME
+
+- posts
+  - How To Create Natural Language Semantic Search For Arbitrary Objects With Deep Learning
+    - https://towardsdatascience.com/semantic-code-search-3cd6d244a39c
+    - https://github.blog/2018-09-18-towards-natural-language-semantic-code-search/
+    - https://github.com/hamelsmu/code_search
+    - related
+      - https://towardsdatascience.com/how-to-create-data-products-that-are-magical-using-sequence-to-sequence-models-703f86a231f8
+      - https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41869.pdf
+      - https://github.com/igrigorik/gharchive.org
+  - Building a Search Engine with BERT and TensorFlow
+    - https://towardsdatascience.com/building-a-search-engine-with-bert-and-tensorflow-c6fdc0186c8a
+
+- papers
+  - BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding
+    - https://arxiv.org/abs/1810.04805
+      - https://github.com/google-research/bert
+      - https://gluebenchmark.com/leaderboard/
+      - https://rajpurkar.github.io/SQuAD-explorer/
+      - https://paperswithcode.com/sota/common-sense-reasoning-on-swag
+  - TinySearch -- Semantics based Search Engine using Bert Embeddings
+    - https://arxiv.org/abs/1908.02451
