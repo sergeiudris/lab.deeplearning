@@ -180,12 +180,12 @@
     - notes
       - hyperstructured data
       - semantic knowledge graph
-      - arguable "the goal of search is to also understand user intent"
-        - one could quote Paul Graham's comparing user-specific search to scientology "what's true is what's true for you"
-          - link to quote https://youtu.be/R9ITLdmfdLI?t=282
-        - the goal of search is to give most relevant results for the query
-        - if the user wants more context, they should expand query
-        - or there should be an "opt in/out" policy
+    - arguable "the goal of search is to also understand user intent"
+      - one could quote Paul Graham's comparing user-specific search to scientology "what's true is what's true for you"
+        - link to quote https://youtu.be/R9ITLdmfdLI?t=282
+      - the goal of search is to give most relevant results for the query
+      - if the user wants more context, they should expand query
+      - or there should be an "opt in/out" policy
   - Sentence embeddings for automated factchecking - Lev Konstantinovskiy
     - https://youtu.be/ddf0lgPCoSo
       - https://fullfact.org/
