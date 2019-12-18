@@ -79,5 +79,4 @@ WORKDIR /opt/app
 COPY deps.edn .
 RUN clojure -A:core -Stree
 
-EXPOSE 7878 8080
-CMD ["bash","c", "dev"]
+EXPOSE 7788 8080
