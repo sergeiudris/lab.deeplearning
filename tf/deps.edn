@@ -12,7 +12,7 @@
           org.tensorflow/tensorflow {:mvn/version "1.15.0"}
           org.tensorflow/libtensorflow {:mvn/version "1.15.0"}
           org.tensorflow/libtensorflow_jni_gpu {:mvn/version "1.15.0"}
-          github.seeris/util.pad {:git/url "https://github.com/seeris/util.pad"
+          github.sergeiudris/util.pad {:git/url "https://github.com/sergeiudris/util.pad"
                              :sha "2eb84840ee63ce204fccb93470700d5126616b5f"
                              :deps/root "."}}}}
 }
