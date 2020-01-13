@@ -15,7 +15,7 @@ clean(){
 
 dock() {
     sudo xhost +
-    docker build -t test.deeplearning.lucene .
+    docker build -t tmp.deeplearning.lucene .
     docker run  --gpus all \
                 --env DISPLAY=${DISPLAY} \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -26,7 +26,7 @@ dock() {
                 -it \
                 -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                 test.deeplearning.lucene \
+                 tmp.deeplearning.lucene \
                  bash
 }
 

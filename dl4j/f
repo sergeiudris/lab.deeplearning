@@ -15,7 +15,7 @@ clean(){
 
 dock() {
     sudo xhost +
-    docker build -t test.deeplearning.dl4j .
+    docker build -t tmp.deeplearning.dl4j .
     docker run  --gpus all \
                 --env DISPLAY=${DISPLAY} \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -29,7 +29,7 @@ dock() {
                 -v "$(pwd)":/opt/app \
                 -v "$(pwd)"/.deeplearning4j:/root/.deeplearning4j \
                 -v "$(pwd)"/dl4j-examples-data:/root/dl4j-examples-data \
-                 test.deeplearning.dl4j \
+                 tmp.deeplearning.dl4j \
                  bash
 }
 

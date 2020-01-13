@@ -2,7 +2,7 @@
 
 
 dock() {
-    docker build -t test.deeplearning.gvm .
+    docker build -t tmp.deeplearning.gvm .
     docker run  --rm \
                 --name gvm \
                 --memory 16g \
@@ -10,7 +10,7 @@ dock() {
                 -it \
                 -p 7788:7788 \
                 -v "$(pwd)":/opt/app \
-                 test.deeplearning.gvm \
+                 tmp.deeplearning.gvm \
                  bash
 }
 
